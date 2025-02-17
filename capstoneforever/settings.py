@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'employee',
     'employer',
     'landing',
+    'admin_panel',
 ]
 
 MIDDLEWARE = [
@@ -161,3 +162,7 @@ DEFAULT_FROM_EMAIL = 'GEOCONNECT <your-Geo@gmail.com>'
 
 # Password Reset Settings
 PASSWORD_RESET_TIMEOUT = 86400  # 24 hours in seconds
+
+# Custom User Model
+AUTH_USER_MODEL = 'admin_panel.AdminUser'
+

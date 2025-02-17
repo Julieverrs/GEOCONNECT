@@ -16,7 +16,7 @@ from .tokens import password_reset_token  # Import our custom token generator
 
 def employee_signup(request):
     if request.method == "POST":
-        form = EmployeeSignupForm(request.POST)
+        form = EmployeeSignupForm(request.POST, request.FILES)
         if form.is_valid():
             # Check if username already exists
             if Employee.objects.filter(username=form.cleaned_data["username"]).exists():
@@ -30,6 +30,9 @@ def employee_signup(request):
 
             employee = form.save(commit=False)
             employee.password = make_password(form.cleaned_data["password"])
+            if form.cleaned_data['document']:
+                employee.document = form.cleaned_data['document']
+                employee.document_name = form.cleaned_data['document_name']
             employee.save()
             messages.success(request, "Account created successfully! Please login.")
             return redirect('employee_login')

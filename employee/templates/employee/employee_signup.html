@@ -3,7 +3,7 @@
 <head>
     {% load static %}
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Employee Signup | GEOCONNECT</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,9 +18,8 @@
             </div>
         </div>
         <div class="form-section">
-            <div class="form-decoration decoration-1"></div>
-            <div class="form-decoration decoration-2"></div>
             <div class="container">
+                <img src="{% static 'images/rocket-icon.svg' %}" alt="Rocket Icon" class="rocket-icon">
                 <h2>Create Account</h2>
                 {% if messages %}
                 <div class="messages">
@@ -31,37 +30,33 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-                <form method="POST" id="signupForm">
+                <form method="POST" id="signupForm" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-group">
                         <label for="id_username">Username</label>
                         {{ form.username }}
-                        {% if form.username.errors %}
-                        <span class="error-message">{{ form.username.errors }}</span>
-                        {% endif %}
                     </div>
                     <div class="form-group">
-                        <label for="id_email">Email Address</label>
+                        <label for="id_email">Email</label>
                         {{ form.email }}
-                        {% if form.email.errors %}
-                        <span class="error-message">{{ form.email.errors }}</span>
-                        {% endif %}
                     </div>
                     <div class="form-group">
                         <label for="id_password">Password</label>
                         {{ form.password }}
-                        {% if form.password.errors %}
-                        <span class="error-message">{{ form.password.errors }}</span>
-                        {% endif %}
                     </div>
                     <div class="form-group">
                         <label for="id_confirm_password">Confirm Password</label>
                         {{ form.confirm_password }}
-                        {% if form.confirm_password.errors %}
-                        <span class="error-message">{{ form.confirm_password.errors }}</span>
-                        {% endif %}
                     </div>
-                    <button type="submit">Create your account</button>
+                    <div class="form-group">
+                        <label for="id_document">NBI Clearance/Permit</label>
+                        {{ form.document }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_document_name">Document Name</label>
+                        {{ form.document_name }}
+                    </div>
+                    <button type="submit">Sign Up</button>
                 </form>
                 <a href="{% url 'employee_login' %}" class="link">Already have an account? Sign in</a>
             </div>
@@ -70,3 +65,4 @@
     <script src="{% static 'js/form.js' %}"></script>
 </body>
 </html>
+

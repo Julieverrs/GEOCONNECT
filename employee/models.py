@@ -24,6 +24,8 @@ class Employee(models.Model):
     last_login = models.DateTimeField(null=True, blank=True)
     date_joined = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)
+    document = models.FileField(upload_to='employee_documents/', blank=True, null=True)
+    document_name = models.CharField(max_length=100, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.password.startswith('pbkdf2_sha256$'):
@@ -46,3 +48,4 @@ class Employee(models.Model):
     @property
     def is_authenticated(self):
         return True
+

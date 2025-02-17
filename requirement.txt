@@ -1,0 +1,4 @@
+Django>=4.2.0
+python-dotenv
+django-crispy-forms
+Pillow
