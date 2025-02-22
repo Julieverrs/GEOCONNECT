@@ -1,60 +1,54 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GEOCONNECT - Employer Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/employer_home.css' %}">
-    <link rel="stylesheet" href="{% static 'css/components.css' %}">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-</head>
-<body class="dashboard-body">
-    <!-- Fixed Header -->
-    <header class="dashboard-header">
-        <div class="header-container">
-            <div class="logo-section">
-                <img src="{% static 'images/rocket-icon.svg' %}" alt="GEOCONNECT" class="header-logo">
-                <span class="logo-text">GEOCONNECT</span>
-            </div>
-            <div class="profile-dropdown">
-                <button class="profile-trigger">
-                    <div class="profile-info">
-                        <div class="profile-avatar">
-                            {{ request.user.username|first|upper }}
-                        </div>
-                        <span class="profile-name">{{ request.user.username }}</span>
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/employer_home.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Fixed Header -->
+<header class="dashboard-header">
+    <div class="header-container">
+        <div class="logo-section">
+            <img src="{% static 'images/rocket-icon.svg' %}" alt="GEOCONNECT" class="header-logo">
+            <span class="logo-text">GEOCONNECT</span>
+        </div>
+        <div class="profile-dropdown">
+            <button class="profile-trigger">
+                <div class="profile-info">
+                    <div class="profile-avatar">
+                        {{ request.user.username|first|upper }}
                     </div>
-                </button>
-                <div class="dropdown-menu">
-                    <a href="#" class="dropdown-item">Profile Settings</a>
-                    <a href="#" class="dropdown-item">Company Details</a>
-                    <div class="dropdown-divider"></div>
-                    <a href="{% url 'employer_logout' %}" class="dropdown-item text-red">Logout</a>
+                    <span class="profile-name">{{ username }}</span>
                 </div>
+            </button>
+            <div class="dropdown-menu">
+                <a href="#" class="dropdown-item">Profile Settings</a>
+                <a href="#" class="dropdown-item">Company Details</a>
+                <div class="dropdown-divider"></div>
+                <a href="{% url 'employer_logout' %}" class="dropdown-item text-red">Logout</a>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
-    <!-- Main Content -->
-    <main class="dashboard-main">
-        <!-- Welcome Section -->
-        <section class="welcome-section">
-            <div class="welcome-content">
-                <h1>Welcome To GeoConnect</h1>
-                <p>Manage your job postings and find the perfect candidates.</p>
-            </div>
-            <button id="createJobBtn" class="create-job-button">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                Create New Job
-            </button>
-        </section>
+<!-- Main Content -->
+<main class="dashboard-main">
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+        <div class="welcome-content">
+            <h1>Welcome To GeoConnect</h1>
+            <p>Manage your job postings and find the perfect candidates.</p>
+        </div>
+        <button id="createJobBtn" class="create-job-button">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Create New Job
+        </button>
+    </section>
 
-        <!-- Jobs Section -->
+    <!-- Jobs Section -->
     <section class="jobs-section">
         <div class="section-header">
             <h2>Your Job Postings</h2>
@@ -122,67 +116,84 @@
             {% endfor %}
         </div>
     </section>
-    </main>
+</main>
 
-    <!-- Create Job Modal -->
-    <div id="createJobModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Create New Job</h2>
-                <button class="close-modal">&times;</button>
-            </div>
-            <form class="job-form">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="jobTitle">Job Title</label>
-                    <input type="text" id="jobTitle" name="jobTitle" required>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="location">Location</label>
-                        <div class="location-input-group">
-                            <input type="text" id="location" name="location" required>
-                            <button type="button" id="locationSearchBtn">Search</button>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div id="map" style="height: 300px; width: 100%;"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="jobType">Job Type</label>
-                        <select id="jobType" name="jobType" required>
-                            <option value="full-time">Full-time</option>
-                            <option value="part-time">Part-time</option>
-                            <option value="contract">Contract</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="description">Job Description</label>
-                    <textarea id="description" name="description" rows="5" required></textarea>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="salary">Salary Range</label>
-                        <input type="text" id="salary" name="salary" placeholder="e.g., ₱30,000 - ₱50,000">
-                    </div>
-                    <div class="form-group">
-                        <label for="experience">Experience Level</label>
-                        <select id="experience" name="experience">
-                            <option value="entry">Entry Level</option>
-                            <option value="mid">Mid Level</option>
-                            <option value="senior">Senior Level</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="button" id="cancelJob" class="button-secondary">Cancel</button>
-                    <button type="submit" class="button-primary">Create Job</button>
-                </div>
-            </form>
+<!-- Update the Create Job Modal form -->
+<div id="createJobModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Create New Job</h2>
+            <button class="close-modal">&times;</button>
         </div>
+        <form class="job-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="jobTitle">Job Title</label>
+                <input type="text" id="jobTitle" name="jobTitle" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <div class="location-input-group">
+                        <input type="text" id="location" name="location" readonly required>
+                        <button type="button" id="locationSearchBtn" class="search-location-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            Search
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group map-container">
+                    <div id="map"></div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="jobType">Job Type</label>
+                    <select id="jobType" name="jobType" required>
+                        <option value="full-time">Full-time</option>
+                        <option value="part-time">Part-time</option>
+                        <option value="contract">Contract</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="workSetup">Work Setup</label>
+                    <select id="workSetup" name="workSetup" required>
+                        <option value="on-site">On-site</option>
+                        <option value="hybrid">Hybrid</option>
+                        <option value="remote">Remote</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description">Job Description</label>
+                <textarea id="description" name="description" rows="5" required></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="salary">Salary Range</label>
+                    <input type="text" id="salary" name="salary" placeholder="e.g., ₱30,000 - ₱50,000">
+                </div>
+                <div class="form-group">
+                    <label for="experience">Experience Level</label>
+                    <select id="experience" name="experience">
+                        <option value="entry">Entry Level</option>
+                        <option value="mid">Mid Level</option>
+                        <option value="senior">Senior Level</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="cancelJob" class="button-secondary">Cancel</button>
+                <button type="submit" class="button-primary">Create Job</button>
+            </div>
+        </form>
     </div>
-    <!-- View Job Modal -->
+</div>
+
+<!-- View Job Modal -->
 <div id="viewJobModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -306,50 +317,48 @@
             <button class="tab-button" data-tab="password">Change Password</button>
         </div>
         
-        <!-- ... (previous code) ... -->
-
-<!-- Company Profile Tab -->
-<div class="tab-content active" id="companyTab">
-    <form id="companyProfileForm" class="settings-form">
-        <div class="form-group">
-            <label for="companyName">Company Name</label>
-            <input type="text" id="companyName" name="company_name" required>
-        </div>
-        <div class="form-group">
-            <label for="companyDescription">Company Description</label>
-            <textarea id="companyDescription" name="company_description" rows="4"></textarea>
-        </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label for="companyWebsite">Website</label>
-                <input type="url" id="companyWebsite" name="company_website">
-            </div>
-            <div class="form-group">
-                <label for="companyLocation">Location</label>
-                <div class="location-input-group">
-                    <input type="text" id="companyLocation" name="company_location">
-                    <button type="button" id="companyLocationSearchBtn">Search</button>
+        <!-- Company Profile Tab -->
+        <div class="tab-content active" id="companyTab">
+            <form id="companyProfileForm" class="settings-form">
+                <div class="form-group">
+                    <label for="companyName">Company Name</label>
+                    <input type="text" id="companyName" name="company_name" required>
                 </div>
-                <input type="hidden" id="companyLatitude" name="latitude">
-                <input type="hidden" id="companyLongitude" name="longitude">
-            </div>
+                <div class="form-group">
+                    <label for="companyDescription">Company Description</label>
+                    <textarea id="companyDescription" name="company_description" rows="4"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="companyWebsite">Website</label>
+                        <input type="url" id="companyWebsite" name="company_website">
+                    </div>
+                    <div class="form-group">
+                        <label for="companyLocation">Company Location</label>
+                        <div class="location-search">
+                          <input type="text" id="companyLocation" name="companyLocation" class="form-control" placeholder="Enter location">
+                          <button type="button" id="companyLocationSearchBtn" class="btn btn-secondary">
+                            Search
+                          </button>
+                        </div>
+                        <div class="map-container">
+                          <div id="companyLocationMap"></div>
+                        </div>
+                        <div class="map-coordinates">
+                          <input type="hidden" id="companyLatitude" name="latitude">
+                          <input type="hidden" id="companyLongitude" name="longitude">
+                        </div>
+                      </div>
+                </div>
+                <div class="form-group">
+                    <label for="industry">Industry</label>
+                    <input type="text" id="industry" name="industry">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="button-primary">Save Changes</button>
+                </div>
+            </form>
         </div>
-        <div class="form-group">
-            <div id="companyLocationMap" style="height: 300px; width: 100%;"></div>
-        </div>
-        <div class="form-group">
-            <label for="industry">Industry</label>
-            <input type="text" id="industry" name="industry">
-        </div>
-        <div class="form-actions">
-            <button type="submit" class="button-primary">Save Changes</button>
-        </div>
-    </form>
-</div>
-
-<!-- ... (rest of the code) ... -->
-
-
         
         <!-- Account Settings Tab -->
         <div class="tab-content" id="accountTab">
@@ -390,11 +399,40 @@
         </div>
     </div>
 </div>
-<script src="{% static 'js/dashboard.js' %}"></script>
 
-    <script src="{% static 'js/search.js' %}"></script>
-    <script src="{% static 'js/profile-settings.js' %}"></script>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-</body>
-</html>
- 
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Hidden Messages Container -->
+{% if messages %}
+<div class="messages" style="display: none;">
+    {% for message in messages %}
+    <div class="django-message" data-type="{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Checking for messages");
+        const djangoMessages = document.querySelectorAll('.django-message');
+        console.log("Found Django messages:", djangoMessages.length);
+        djangoMessages.forEach((message) => {
+            const messageText = message.textContent.trim();
+            const messageType = message.dataset.type;
+            console.log("Processing Django message:", messageText, messageType);
+            toastNotification(messageText, messageType);
+            message.remove();
+        });
+    });
+</script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script src="{% static 'js/search.js' %}"></script>
+<script src="{% static 'js/profile-settings.js' %}"></script>
+{% endblock %}
+

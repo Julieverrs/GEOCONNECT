@@ -2,10 +2,13 @@
 {% load static %}
 
 {% block content %}
-<!-- Fixed Navigation -->
+<!-- Improved Navigation -->
 <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
-        <a class="navbar-brand" href="#home">GeoConnect</a>
+        <a class="navbar-brand" href="#home">
+            <img src="{% static 'images/logo.png' %}" alt="GeoConnect Logo" height="30">
+            GeoConnect
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -13,22 +16,22 @@
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="#home">
-                        <i class="fas fa-home me-2"></i>Home
+                        <i class="fas fa-home"></i> Home
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#jobs">
-                        <i class="fas fa-briefcase me-2"></i>Jobs
+                        <i class="fas fa-briefcase"></i> Jobs
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#contact">
-                        <i class="fas fa-envelope me-2"></i>Contact
+                        <i class="fas fa-envelope"></i> Contact
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#about">
-                        <i class="fas fa-info-circle me-2"></i>About
+                        <i class="fas fa-info-circle"></i> About
                     </a>
                 </li>
             </ul>
@@ -42,13 +45,13 @@
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
                         <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">
-                            <i class="fas fa-user-cog me-2"></i>Profile Settings
+                            <i class="fas fa-user-cog"></i> Profile Settings
                         </a>
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <a class="dropdown-item" href="{% url 'employee_logout' %}">
-                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </li>
                 </ul>
@@ -62,12 +65,12 @@
     <div class="container">
         <div class="welcome-card">
             <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1>Welcome back, {{ username }}!</h1>
-                    <p class="text-muted">Find your dream job and take the next step in your career.</p>
+                <div class="col-lg-8">
+                    <h1 class="mb-4">Welcome back, {{ username }}!</h1>
+                    <p class="lead text-muted">Find your dream job and take the next step in your career.</p>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <button class="btn btn-primary">
+                <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
+                    <button class="btn btn-primary btn-lg" id="startJobSearch">
                         <i class="fas fa-search me-2"></i>Start Job Search
                     </button>
                 </div>
@@ -75,37 +78,47 @@
         </div>
 
         <div class="dashboard-stats">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-file-alt"></i>
+            <div class="row">
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h3>Applications</h3>
+                        <p class="stat-number">12</p>
+                        <p class="stat-label">Total Applications</p>
+                    </div>
                 </div>
-                <h3>Applications</h3>
-                <p class="stat-number">12</p>
-                <p class="stat-label">Total Applications</p>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-calendar-check"></i>
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <h3>Interviews</h3>
+                        <p class="stat-number">3</p>
+                        <p class="stat-label">Scheduled</p>
+                    </div>
                 </div>
-                <h3>Interviews</h3>
-                <p class="stat-number">3</p>
-                <p class="stat-label">Scheduled</p>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-bookmark"></i>
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-bookmark"></i>
+                        </div>
+                        <h3>Saved Jobs</h3>
+                        <p class="stat-number">8</p>
+                        <p class="stat-label">Bookmarked</p>
+                    </div>
                 </div>
-                <h3>Saved Jobs</h3>
-                <p class="stat-number">8</p>
-                <p class="stat-label">Bookmarked</p>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-eye"></i>
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3>Profile Views</h3>
+                        <p class="stat-number">45</p>
+                        <p class="stat-label">Last 30 days</p>
+                    </div>
                 </div>
-                <h3>Profile Views</h3>
-                <p class="stat-number">45</p>
-                <p class="stat-label">Last 30 days</p>
             </div>
         </div>
     </div>
@@ -114,17 +127,17 @@
 <!-- Jobs Section -->
 <section id="jobs" class="section">
     <div class="container">
-        <div class="section-header">
+        <div class="section-header text-center mb-5">
             <h2>Available Jobs</h2>
             <p class="text-muted">Discover opportunities that match your skills and experience</p>
         </div>
 
-        <div class="jobs-filter">
+        <div class="jobs-filter mb-5">
             <div class="row g-3">
                 <div class="col-md-4">
                     <div class="search-input">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="jobSearch" placeholder="Search jobs..." class="form-control">
+                        <input type="text" id="jobSearch" class="form-control" placeholder="Search jobs...">
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -144,142 +157,76 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-primary w-100">
+                    <button id="filterJobs" class="btn btn-primary w-100">
                         <i class="fas fa-filter me-2"></i>Filter
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="jobs-grid" id="jobsGrid">
-            <!-- Jobs will be dynamically added here -->
-        </div>
+        <div id="jobsGrid" class="row"></div>
     </div>
 </section>
-
-<!-- Profile Modal -->
-<div class="modal fade" id="profileModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Profile Settings</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="profile-edit-form">
-                    <div class="row">
-                        <div class="col-md-4 text-center">
-                            <div class="avatar-upload">
-                                <div class="avatar-preview">
-                                    <img src="{% static 'images/default-avatar.png' %}" alt="Profile Picture" class="rounded-circle">
-                                </div>
-                                <div class="avatar-edit mt-3">
-                                    <button class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-camera me-2"></i>Change Photo
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-8">
-                            <form id="profileForm">
-                                <div class="mb-3">
-                                    <label class="form-label">Full Name</label>
-                                    <input type="text" class="form-control" value="{{ employee.username }}">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" value="{{ employee.email }}">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Phone Number</label>
-                                    <input type="tel" class="form-control" placeholder="Enter your phone number">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Location</label>
-                                    <input type="text" class="form-control" placeholder="City, Country">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Bio</label>
-                                    <textarea class="form-control" rows="3" placeholder="Tell us about yourself"></textarea>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary">Save Changes</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Contact Section -->
 <section id="contact" class="section contact-section">
     <div class="container">
-        <div class="section-header">
+        <div class="section-header text-center mb-5">
             <h2>Contact Us</h2>
             <p class="text-muted">Get in touch with our support team</p>
         </div>
 
         <div class="contact-card">
-            <div class="contact-content">
-                <div class="row h-100">
-                    <div class="col-md-5">
-                        <div class="contact-info">
-                            <div>
-                                <div class="contact-info-item">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <h4>Our Location</h4>
-                                    <p>123 Job Street, Calapan City<br>Oriental Mindoro, Philippines</p>
-                                </div>
-                                <div class="contact-info-item">
-                                    <i class="fas fa-envelope"></i>
-                                    <h4>Email Us</h4>
-                                    <p>support@geoconnect.com<br>careers@geoconnect.com</p>
-                                </div>
-                                <div class="contact-info-item">
-                                    <i class="fas fa-phone-alt"></i>
-                                    <h4>Call Us</h4>
-                                    <p>+63 912 345 6789<br>+63 987 654 3210</p>
-                                </div>
-                            </div>
-                            <div class="contact-social mt-auto">
-                                <h4>Follow Us</h4>
-                                <div class="social-links">
-                                    <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
-                                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                                    <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
-                                </div>
+            <div class="row">
+                <div class="col-lg-5 mb-4 mb-lg-0">
+                    <div class="contact-info">
+                        <div class="contact-info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <h4>Our Location</h4>
+                            <p>123 Job Street, Calapan City<br>Oriental Mindoro, Philippines</p>
+                        </div>
+                        <div class="contact-info-item">
+                            <i class="fas fa-envelope"></i>
+                            <h4>Email Us</h4>
+                            <p>support@geoconnect.com<br>careers@geoconnect.com</p>
+                        </div>
+                        <div class="contact-info-item">
+                            <i class="fas fa-phone-alt"></i>
+                            <h4>Call Us</h4>
+                            <p>+63 912 345 6789<br>+63 987 654 3210</p>
+                        </div>
+                        <div class="contact-social mt-4">
+                            <h4>Follow Us</h4>
+                            <div class="social-links">
+                                <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                                <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                                <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-7">
-                        <form class="contact-form h-100 d-flex flex-column">
-                            <div class="flex-grow-1">
-                                <div class="mb-4">
-                                    <label class="form-label">Name</label>
-                                    <input type="text" class="form-control" placeholder="Your name">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" placeholder="Your email">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label">Subject</label>
-                                    <input type="text" class="form-control" placeholder="What's this about?">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label">Message</label>
-                                    <textarea class="form-control" rows="5" placeholder="Your message here..."></textarea>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane me-2"></i>Send Message
-                            </button>
-                        </form>
-                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <form class="contact-form">
+                        <div class="mb-3">
+                            <label for="contactName" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="contactName" placeholder="Your name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contactEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="contactEmail" placeholder="Your email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contactSubject" class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="contactSubject" placeholder="What's this about?" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contactMessage" class="form-label">Message</label>
+                            <textarea class="form-control" id="contactMessage" rows="5" placeholder="Your message here..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Send Message
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -289,70 +236,76 @@
 <!-- About Section -->
 <section id="about" class="section about-section">
     <div class="container">
-        <div class="section-header">
+        <div class="section-header text-center mb-5">
             <h2>About GeoConnect</h2>
             <p class="text-muted">Connecting talent with opportunities in Oriental Mindoro</p>
         </div>
 
         <div class="about-card">
-            <div class="about-content">
-                <div class="row">
-                    <div class="col-lg-6">
-                        <div class="about-text">
-                            <h3>Our Mission</h3>
-                            <p>GeoConnect is dedicated to bridging the gap between talented professionals and leading companies in Oriental Mindoro. We strive to create meaningful employment opportunities and foster economic growth in our region.</p>
-                            
-                            <h3 class="mt-4">Our Vision</h3>
-                            <p>To be the premier job portal in Oriental Mindoro, facilitating career growth and business success through innovative recruitment solutions.</p>
-                        </div>
+            <div class="row">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="about-text">
+                        <h3>Our Mission</h3>
+                        <p>GeoConnect is dedicated to bridging the gap between talented professionals and leading companies in Oriental Mindoro. We strive to create meaningful employment opportunities and foster economic growth in our region.</p>
+                        
+                        <h3 class="mt-4">Our Vision</h3>
+                        <p>To be the premier job portal in Oriental Mindoro, facilitating career growth and business success through innovative recruitment solutions.</p>
                     </div>
-                    <div class="col-lg-6">
-                        <div class="about-stats">
-                            <div class="row g-4">
-                                <div class="col-6">
-                                    <div class="stat-card">
-                                        <div class="stat-icon">
-                                            <i class="fas fa-building"></i>
-                                        </div>
-                                        <h4>1,000+</h4>
-                                        <p>Partner Companies</p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="about-stats">
+                        <div class="row">
+                            <div class="col-6 mb-4">
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-building"></i>
                                     </div>
+                                    <h4>1,000+</h4>
+                                    <p>Partner Companies</p>
                                 </div>
-                                <div class="col-6">
-                                    <div class="stat-card">
-                                        <div class="stat-icon">
-                                            <i class="fas fa-users"></i>
-                                        </div>
-                                        <h4>50,000+</h4>
-                                        <p>Active Job Seekers</p>
+                            </div>
+                            <div class="col-6 mb-4">
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-users"></i>
                                     </div>
+                                    <h4>50,000+</h4>
+                                    <p>Active Job Seekers</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="feature-grid mt-5">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-map-marked-alt"></i>
+            <div class="feature-grid mt-5">
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </div>
+                            <h4>Local Focus</h4>
+                            <p>Specialized in Oriental Mindoro's job market</p>
                         </div>
-                        <h4>Local Focus</h4>
-                        <p>Specialized in Oriental Mindoro's job market</p>
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-shield-alt"></i>
+                    <div class="col-md-4 mb-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h4>Verified Employers</h4>
+                            <p>All companies are thoroughly vetted</p>
                         </div>
-                        <h4>Verified Employers</h4>
-                        <p>All companies are thoroughly vetted</p>
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
+                    <div class="col-md-4 mb-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h4>Career Growth</h4>
+                            <p>Focus on long-term career development</p>
                         </div>
-                        <h4>Career Growth</h4>
-                        <p>Focus on long-term career development</p>
                     </div>
                 </div>
             </div>
@@ -360,4 +313,90 @@
     </div>
 </section>
 
+<!-- Profile Modal -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="profileModalLabel">Profile Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="profileForm">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4 mb-md-0">
+                            <div class="avatar-upload">
+                                <div class="avatar-preview mb-3">
+                                    <img src="{% static 'images/default-avatar.png' %}" alt="Profile Picture" class="rounded-circle img-fluid" id="avatarPreview">
+                                </div>
+                                <div class="avatar-edit">
+                                    <input type='file' id="avatarUpload" accept=".png, .jpg, .jpeg" />
+                                    <label for="avatarUpload" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-camera me-2"></i>Change Photo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="fullName" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="fullName" value="{{ employee.username }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" value="{{ employee.email }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" placeholder="Enter your phone number">
+                            </div>
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="location" placeholder="City, Country">
+                            </div>
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea class="form-control" id="bio" rows="3" placeholder="Tell us about yourself"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveProfile">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+{% if messages %}
+<div id="messages" style="display: none;">
+    {% for message in messages %}
+        <div class="django-message" data-type="{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if messages %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Checking for messages");
+        {% for message in messages %}
+            console.log("Message found:", "{{ message }}");
+            {% if 'toast:' in message.message %}
+                toastNotification("{{ message.message|slice:"6:" }}", "{{ message.tags }}");
+            {% else %}
+                toastNotification("{{ message }}", "{{ message.tags }}");
+            {% endif %}
+        {% endfor %}
+    });
+</script>
+{% endif %}
+
 {% endblock %}
+<script src="{% static 'js/notifications.js' %}"></script>
+<script src="{% static 'js/employee_home.js' %}"></script>
+

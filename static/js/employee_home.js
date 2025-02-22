@@ -1,142 +1,194 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Navbar Scroll Effect
-    const navbar = document.querySelector('.navbar');
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
-        }
-    });
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM fully loaded and parsed")
 
-    // Parallax Effect for Cards
-    document.addEventListener('mousemove', (e) => {
-        const cards = document.querySelectorAll('.stat-card, .feature-card');
-        cards.forEach(card => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            card.style.transform = `perspective(1000px) rotateX(${(y - rect.height/2)/20}deg) rotateY(${-(x - rect.width/2)/20}deg)`;
-        });
-    });
-
-    // Reset card transform on mouse leave
-    const cards = document.querySelectorAll('.stat-card, .feature-card');
-    cards.forEach(card => {
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
-        });
-    });
-
-    // Smooth Scroll with Offset
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                const headerOffset = 80;
-                const elementPosition = target.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-                window.scrollTo({
-                    top: offsetPosition,
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
-
-    // Intersection Observer for Animations
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('fade-in-scale');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
-
-    document.querySelectorAll('.stat-card, .feature-card, .job-card').forEach(el => {
-        observer.observe(el);
-    });
-
-    // Advanced Form Validation
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => {
-        const inputs = form.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-            input.addEventListener('focus', () => {
-                input.parentElement.classList.add('focused');
-            });
-
-            input.addEventListener('blur', () => {
-                input.parentElement.classList.remove('focused');
-                validateInput(input);
-            });
-        });
-    });
-
-    function validateInput(input) {
-        const value = input.value.trim();
-        if (!value) {
-            input.classList.add('is-invalid');
-            return false;
-        }
-        input.classList.remove('is-invalid');
-        return true;
+  // Check for messages in the DOM
+  const messages = document.querySelectorAll(".django-message")
+  console.log("Found messages:", messages.length)
+  messages.forEach((message) => {
+    const messageText = message.textContent.trim()
+    const messageType = message.dataset.type
+    console.log("Processing message:", messageText, messageType)
+    if (typeof toastNotification === "function") {
+      toastNotification(messageText, messageType)
+    } else {
+      console.error("toastNotification function is not defined")
     }
+    message.remove()
+  })
 
-    // Loading States
-    function showLoading(element) {
-        element.classList.add('loading-skeleton');
-        element.setAttribute('disabled', true);
+  // Navbar scroll effect
+  const navbar = document.querySelector(".navbar")
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 50) {
+      navbar.classList.add("navbar-scrolled")
+    } else {
+      navbar.classList.remove("navbar-scrolled")
     }
+  })
 
-    function hideLoading(element) {
-        element.classList.remove('loading-skeleton');
-        element.removeAttribute('disabled');
-    }
+  // Smooth scrolling for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener("click", function (e) {
+      e.preventDefault()
+      document.querySelector(this.getAttribute("href")).scrollIntoView({
+        behavior: "smooth",
+      })
+    })
+  })
 
-    // Form Submission with Loading State
-    const submitButtons = document.querySelectorAll('button[type="submit"]');
-    submitButtons.forEach(button => {
-        button.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const form = button.closest('form');
-            if (form) {
-                const isValid = Array.from(form.querySelectorAll('input, textarea'))
-                    .every(input => validateInput(input));
+  // Job search functionality
+  const jobSearch = document.getElementById("jobSearch")
+  const jobCategory = document.getElementById("jobCategory")
+  const jobLocation = document.getElementById("jobLocation")
+  const jobsGrid = document.getElementById("jobsGrid")
 
-                if (isValid) {
-                    showLoading(button);
-                    // Simulate API call
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    hideLoading(button);
-                    // Show success message
-                    showNotification('Success!', 'Your form has been submitted.');
-                }
-            }
-        });
-    });
+  function filterJobs() {
+    const searchTerm = jobSearch.value.toLowerCase()
+    const category = jobCategory.value
+    const location = jobLocation.value
 
-    // Custom Notification System
-    function showNotification(title, message) {
-        const notification = document.createElement('div');
-        notification.className = 'custom-notification fade-in-scale';
-        notification.innerHTML = `
-            <h4>${title}</h4>
-            <p>${message}</p>
-        `;
-        document.body.appendChild(notification);
+    // Simulated job data (replace with actual data from your backend)
+    const jobs = [
+      {
+        title: "Software Developer",
+        category: "tech",
+        location: "remote",
+        company: "TechCorp",
+        description: "Exciting opportunity for a skilled developer...",
+      },
+      {
+        title: "Marketing Specialist",
+        category: "marketing",
+        location: "onsite",
+        company: "AdAgency",
+        description: "Join our creative marketing team...",
+      },
+      {
+        title: "UI/UX Designer",
+        category: "design",
+        location: "hybrid",
+        company: "DesignStudio",
+        description: "Create beautiful and functional interfaces...",
+      },
+      // Add more job listings as needed
+    ]
 
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
-});
+    const filteredJobs = jobs.filter(
+      (job) =>
+        job.title.toLowerCase().includes(searchTerm) &&
+        (category === "" || job.category === category) &&
+        (location === "" || job.location === location),
+    )
+
+    displayJobs(filteredJobs)
+  }
+
+  function displayJobs(jobs) {
+    jobsGrid.innerHTML = ""
+    jobs.forEach((job) => {
+      const jobCard = document.createElement("div")
+      jobCard.className = "job-card"
+      jobCard.innerHTML = `
+                <h3>${job.title}</h3>
+                <p><strong>${job.company}</strong> - ${job.location}</p>
+                <p>${job.description}</p>
+                <button class="btn btn-primary btn-sm">Apply Now</button>
+            `
+      jobsGrid.appendChild(jobCard)
+    })
+  }
+
+  if (jobSearch && jobCategory && jobLocation && jobsGrid) {
+    jobSearch.addEventListener("input", filterJobs)
+    jobCategory.addEventListener("change", filterJobs)
+    jobLocation.addEventListener("change", filterJobs)
+  }
+
+  // Initial job display
+  if (typeof filterJobs === "function") {
+    filterJobs()
+  }
+
+  // Profile form submission
+  const profileForm = document.getElementById("profileForm")
+  const saveProfileBtn = document.getElementById("saveProfileBtn")
+  if (saveProfileBtn) {
+    saveProfileBtn.addEventListener("click", (e) => {
+      e.preventDefault()
+      // Simulated form submission (replace with actual AJAX call to your backend)
+      const formData = new FormData(profileForm)
+      console.log("Profile data:", Object.fromEntries(formData))
+      // $("#profileModal").modal("hide")
+      if (typeof toastNotification === "function") {
+        toastNotification("Profile updated successfully!", "success")
+      }
+    })
+  }
+
+  // Contact form submission
+  const contactForm = document.querySelector(".contact-form")
+  if (contactForm) {
+    contactForm.addEventListener("submit", (e) => {
+      e.preventDefault()
+      // Simulated form submission (replace with actual AJAX call to your backend)
+      const formData = new FormData(contactForm)
+      console.log("Contact form data:", Object.fromEntries(formData))
+      contactForm.reset()
+      if (typeof toastNotification === "function") {
+        toastNotification("Message sent successfully!", "success")
+      }
+    })
+  }
+
+  // Replace showNotification with toastNotification
+  function toastNotification(message, type) {
+    console.log("Showing toast notification:", message, type)
+    const toastContainer = document.getElementById("toastContainer") || createToastContainer()
+    const toast = document.createElement("div")
+    toast.className = `toast ${type} show`
+    toast.setAttribute("role", "alert")
+    toast.setAttribute("aria-live", "assertive")
+    toast.setAttribute("aria-atomic", "true")
+    toast.innerHTML = `
+    <div class="toast-header">
+      <strong class="me-auto">${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      ${message}
+    </div>
+  `
+    toastContainer.appendChild(toast)
+
+    // Initialize the Bootstrap toast
+    const bsToast = new bootstrap.Toast(toast)
+    bsToast.show()
+
+    // Auto-hide the toast after 3 seconds
+    setTimeout(() => {
+      bsToast.hide()
+      setTimeout(() => toast.remove(), 300)
+    }, 3000)
+  }
+
+  function createToastContainer() {
+    console.log("Creating toast container")
+    const container = document.createElement("div")
+    container.id = "toastContainer"
+    container.className = "toast-container position-fixed bottom-0 end-0 p-3"
+    document.body.appendChild(container)
+    return container
+  }
+
+  // Add animation to stat cards
+  const statCards = document.querySelectorAll(".stat-card")
+  statCards.forEach((card) => {
+    card.addEventListener("mouseenter", () => {
+      card.style.transform = "scale(1.05)"
+    })
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "scale(1)"
+    })
+  })
+})
+

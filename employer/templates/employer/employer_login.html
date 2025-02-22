@@ -1,69 +1,70 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% load static %}
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employer Login | GEOCONNECT</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="split-container">
-        <div class="image-section">
-            <div class="image-content">
-                <img src="{% static 'images/rocket-icon.svg' %}" alt="Globe Icon" class="rocket-icon">
-                <h1>GEOCONNECT for Employers</h1>
-                <p>Access your dashboard to connect with talented professionals in the geospatial industry.</p>
-            </div>
-        </div>
-        <div class="form-section">
-            <div class="form-decoration decoration-1"></div>
-            <div class="form-decoration decoration-2"></div>
-            <div class="container">
-                <h2>Welcome back</h2>
-                <!-- Add this right after the <h2> tag in your form section -->
-{% if messages %}
-<div class="messages">
-    {% for message in messages %}
-    <div class="message {{ message.tags }}">
-        {{ message }}
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-image">
+        <h1>Welcome back!</h1>
+        <p>Access your GEOCONNECT employer dashboard</p>
     </div>
-    {% endfor %}
+    <div class="auth-form">
+        <div class="form-header">
+            <h2>Employer Login</h2>
+            <p>Please enter your credentials to sign in</p>
+        </div>
+        {% if messages %}
+        <div class="messages" style="display: none;">
+            {% for message in messages %}
+            <div class="django-message" data-type="{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <form method="POST" id="loginForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username">
+                    <i class="fas fa-user"></i>
+                    Username
+                </label>
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                <label for="id_password">
+                    <i class="fas fa-lock"></i>
+                    Password
+                </label>
+                {{ form.password }}
+            </div>
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                Sign in
+            </button>
+        </form>
+        <div class="auth-links">
+            <a href="{% url 'employer_password_reset' %}">Forgot your password?</a>
+            <p>Don't have an account? <a href="{% url 'employer_signup' %}">Create an account</a></p>
+        </div>
+    </div>
 </div>
-{% endif %}
-                {% if messages %}
-                <div class="messages">
-                    {% for message in messages %}
-                    <div class="{% if message.tags %}{{ message.tags }}{% endif %}-message">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                <form method="POST" id="loginForm">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="id_username">Username</label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                        <span class="error-message">{{ form.username.errors }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_password">Password</label>
-                        {{ form.password }}
-                        {% if form.password.errors %}
-                        <span class="error-message">{{ form.password.errors }}</span>
-                        {% endif %}
-                        <a href="{% url 'employer_password_reset' %}" class="forgot-password">Forgot your password?</a>
-                    </div>
-                    <button type="submit">Sign in to your account</button>
-                </form>
-                <a href="{% url 'employer_signup' %}" class="link">New employer? Create a company account</a>
-            </div>
-        </div>
-    </div>
-    <script src="{% static 'js/form.js' %}"></script>
-</body>
-</html>
+
+<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Checking for messages");
+        const djangoMessages = document.querySelectorAll('.django-message');
+        console.log("Found Django messages:", djangoMessages.length);
+        djangoMessages.forEach((message) => {
+            const messageText = message.textContent.trim();
+            const messageType = message.dataset.type;
+            console.log("Processing Django message:", messageText, messageType);
+            toastNotification(messageText, messageType);
+            message.remove();
+        });
+    });
+</script>
+{% endblock %}
+

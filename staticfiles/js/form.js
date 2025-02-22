@@ -111,3 +111,71 @@ function clearError(input) {
 function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
+
+// Add this to your existing form.js file
+
+function showError(input, message) {
+    // your showError function implementation here
+    input.classList.add("error")
+    const errorElement = input.nextElementSibling
+    if (errorElement) {
+      errorElement.textContent = message
+    }
+  }
+  
+  function isValidEmail(email) {
+    // your isValidEmail function implementation here
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  }
+  
+  // Password reset form validation
+  const resetForm = document.getElementById("resetForm")
+  if (resetForm) {
+    resetForm.addEventListener("submit", (e) => {
+      const email = document.getElementById("id_email")
+  
+      let isValid = true
+  
+      if (!email.value.trim()) {
+        showError(email, "Email is required")
+        isValid = false
+      } else if (!isValidEmail(email.value)) {
+        showError(email, "Please enter a valid email address")
+        isValid = false
+      }
+  
+      if (!isValid) {
+        e.preventDefault()
+      }
+    })
+  }
+  
+  // New password form validation
+  const newPasswordForm = document.getElementById("newPasswordForm")
+  if (newPasswordForm) {
+    newPasswordForm.addEventListener("submit", (e) => {
+      const newPassword = document.getElementById("id_new_password")
+      const confirmPassword = document.getElementById("id_confirm_password")
+  
+      let isValid = true
+  
+      if (!newPassword.value) {
+        showError(newPassword, "Password is required")
+        isValid = false
+      }
+  
+      if (!confirmPassword.value) {
+        showError(confirmPassword, "Please confirm your password")
+        isValid = false
+      } else if (newPassword.value !== confirmPassword.value) {
+        showError(confirmPassword, "Passwords do not match")
+        isValid = false
+      }
+  
+      if (!isValid) {
+        e.preventDefault()
+      }
+    })
+  }
+  
+  

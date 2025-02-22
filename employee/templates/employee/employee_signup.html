@@ -1,68 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% load static %}
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Employee Signup | GEOCONNECT</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="split-container">
-        <div class="image-section">
-            <div class="image-content">
-                <img src="{% static 'images/rocket-icon.svg' %}" alt="Rocket Icon" class="rocket-icon">
-                <h1>Join GEOCONNECT</h1>
-                <p>Connect with opportunities and discover your path to success in the geospatial industry.</p>
-            </div>
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-image">
+        <h1>Let's Get Started!</h1>
+        <p>Create your GEOCONNECT employee account</p>
+    </div>
+    <div class="auth-form">
+        <div class="form-header">
+            <h2>Employee Sign Up</h2>
+            <p>Fill in your details to create an account</p>
         </div>
-        <div class="form-section">
-            <div class="container">
-                <img src="{% static 'images/rocket-icon.svg' %}" alt="Rocket Icon" class="rocket-icon">
-                <h2>Create Account</h2>
-                {% if messages %}
-                <div class="messages">
-                    {% for message in messages %}
-                    <div class="{% if message.tags %}{{ message.tags }}{% endif %}-message">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                <form method="POST" id="signupForm" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="id_username">Username</label>
-                        {{ form.username }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_email">Email</label>
-                        {{ form.email }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_password">Password</label>
-                        {{ form.password }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_confirm_password">Confirm Password</label>
-                        {{ form.confirm_password }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_document">NBI Clearance/Permit</label>
-                        {{ form.document }}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_document_name">Document Name</label>
-                        {{ form.document_name }}
-                    </div>
-                    <button type="submit">Sign Up</button>
-                </form>
-                <a href="{% url 'employee_login' %}" class="link">Already have an account? Sign in</a>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <form method="POST" id="signupForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username">
+                    <i class="fas fa-user"></i>
+                    Username
+                </label>
+                {{ form.username }}
             </div>
+            <div class="form-group">
+                <label for="id_email">
+                    <i class="fas fa-envelope"></i>
+                    Email Address
+                </label>
+                {{ form.email }}
+            </div>
+            <div class="form-group">
+                <label for="id_password">
+                    <i class="fas fa-lock"></i>
+                    Password
+                </label>
+                {{ form.password }}
+            </div>
+            <div class="form-group">
+                <label for="id_confirm_password">
+                    <i class="fas fa-lock"></i>
+                    Confirm Password
+                </label>
+                {{ form.confirm_password }}
+            </div>
+            <div class="form-group">
+                <label for="id_document">
+                    <i class="fas fa-file-alt"></i>
+                    NBI Clearance/Permit
+                </label>
+                {{ form.document }}
+            </div>
+            <div class="form-group">
+                <label for="id_document_name">
+                    <i class="fas fa-file-signature"></i>
+                    Document Name
+                </label>
+                {{ form.document_name }}
+            </div>
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-user-plus"></i>
+                Create Account
+            </button>
+        </form>
+        <div class="auth-links">
+            <p>Already have an account? <a href="{% url 'employee_login' %}">Sign in</a></p>
         </div>
     </div>
-    <script src="{% static 'js/form.js' %}"></script>
-</body>
-</html>
+</div>
+{% endblock %}
 

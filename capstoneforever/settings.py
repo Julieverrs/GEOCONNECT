@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'employer',
     'landing',
     'admin_panel',
+    'django_bootstrap5'
+    
 ]
 
 MIDDLEWARE = [
@@ -158,7 +160,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'juluiscastillo17@gmail.com'  # Replace with your Gmail address
 EMAIL_HOST_PASSWORD = 'odsw knbu aarp qxym'  # Replace with the App Password you generated
-DEFAULT_FROM_EMAIL = 'GEOCONNECT <your-Geo@gmail.com>'
+DEFAULT_FROM_EMAIL = 'JOBCONNECT <your-Jobconnect@gmail.com>'
 
 # Password Reset Settings
 PASSWORD_RESET_TIMEOUT = 86400  # 24 hours in seconds

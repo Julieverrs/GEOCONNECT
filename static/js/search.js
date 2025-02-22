@@ -1,51 +1,51 @@
 // Search and Filter Functionality
 function initializeSearch() {
-    const searchInput = document.getElementById("searchInput")
-    const statusFilter = document.getElementById("statusFilter")
-    const sortBy = document.getElementById("sortBy")
-    let searchTimeout
-  
-    // Function to perform search
-    async function performSearch() {
-      const searchQuery = searchInput.value
-      const statusValue = statusFilter.value
-      const sortValue = sortBy.value
-  
-      try {
-        const response = await fetch(
-          `/employer/search-jobs/?q=${encodeURIComponent(searchQuery)}&status=${statusValue}&sort=${sortValue}`,
-        )
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const data = await response.json()
-  
-        if (data.jobs) {
-          updateJobsGrid(data.jobs)
-          updateJobsCount(data.total)
-        }
-      } catch (error) {
-        console.error("Error:", error)
-        showNotification("Error searching jobs. Please try again.", "error")
+  const searchInput = document.getElementById("searchInput")
+  const statusFilter = document.getElementById("statusFilter")
+  const sortBy = document.getElementById("sortBy")
+  let searchTimeout
+
+  // Function to perform search
+  async function performSearch() {
+    const searchQuery = searchInput.value
+    const statusValue = statusFilter.value
+    const sortValue = sortBy.value
+
+    try {
+      const response = await fetch(
+        `/employer/search-jobs/?q=${encodeURIComponent(searchQuery)}&status=${statusValue}&sort=${sortValue}`,
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
+      const data = await response.json()
+
+      if (data.jobs) {
+        updateJobsGrid(data.jobs)
+        updateJobsCount(data.total)
+      }
+    } catch (error) {
+      console.error("Error:", error)
+      showNotification("Error searching jobs. Please try again.", "error")
     }
-  
-    // Update jobs grid with search results
-    function updateJobsGrid(jobs) {
-      const jobsGrid = document.querySelector(".jobs-grid")
-  
-      if (jobs.length === 0) {
-        jobsGrid.innerHTML = `
+  }
+
+  // Update jobs grid with search results
+  function updateJobsGrid(jobs) {
+    const jobsGrid = document.querySelector(".jobs-grid")
+
+    if (jobs.length === 0) {
+      jobsGrid.innerHTML = `
                   <div class="no-jobs">
                       <p>No jobs found matching your criteria</p>
                   </div>
               `
-        return
-      }
-  
-      jobsGrid.innerHTML = jobs
-        .map(
-          (job) => `
+      return
+    }
+
+    jobsGrid.innerHTML = jobs
+      .map(
+        (job) => `
               <div class="job-card" data-job-id="${job.id}">
                   <div class="job-card-header">
                       <h3>${escapeHtml(job.title)}</h3>
@@ -79,50 +79,49 @@ function initializeSearch() {
                   </div>
               </div>
           `,
-        )
-        .join("")
-    }
-  
-    // Update total jobs count
-    function updateJobsCount(total) {
-      const countElement = document.querySelector(".section-header h2")
-      if (countElement) {
-        countElement.textContent = `Your Job Postings (${total})`
-      }
-    }
-  
-    // Helper function to escape HTML
-    function escapeHtml(unsafe) {
-      return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;")
-    }
-  
-    // Event listeners
-    searchInput.addEventListener("input", () => {
-      clearTimeout(searchTimeout)
-      searchTimeout = setTimeout(performSearch, 300)
-    })
-  
-    statusFilter.addEventListener("change", performSearch)
-    sortBy.addEventListener("change", performSearch)
-  
-    // Initial search
-    performSearch()
+      )
+      .join("")
   }
-  
-  // Helper function to show notifications
-  function showNotification(message, type) {
-    // Implementation to display notification. Replace with your actual notification logic.
-    console.log(`Notification: ${message} (${type})`)
-    // Example using an alert (replace with a better notification system in a real application)
-    alert(message)
+
+  // Update total jobs count
+  function updateJobsCount(total) {
+    const countElement = document.querySelector(".section-header h2")
+    if (countElement) {
+      countElement.textContent = `Your Job Postings (${total})`
+    }
   }
-  
-  // Initialize search when DOM is loaded
-  document.addEventListener("DOMContentLoaded", initializeSearch)
-  
-  
+
+  // Helper function to escape HTML
+  function escapeHtml(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;")
+  }
+
+  // Event listeners
+  searchInput.addEventListener("input", () => {
+    clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(performSearch, 300)
+  })
+
+  statusFilter.addEventListener("change", performSearch)
+  sortBy.addEventListener("change", performSearch)
+
+  // Initial search
+  performSearch()
+}
+
+// Helper function to show notifications
+function showNotification(message, type) {
+  // Implementation to display notification. Replace with your actual notification logic.
+  console.log(`Notification: ${message} (${type})`)
+  // Example using an alert (replace with a better notification system in a real application)
+  alert(message)
+}
+
+// Initialize search when DOM is loaded
+document.addEventListener("DOMContentLoaded", initializeSearch)
+

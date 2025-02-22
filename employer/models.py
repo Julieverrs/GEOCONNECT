@@ -30,6 +30,14 @@ class Employer(models.Model):
         return self.username
 
 class Job(models.Model):
+    
+    WORK_SETUP_CHOICES = [
+        ('on-site', 'On-site'),
+        ('hybrid', 'Hybrid'),
+        ('remote', 'Remote'),
+    ]
+    work_setup = models.CharField(max_length=20, choices=WORK_SETUP_CHOICES)
+    
     JOB_TYPE_CHOICES = [
         ('full-time', 'Full-time'),
         ('part-time', 'Part-time'),
@@ -64,5 +72,4 @@ class Job(models.Model):
 
     def __str__(self):
         return self.title
-    
-    
+

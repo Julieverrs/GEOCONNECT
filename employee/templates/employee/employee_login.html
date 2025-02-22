@@ -1,59 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% load static %}
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Employee Login | GEOCONNECT</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="split-container">
-        <div class="image-section">
-            <div class="image-content">
-                <img src="{% static 'images/rocket-icon.svg' %}" alt="Rocket Icon" class="rocket-icon">
-                <h1>Welcome to GEOCONNECT</h1>
-            </div>
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-image">
+        <h1>Welcome back!</h1>
+        <p>Access your GEOCONNECT employee account</p>
+    </div>
+    <div class="auth-form">
+        <div class="form-header">
+            <h2>Employee Login</h2>
+            <p>Please enter your credentials to sign in</p>
         </div>
-        <div class="form-section">
-            <div class="container">
-                <h2>Welcome back</h2>
-                {% if messages %}
-                <div class="messages">
-                    {% for message in messages %}
-                    <div class="message {{ message.tags }}">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                <form method="POST" id="loginForm">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="id_username">Username</label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                        <span class="error-message">{{ form.username.errors }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="form-group">
-                        <label for="id_password">Password</label>
-                        {{ form.password }}
-                        {% if form.password.errors %}
-                        <span class="error-message">{{ form.password.errors }}</span>
-                        {% endif %}
-                        <a href="{% url 'password_reset' %}" class="forgot-password">Forgot your password?</a>
-                    </div>
-                    <button type="submit">Sign in to your account</button>
-                </form>
-                <div class="form-links">
-                    <a href="{% url 'employee_signup' %}" class="link">New to GEOCONNECT? Create an account</a>
-                </div>
+        <form method="POST" id="loginForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username">
+                    <i class="fas fa-user"></i>
+                    Username
+                </label>
+                {{ form.username }}
             </div>
+            <div class="form-group">
+                <label for="id_password">
+                    <i class="fas fa-lock"></i>
+                    Password
+                </label>
+                {{ form.password }}
+            </div>
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                Sign in
+            </button>
+        </form>
+        <div class="auth-links">
+            <a href="{% url 'password_reset' %}">Forgot your password?</a>
+            <p>Don't have an account? <a href="{% url 'employee_signup' %}">Create an account</a></p>
         </div>
     </div>
-    <script src="{% static 'js/form.js' %}"></script>
-</body>
-</html>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="django-message" data-type="{{ message.tags }}" style="display: none;">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Checking for messages");
+        const djangoMessages = document.querySelectorAll('.django-message');
+        console.log("Found Django messages:", djangoMessages.length);
+        djangoMessages.forEach((message) => {
+            const messageText = message.textContent.trim();
+            const messageType = message.dataset.type;
+            console.log("Processing Django message:", messageText, messageType);
+            toastNotification(messageText, messageType);
+            message.remove();
+        });
+    });
+</script>
+{% endblock %}
 

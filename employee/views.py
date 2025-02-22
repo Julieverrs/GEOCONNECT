@@ -34,7 +34,7 @@ def employee_signup(request):
                 employee.document = form.cleaned_data['document']
                 employee.document_name = form.cleaned_data['document_name']
             employee.save()
-            messages.success(request, "Account created successfully! Please login.")
+            messages.success(request, "toast:Account created successfully! Please login.")
             return redirect('employee_login')
     else:
         form = EmployeeSignupForm()
@@ -49,18 +49,18 @@ def employee_login(request):
             user = Employee.objects.filter(username=username).first()
             
             if not user:
-                messages.error(request, "Username not found. Please check your username or sign up.")
+                messages.error(request, "toast:Username not found. Please check your username or sign up.")
                 return render(request, 'employee/employee_login.html', {'form': form})
             
-            if not check_password(password, user.password):
-                messages.error(request, "Incorrect password. Please try again.")
+            if check_password(password, user.password):
+                request.session['employee_id'] = user.id
+                request.session['employee_username'] = username
+                request.session['employee_email'] = user.email
+                messages.success(request, f"ILOVEYOUSOMUCH, {username}!")
+                return redirect('employee_home')
+            else:
+                messages.error(request, "toast:Incorrect password. Please try again.")
                 return render(request, 'employee/employee_login.html', {'form': form})
-            
-            request.session['employee_id'] = user.id
-            request.session['employee_username'] = username
-            request.session['employee_email'] = user.email  # Add this line to store email in session
-            messages.success(request, f"Welcome back, {username}!")
-            return redirect('employee_home')
     else:
         form = EmployeeLoginForm()
     return render(request, 'employee/employee_login.html', {'form': form})
@@ -97,10 +97,10 @@ def employee_logout(request):
         # Clear specific session data
         request.session.pop('employee_username', None)
         request.session.pop('employee_id', None)
-        messages.success(request, "You have been successfully logged out.")
+        messages.success(request, "toast:You have been successfully logged out.")
         return redirect('employee_login')
     except Exception as e:
-        messages.error(request, "An error occurred during logout.")
+        messages.error(request, "toast:An error occurred during logout.")
         return redirect('employee_login')
         
 # Add these new views

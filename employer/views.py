@@ -104,6 +104,7 @@ def employer_home(request):
 
 from django.views.decorators.csrf import ensure_csrf_cookie
 
+# Update the create_job view to handle work_setup
 @ensure_csrf_cookie
 def create_job(request):
     if not request.session.get('employer_username'):
@@ -119,6 +120,7 @@ def create_job(request):
                 title=data['jobTitle'],
                 location=data['location'],
                 job_type=data['jobType'],
+                work_setup=data['workSetup'],  # Add this line
                 description=data['description'],
                 salary_range=data['salary'],
                 experience_level=data['experience']
@@ -131,6 +133,7 @@ def create_job(request):
                     'title': job.title,
                     'location': job.location,
                     'job_type': job.get_job_type_display(),
+                    'work_setup': job.get_work_setup_display(),  # Add this line
                     'description': job.description,
                     'salary_range': job.salary_range,
                     'experience_level': job.get_experience_level_display(),
