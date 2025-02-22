@@ -92,6 +92,58 @@ body {
   border-color: var(--primary-blue);
 }
 
+/* Add these styles to your existing auth.css */
+
+.form-section {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.form-section h3 {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 1.1em;
+}
+
+.help-text {
+  display: block;
+  margin-top: 5px;
+  color: #6c757d;
+  font-size: 0.85em;
+}
+
+/* Radio button styles */
+.form-group input[type="radio"] {
+  margin-right: 5px;
+}
+
+.form-group input[type="radio"] + label {
+  margin-right: 15px;
+}
+
+/* File input styles */
+.form-group input[type="file"] {
+  padding: 10px;
+  border: 1px dashed #ced4da;
+  border-radius: 4px;
+  width: 100%;
+  background-color: #fff;
+}
+
+.form-group input[type="file"]:hover {
+  border-color: #adb5bd;
+}
+
+/* Date input styles */
+.form-group input[type="date"] {
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  width: 100%;
+}
+
 .submit-btn {
   width: 100%;
   padding: 0.75rem;

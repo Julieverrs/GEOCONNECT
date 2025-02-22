@@ -23,23 +23,40 @@ from .tokens import employer_password_reset_token
 
 def employer_signup(request):
     if request.method == "POST":
-        form = EmployerSignupForm(request.POST)
+        form = EmployerSignupForm(request.POST, request.FILES)  # Add request.FILES here
         if form.is_valid():
-            # Check if username already exists
-            if Employer.objects.filter(username=form.cleaned_data["username"]).exists():
-                messages.error(request, "Username already exists. Please choose another one.")
-                return render(request, 'employer/employer_signup.html', {'form': form})
-            
-            # Check if email already exists
-            if Employer.objects.filter(email=form.cleaned_data["email"]).exists():
-                messages.error(request, "Email already registered. Please use another email.")
-                return render(request, 'employer/employer_signup.html', {'form': form})
+            try:
+                # Check if username already exists
+                if Employer.objects.filter(username=form.cleaned_data["username"]).exists():
+                    messages.error(request, "Username already exists. Please choose another one.")
+                    return render(request, 'employer/employer_signup.html', {'form': form})
+                
+                # Check if email already exists
+                if Employer.objects.filter(email=form.cleaned_data["email"]).exists():
+                    messages.error(request, "Email already registered. Please use another email.")
+                    return render(request, 'employer/employer_signup.html', {'form': form})
 
-            employer = form.save(commit=False)
-            employer.password = make_password(form.cleaned_data["password"])
-            employer.save()
-            messages.success(request, "Company account created successfully! Please login.")
-            return redirect('employer_login')
+                employer = form.save(commit=False)
+                employer.password = make_password(form.cleaned_data["password"])
+                
+                # Handle file uploads
+                if 'business_permit' in request.FILES:
+                    employer.business_permit = request.FILES['business_permit']
+                if 'registration_document' in request.FILES:
+                    employer.registration_document = request.FILES['registration_document']
+                
+                employer.save()
+                messages.success(request, "Company account created successfully! Please wait for verification before logging in.")
+                return redirect('employer_login')
+            except Exception as e:
+                print(f"Error during signup: {str(e)}")  # For debugging
+                messages.error(request, f"An error occurred during signup: {str(e)}")
+        else:
+            # Print form errors for debugging
+            print("Form errors:", form.errors)
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
     else:
         form = EmployerSignupForm()
     return render(request, 'employer/employer_signup.html', {'form': form})

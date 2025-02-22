@@ -12,29 +12,57 @@
             <h2>Admin Login</h2>
             <p>Please enter your admin credentials to sign in</p>
         </div>
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="message {{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        </div>
-        {% endif %}
         <form method="POST" id="adminLoginForm">
             {% csrf_token %}
             <div class="form-group">
-                <label for="id_username">Username</label>
+                <label for="id_username">
+                    <i class="fas fa-user"></i>
+                    Username
+                </label>
                 {{ form.username }}
             </div>
             <div class="form-group">
-                <label for="id_password">Password</label>
+                <label for="id_password">
+                    <i class="fas fa-lock"></i>
+                    Password
+                </label>
                 {{ form.password }}
             </div>
-            <button type="submit" class="submit-btn">Sign in</button>
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                Sign in
+            </button>
         </form>
         <div class="auth-links">
             <p>Need an admin account? <a href="{% url 'admin_signup' %}">Create account</a></p>
         </div>
     </div>
 </div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="django-message" data-type="{{ message.tags }}" style="display: none;">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Checking for messages");
+        const djangoMessages = document.querySelectorAll('.django-message');
+        console.log("Found Django messages:", djangoMessages.length);
+        djangoMessages.forEach((message) => {
+            const messageText = message.textContent.trim();
+            const messageType = message.dataset.type;
+            console.log("Processing Django message:", messageText, messageType);
+            toastNotification(messageText, messageType);
+            message.remove();
+        });
+    });
+</script>
 {% endblock %}
 

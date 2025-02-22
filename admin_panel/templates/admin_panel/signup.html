@@ -9,8 +9,8 @@
     </div>
     <div class="auth-form">
         <div class="form-header">
-            <h2>Create Admin Account</h2>
-            <p>Fill in your details to get started</p>
+            <h2>Admin Sign Up</h2>
+            <p>Fill in your details to create an account</p>
         </div>
         {% if messages %}
         <div class="messages">
@@ -22,27 +22,68 @@
         <form method="POST" id="adminSignupForm">
             {% csrf_token %}
             <div class="form-group">
-                <label for="id_username">Username</label>
+                <label for="id_username">
+                    <i class="fas fa-user"></i>
+                    Username
+                </label>
                 {{ form.username }}
             </div>
             <div class="form-group">
-                <label for="id_email">Email</label>
+                <label for="id_email">
+                    <i class="fas fa-envelope"></i>
+                    Email Address
+                </label>
                 {{ form.email }}
             </div>
             <div class="form-group">
-                <label for="id_password1">Password</label>
+                <label for="id_password1">
+                    <i class="fas fa-lock"></i>
+                    Password
+                </label>
                 {{ form.password1 }}
             </div>
             <div class="form-group">
-                <label for="id_password2">Confirm Password</label>
+                <label for="id_password2">
+                    <i class="fas fa-lock"></i>
+                    Confirm Password
+                </label>
                 {{ form.password2 }}
             </div>
-            <button type="submit" class="submit-btn">Create Account</button>
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-user-plus"></i>
+                Create Account
+            </button>
         </form>
         <div class="auth-links">
             <p>Already have an account? <a href="{% url 'admin_login' %}">Sign in</a></p>
         </div>
     </div>
 </div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="django-message" data-type="{{ message.tags }}" style="display: none;">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Checking for messages");
+        const djangoMessages = document.querySelectorAll('.django-message');
+        console.log("Found Django messages:", djangoMessages.length);
+        djangoMessages.forEach((message) => {
+            const messageText = message.textContent.trim();
+            const messageType = message.dataset.type;
+            console.log("Processing Django message:", messageText, messageType);
+            toastNotification(messageText, messageType);
+            message.remove();
+        });
+    });
+</script>
 {% endblock %}
 

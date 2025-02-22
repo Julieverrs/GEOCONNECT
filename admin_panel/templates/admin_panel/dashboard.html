@@ -1,42 +1,423 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Admin Dashboard{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_panel.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <h1 class="mb-4">Admin Dashboard</h1>
-    <div class="row">
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">User Management</h5>
-                    <p class="card-text">Manage user accounts and permissions.</p>
-                    <a href="#" class="btn btn-primary">Manage Users</a>
+<div class="admin-dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Admin Panel</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <i class="fas fa-users"></i>
+                Users
+            </a>
+            <a href="{% url 'admin_logout' %}" class="nav-item">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-header">
+            <h1>User Management</h1>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="employees">
+                Employees
+            </button>
+            <button class="tab-btn" data-tab="employers">
+                Employers
+            </button>
+        </div>
+
+        <!-- Employee List -->
+        <div class="tab-content active" id="employees-content">
+            <div class="table-container">
+                <div class="table-header">
+                    <h2>Employees</h2>
+                    <div class="table-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Search employees...">
+                        </div>
+                    </div>
                 </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Document</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in employees %}
+                        <tr>
+                            <td>{{ employee.username }}</td>
+                            <td>{{ employee.email }}</td>
+                            <td>
+                                <span class="status-badge {% if employee.is_active %}active{% else %}inactive{% endif %}">
+                                    {% if employee.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if employee.document %}
+                                <a href="{{ employee.document.url }}" target="_blank" class="document-link">
+                                    <i class="fas fa-file-alt"></i>
+                                    View Document
+                                </a>
+                                {% else %}
+                                <span class="text-muted">No document</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon" onclick="viewUser('employee', '{{ employee.id }}')" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn-icon" onclick="toggleStatus('employee', '{{ employee.id }}')" title="Toggle Status">
+                                        <i class="fas fa-power-off"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="deleteUser('employee', '{{ employee.id }}')" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No employees found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Content Management</h5>
-                    <p class="card-text">Manage site content and pages.</p>
-                    <a href="#" class="btn btn-primary">Manage Content</a>
+
+        <!-- Employer List -->
+        <div class="tab-content" id="employers-content">
+            <div class="table-container">
+                <div class="table-header">
+                    <h2>Employers</h2>
+                    <div class="table-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Search employers...">
+                        </div>
+                    </div>
                 </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Company Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Documents</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employer in employers %}
+                        <tr>
+                            <td>{{ employer.company_name }}</td>
+                            <td>{{ employer.email }}</td>
+                            <td>
+                                <span class="status-badge {% if employer.is_verified %}verified{% else %}pending{% endif %}">
+                                    {% if employer.is_verified %}Verified{% else %}Pending{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="document-links">
+                                    {% if employer.business_permit %}
+                                    <a href="{{ employer.business_permit.url }}" target="_blank" class="document-link">
+                                        <i class="fas fa-file-alt"></i>
+                                        Business Permit
+                                    </a>
+                                    {% endif %}
+                                    {% if employer.registration_document %}
+                                    <a href="{{ employer.registration_document.url }}" target="_blank" class="document-link">
+                                        <i class="fas fa-file-alt"></i>
+                                        Registration
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon" onclick="viewUser('employer', '{{ employer.id }}')" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn-icon" onclick="toggleVerification('{{ employer.id }}')" title="Toggle Verification">
+                                        <i class="fas fa-check-circle"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="deleteUser('employer', '{{ employer.id }}')" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No employers found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Analytics</h5>
-                    <p class="card-text">View site statistics and analytics.</p>
-                    <a href="#" class="btn btn-primary">View Analytics</a>
-                </div>
-            </div>
+    </main>
+</div>
+
+<!-- User Details Modal -->
+<div class="modal" id="userModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>User Details</h3>
+            <button class="close-modal">×</button>
         </div>
-    </div>
-    <div class="mt-4">
-        <a href="{% url 'admin_logout' %}" class="btn btn-danger">Logout</a>
+        <div class="modal-body">
+            <!-- Content will be loaded dynamically -->
+        </div>
     </div>
 </div>
+
+<!-- Confirmation Modal -->
+<div class="modal" id="confirmModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Confirm Action</h3>
+            <button class="close-modal">×</button>
+        </div>
+        <div class="modal-body">
+            <p id="confirmMessage"></p>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeModal('confirmModal')">Cancel</button>
+                <button class="btn-primary" id="confirmAction">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching
+    const tabs = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active class from all tabs and contents
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+
+            // Add active class to clicked tab and corresponding content
+            tab.classList.add('active');
+            document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
+        });
+    });
+
+    // Search functionality
+    document.querySelectorAll('.search-box input').forEach(input => {
+        input.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const tableBody = this.closest('.table-container').querySelector('tbody');
+            const rows = tableBody.querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    });
+});
+
+// Modal functions
+function openModal(modalId) {
+    document.getElementById(modalId).classList.add('active');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+// Close modal when clicking outside
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+});
+
+// Close modal when clicking close button
+document.querySelectorAll('.close-modal').forEach(button => {
+    button.addEventListener('click', () => {
+        button.closest('.modal').classList.remove('active');
+    });
+});
+
+// View user details
+async function viewUser(type, id) {
+    try {
+        const response = await fetch(`/admin-panel/${type}/${id}/`);
+        const data = await response.json();
+        
+        const modalBody = document.querySelector('#userModal .modal-body');
+        modalBody.innerHTML = `
+            <div class="user-details">
+                ${type === 'employer' ? `
+                    <div class="detail-group">
+                        <label>Company Name</label>
+                        <p>${data.company_name}</p>
+                    </div>
+                ` : ''}
+                <div class="detail-group">
+                    <label>Username</label>
+                    <p>${data.username}</p>
+                </div>
+                <div class="detail-group">
+                    <label>Email</label>
+                    <p>${data.email}</p>
+                </div>
+                ${type === 'employer' ? `
+                    <div class="detail-group">
+                        <label>Registration Type</label>
+                        <p>${data.registration_type}</p>
+                    </div>
+                    <div class="detail-group">
+                        <label>Registration Number</label>
+                        <p>${data.registration_number}</p>
+                    </div>
+                    <div class="detail-group">
+                        <label>Registration Date</label>
+                        <p>${data.registration_date}</p>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        
+        openModal('userModal');
+    } catch (error) {
+        console.error('Error fetching user details:', error);
+        alert('Error fetching user details');
+    }
+}
+
+// Toggle user status
+async function toggleStatus(type, id) {
+    const confirmMessage = `Are you sure you want to toggle this ${type}'s status?`;
+    document.getElementById('confirmMessage').textContent = confirmMessage;
+    
+    document.getElementById('confirmAction').onclick = async () => {
+        try {
+            const response = await fetch(`/admin-panel/${type}/${id}/toggle-status/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            
+            if (response.ok) {
+                location.reload();
+            } else {
+                throw new Error('Failed to toggle status');
+            }
+        } catch (error) {
+            console.error('Error toggling status:', error);
+            alert('Error toggling status');
+        }
+    };
+    
+    openModal('confirmModal');
+}
+
+// Toggle employer verification
+async function toggleVerification(id) {
+    const confirmMessage = 'Are you sure you want to toggle this employer\'s verification status?';
+    document.getElementById('confirmMessage').textContent = confirmMessage;
+    
+    document.getElementById('confirmAction').onclick = async () => {
+        try {
+            const response = await fetch(`/admin-panel/employer/${id}/toggle-verification/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            
+            if (response.ok) {
+                location.reload();
+            } else {
+                throw new Error('Failed to toggle verification');
+            }
+        } catch (error) {
+            console.error('Error toggling verification:', error);
+            alert('Error toggling verification');
+        }
+    };
+    
+    openModal('confirmModal');
+}
+
+// Delete user
+async function deleteUser(type, id) {
+    const confirmMessage = `Are you sure you want to delete this ${type}? This action cannot be undone.`;
+    document.getElementById('confirmMessage').textContent = confirmMessage;
+    
+    document.getElementById('confirmAction').onclick = async () => {
+        try {
+            const response = await fetch(`/admin-panel/${type}/${id}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            
+            if (response.ok) {
+                location.reload();
+            } else {
+                throw new Error('Failed to delete user');
+            }
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            alert('Error deleting user');
+        }
+    };
+    
+    openModal('confirmModal');
+}
+
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
 {% endblock %}
 
