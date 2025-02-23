@@ -1,0 +1,336 @@
+/* Employee Approval Dashboard specific styles */
+.section {
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-xl);
+    overflow: hidden;
+  }
+  
+  .section-header {
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--gray-200);
+    background-color: var(--gray-50);
+  }
+  
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+  }
+  
+  /* Table Container Styles */
+  .table-container {
+    overflow-x: auto;
+    margin: 0;
+    padding: var(--spacing-md);
+    background-color: var(--surface);
+  }
+  
+  .data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 0;
+    min-width: 1200px;
+  }
+  
+  .data-table th {
+    position: sticky;
+    top: 0;
+    background-color: var(--gray-50);
+    z-index: 10;
+    padding: var(--spacing-md) var(--spacing-lg);
+    text-align: left;
+    font-weight: 600;
+    color: var(--gray-700);
+    border-bottom: 2px solid var(--gray-200);
+  }
+  
+  .data-table td {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--gray-200);
+    vertical-align: middle;
+  }
+  
+  .data-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .data-table tr:hover td {
+    background-color: var(--gray-50);
+  }
+  
+  /* Document Links Styling */
+  .document-links {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+  }
+  
+  .document-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    color: var(--gray-700);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  .document-link:hover {
+    background-color: var(--gray-200);
+    border-color: var(--gray-300);
+    transform: translateY(-1px);
+  }
+  
+  .document-link i {
+    color: var(--primary);
+  }
+  
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+  
+  .btn-icon {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-icon.view {
+    background-color: var(--gray-100);
+    color: var(--gray-700);
+  }
+  
+  .btn-icon.approve {
+    background-color: #dcfce7;
+    color: var(--success);
+  }
+  
+  .btn-icon.reject {
+    background-color: #fee2e2;
+    color: var(--danger);
+  }
+  
+  .btn-icon.reconsider {
+    background-color: #e0e7ff;
+    color: var(--primary);
+  }
+  
+  .btn-icon:hover {
+    transform: translateY(-1px);
+    filter: brightness(0.95);
+  }
+  
+  /* Status Badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .status-badge.pending {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  .status-badge.approved {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+  
+  .status-badge.rejected {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+  
+  /* Rejection Reason */
+  .rejection-reason {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    cursor: help;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--gray-100);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 1024px) {
+    .table-container {
+      margin: 0;
+      border-radius: 0;
+    }
+  
+    .data-table {
+      min-width: 800px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .section {
+      margin: var(--spacing-md) 0;
+      border-radius: var(--radius-md);
+    }
+  
+    .section-header {
+      padding: var(--spacing-md);
+    }
+  
+    .table-container {
+      padding: var(--spacing-sm);
+    }
+  
+    .document-links {
+      flex-direction: column;
+    }
+  
+    .document-link {
+      width: fit-content;
+    }
+  
+    .action-buttons {
+      flex-wrap: wrap;
+    }
+  
+    .btn-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+  }
+  
+  /* Empty State Styling */
+  .text-center {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--gray-500);
+    font-style: italic;
+  }
+  
+  /* Loading State */
+  .loading-skeleton {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    background-color: var(--gray-100);
+    border-radius: var(--radius-sm);
+  }
+  
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
+  /* Toast Notifications */
+  .toast-container {
+    position: fixed;
+    bottom: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .toast {
+    min-width: 300px;
+    max-width: 500px;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    background-color: var(--surface);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    animation: slideIn 0.3s ease-out;
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  .toast.success {
+    border-left: 4px solid var(--success);
+  }
+  
+  .toast.error {
+    border-left: 4px solid var(--danger);
+  }
+  
+  .toast.info {
+    border-left: 4px solid var(--primary);
+  }
+  
+  /* Modal Styles */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-md);
+  }
+  
+  .modal.active {
+    display: flex;
+  }
+  
+  .modal-content {
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: modalSlideIn 0.3s ease-out;
+  }
+  
+  @keyframes modalSlideIn {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  

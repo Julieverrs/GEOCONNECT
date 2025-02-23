@@ -13,7 +13,6 @@ from django.utils import timezone
 from .forms import PasswordResetForm, SetPasswordForm
 from .tokens import password_reset_token  # Import our custom token generator
 
-
 def employee_signup(request):
     if request.method == "POST":
         form = EmployeeSignupForm(request.POST, request.FILES)
@@ -30,11 +29,12 @@ def employee_signup(request):
 
             employee = form.save(commit=False)
             employee.password = make_password(form.cleaned_data["password"])
+            employee.is_approved = False  # Set initial approval status to False
             if form.cleaned_data['document']:
                 employee.document = form.cleaned_data['document']
                 employee.document_name = form.cleaned_data['document_name']
             employee.save()
-            messages.success(request, "toast:Account created successfully! Please login.")
+            messages.success(request, "Account created successfully! Please wait for admin approval before logging in.")
             return redirect('employee_login')
     else:
         form = EmployeeSignupForm()
@@ -52,11 +52,20 @@ def employee_login(request):
                 messages.error(request, "toast:Username not found. Please check your username or sign up.")
                 return render(request, 'employee/employee_login.html', {'form': form})
             
+            if not user.is_active:
+                messages.error(request, "toast:Your account has been deactivated. Please contact support.")
+                return render(request, 'employee/employee_login.html', {'form': form})
+            
+            # Check approval status
+            if not user.is_approved:
+                messages.error(request, "toast:Your account is pending approval. Please wait for admin approval.")
+                return render(request, 'employee/employee_login.html', {'form': form})
+            
             if check_password(password, user.password):
                 request.session['employee_id'] = user.id
                 request.session['employee_username'] = username
                 request.session['employee_email'] = user.email
-                messages.success(request, f"ILOVEYOUSOMUCH, {username}!")
+                messages.success(request, f"toast:Welcome back, {username}!")
                 return redirect('employee_home')
             else:
                 messages.error(request, "toast:Incorrect password. Please try again.")

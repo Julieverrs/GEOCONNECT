@@ -68,6 +68,9 @@ class Employer(models.Model):
     date_joined = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)
     is_verified = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
+    approval_date = models.DateTimeField(null=True, blank=True)
+    rejection_reason = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.password.startswith('pbkdf2_sha256$'):

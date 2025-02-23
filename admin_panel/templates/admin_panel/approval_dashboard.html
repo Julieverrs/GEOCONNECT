@@ -1,0 +1,1277 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Approval Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_panel.css' %}">
+<style>
+    /* Additional styles for the approval dashboard */
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 4px;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-width: 300px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .toast-success {
+        background-color: #4caf50;
+        color: white;
+    }
+
+    .toast-error {
+        background-color: #f44336;
+        color: white;
+    }
+
+    .toast-info {
+        background-color: #2196f3;
+        color: white;
+    }
+
+    .toast-closing {
+        animation: slideOut 0.3s ease-out forwards;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+
+    .document-links {
+        display: flex;
+        gap: 10px;
+    }
+
+    .document-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background-color: #f0f0f0;
+        color: #333;
+        text-decoration: none;
+        font-size: 0.9em;
+    }
+
+    .document-link:hover {
+        background-color: #e0e0e0;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+
+    .modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .close-modal:hover {
+        color: #333;
+    }
+
+    .detail-group {
+        margin-bottom: 15px;
+    }
+
+    .detail-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #666;
+    }
+
+    .detail-group p {
+        margin: 0;
+        color: #333;
+    }
+
+    .btn-icon {
+        padding: 6px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 0 2px;
+    }
+
+    .btn-icon.view {
+        background-color: #2196f3;
+        color: white;
+    }
+
+    .btn-icon.approve {
+        background-color: #4caf50;
+        color: white;
+    }
+
+    .btn-icon.reject {
+        background-color: #f44336;
+        color: white;
+    }
+
+    .btn-icon:hover {
+        opacity: 0.9;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn-secondary {
+        background-color: #9e9e9e;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-danger {
+        background-color: #f44336;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    /* Debug info styles */
+    .debug-info {
+        background-color: #f8f9fa;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+
+    /* Rejection reason styles */
+    .rejection-reason {
+        display: inline-block;
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: help;
+    }
+
+    /* Button styles for rejected section */
+    .btn-icon.reconsider {
+        background-color: #8b5cf6;
+        color: white;
+    }
+
+    .btn-icon.reconsider:hover {
+        background-color: #7c3aed;
+    }
+
+    /* Status badge for rejected */
+    .status-badge.rejected {
+        background-color: #fee2e2;
+        color: #dc2626;
+    }
+    /* Specific styles for employer approval dashboard */
+    .employer-approval-dashboard .table-container {
+        max-width: 1400px !important; /* Wider tables for employer data */
+        margin: 0 auto 2rem;
+        overflow-x: auto;
+    }
+
+    .employer-approval-dashboard .data-table {
+        min-width: 1200px; /* Ensure table doesn't get too narrow */
+        width: 100%;
+    }
+
+    .employer-approval-dashboard .section {
+        padding: 0 2rem;
+    }
+
+    .employer-approval-dashboard .document-links {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .employer-approval-dashboard .document-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background-color: #f3f4f6;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        color: #374151;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .employer-approval-dashboard .document-link:hover {
+        background-color: #e5e7eb;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1536px) {
+        .employer-approval-dashboard .table-container {
+            max-width: 1200px !important;
+        }
+    }
+
+    @media (max-width: 1280px) {
+        .employer-approval-dashboard .table-container {
+            max-width: 1000px !important;
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .employer-approval-dashboard .table-container {
+            max-width: 90% !important;
+            margin: 0 auto 2rem;
+        }
+        
+        .employer-approval-dashboard .section {
+            padding: 0 1rem;
+        }
+    }
+
+    /* Enhanced table styles */
+    .employer-approval-dashboard .data-table th {
+        white-space: nowrap;
+        padding: 1rem 1.5rem;
+        background-color: #f9fafb;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .employer-approval-dashboard .data-table td {
+        padding: 1rem 1.5rem;
+        vertical-align: middle;
+    }
+
+    /* Status badges */
+    .employer-approval-dashboard .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .employer-approval-dashboard .status-badge.pending {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .employer-approval-dashboard .status-badge.approved {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+
+    .employer-approval-dashboard .status-badge.rejected {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* Action buttons container */
+    .employer-approval-dashboard .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    /* Make the modal wider for employer details */
+    .employer-approval-dashboard .modal-content {
+        max-width: 800px !important;
+        width: 90%;
+    }
+    
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Debug information -->
+{% if messages %}
+<div class="debug-info">
+    {% for message in messages %}
+        <div{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="admin-dashboard employer-approval-dashboard">
+    <!-- Sidebar -->
+    <!-- Update the sidebar navigation -->
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <h2>Admin Panel</h2>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+            <i class="fas fa-users"></i>
+            <span>Users</span>
+        </a>
+        <a href="{% url 'admin_panel:approvals' %}" class="nav-item active">
+            <i class="fas fa-building"></i>
+            <span>Employer Approval</span>
+        </a>
+        <a href="{% url 'admin_panel:employee_approvals' %}" class="nav-item">
+            <i class="fas fa-user-tie"></i>
+            <span>Employee Approval</span>
+        </a>
+        <a href="{% url 'admin_panel:logout' %}" class="nav-item">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
+    </nav>
+</aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-header">
+            <h1>Employer Approvals</h1>
+        </div>
+
+        <!-- Pending Approvals -->
+        <div class="section">
+            <div class="section-header">
+                <h2>Pending Approvals ({{ pending_employers.count }})</h2>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Company Name</th>
+                            <th>Registration Type</th>
+                            <th>Documents</th>
+                            <th>Date Applied</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employer in pending_employers %}
+                        <tr data-employer-id="{{ employer.id }}">
+                            <td>{{ employer.company_name }}</td>
+                            <td>{{ employer.registration_type }}</td>
+                            <td>
+                                <div class="document-links">
+                                    {% if employer.business_permit %}
+                                    <a href="{{ employer.business_permit.url }}" target="_blank" class="document-link">
+                                        <i class="fas fa-file-alt"></i>
+                                        Business Permit
+                                    </a>
+                                    {% endif %}
+                                    {% if employer.registration_document %}
+                                    <a href="{{ employer.registration_document.url }}" target="_blank" class="document-link">
+                                        <i class="fas fa-file-alt"></i>
+                                        Registration
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>{{ employer.date_joined|date:"M d, Y" }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon view" onclick="viewEmployerDetails({{ employer.id }})" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn-icon approve" onclick="approveEmployer({{ employer.id }})" title="Approve">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn-icon reject" onclick="rejectEmployer({{ employer.id }})" title="Reject">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No pending approvals</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recently Approved -->
+        <div class="section mt-6">
+            <div class="section-header">
+                <h2>Recently Approved ({{ approved_employers.count }})</h2>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Company Name</th>
+                            <th>Registration Type</th>
+                            <th>Approval Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employer in approved_employers %}
+                        <tr>
+                            <td>{{ employer.company_name }}</td>
+                            <td>{{ employer.registration_type }}</td>
+                            <td>{{ employer.approval_date|date:"M d, Y" }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon view" onclick="viewEmployerDetails({{ employer.id }})" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">No approved employers</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Rejected Applications -->
+        <div class="section mt-6">
+            <div class="section-header">
+                <h2>Rejected Applications ({{ rejected_employers.count }})</h2>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Company Name</th>
+                            <th>Registration Type</th>
+                            <th>Rejection Date</th>
+                            <th>Rejection Reason</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employer in rejected_employers %}
+                        <tr data-employer-id="{{ employer.id }}">
+                            <td>{{ employer.company_name }}</td>
+                            <td>{{ employer.registration_type }}</td>
+                            <td>{{ employer.date_joined|date:"M d, Y" }}</td>
+                            <td>
+                                <span class="rejection-reason" title="{{ employer.rejection_reason }}">
+                                    {{ employer.rejection_reason|truncatechars:50 }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon view" onclick="viewEmployerDetails({{ employer.id }})" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn-icon reconsider" onclick="reconsiderEmployer({{ employer.id }})" title="Reconsider Application">
+                                        <i class="fas fa-redo"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No rejected applications</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- View Details Modal -->
+<div class="modal" id="viewDetailsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Employer Details</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- Content will be loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<!-- Rejection Modal -->
+<div class="modal" id="rejectionModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Reject Application</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="rejectionReason">Reason for Rejection</label>
+                <textarea id="rejectionReason" class="form-input" rows="4" placeholder="Please provide a reason for rejection"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeModal('rejectionModal')">Cancel</button>
+                <button class="btn-danger" id="confirmReject">Reject</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedEmployerId = null;
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <span class="toast-icon">
+                ${type === 'success' 
+                    ? '<i class="fas fa-check-circle"></i>' 
+                    : '<i class="fas fa-exclamation-circle"></i>'}
+            </span>
+            <span class="toast-message">${message}</span>
+        </div>
+        <button class="toast-close">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+
+    document.body.appendChild(toast);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('toast-closing');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+
+    // Close button handler
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        toast.classList.add('toast-closing');
+        setTimeout(() => toast.remove(), 300);
+    });
+}
+
+// Update only the viewEmployerDetails function to handle document URLs properly
+async function viewEmployerDetails(employerId) {
+    try {
+        const response = await fetch(`/secret-admin/employer/${employerId}/details/`);
+        if (!response.ok) throw new Error('Failed to fetch employer details');
+        
+        const data = await response.json();
+        const modalBody = document.querySelector('#viewDetailsModal .modal-body');
+        
+        modalBody.innerHTML = `
+            <div class="employer-details">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="detail-card">
+                        <h4 class="detail-section-title">Company Information</h4>
+                        <div class="detail-group">
+                            <label>Company Name</label>
+                            <p class="detail-value">${data.company_name || 'N/A'}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Industry</label>
+                            <p class="detail-value">${data.industry || 'N/A'}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Company Description</label>
+                            <p class="detail-value description">${data.company_description || 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <h4 class="detail-section-title">Registration Details</h4>
+                        <div class="detail-group">
+                            <label>Registration Type</label>
+                            <p class="detail-value">${data.registration_type || 'N/A'}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Registration Number</label>
+                            <p class="detail-value">${data.registration_number || 'N/A'}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Registration Date</label>
+                            <p class="detail-value">${data.registration_date || 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <h4 class="detail-section-title">Contact Information</h4>
+                        <div class="detail-group">
+                            <label>Email</label>
+                            <p class="detail-value">${data.email || 'N/A'}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Company Website</label>
+                            <p class="detail-value">
+                                ${data.company_website ? 
+                                    `<a href="${data.company_website}" target="_blank" class="website-link">
+                                        <i class="fas fa-external-link-alt"></i> ${data.company_website}
+                                    </a>` : 
+                                    'N/A'}
+                            </p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Company Location</label>
+                            <p class="detail-value">${data.company_location || 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <h4 class="detail-section-title">Required Documents</h4>
+                        <div class="documents-grid">
+                            <div class="document-item">
+                                <label>Business Permit</label>
+                                ${data.business_permit_url ? 
+                                    `<div class="document-preview">
+                                        <div class="document-actions">
+                                            <a href="${data.business_permit_url}" target="_blank" class="document-link primary">
+                                                <i class="fas fa-eye"></i>
+                                                View
+                                            </a>
+                                            <a href="${data.business_permit_url}" download class="document-link secondary">
+                                                <i class="fas fa-download"></i>
+                                                Download
+                                            </a>
+                                        </div>
+                                        ${isImageFile(data.business_permit_url) ? 
+                                            `<div class="document-image">
+                                                <img src="${data.business_permit_url}" alt="Business Permit" />
+                                            </div>` :
+                                            `<div class="document-file">
+                                                <i class="fas fa-file-pdf"></i>
+                                                <span>Business Permit Document</span>
+                                            </div>`
+                                        }
+                                    </div>` : 
+                                    '<p class="no-document">No business permit uploaded</p>'
+                                }
+                            </div>
+
+                            <div class="document-item">
+                                <label>Registration Document</label>
+                                ${data.registration_document_url ? 
+                                    `<div class="document-preview">
+                                        <div class="document-actions">
+                                            <a href="${data.registration_document_url}" target="_blank" class="document-link primary">
+                                                <i class="fas fa-eye"></i>
+                                                View
+                                            </a>
+                                            <a href="${data.registration_document_url}" download class="document-link secondary">
+                                                <i class="fas fa-download"></i>
+                                                Download
+                                            </a>
+                                        </div>
+                                        ${isImageFile(data.registration_document_url) ? 
+                                            `<div class="document-image">
+                                                <img src="${data.registration_document_url}" alt="Registration Document" />
+                                            </div>` :
+                                            `<div class="document-file">
+                                                <i class="fas fa-file-pdf"></i>
+                                                <span>Registration Document</span>
+                                            </div>`
+                                        }
+                                    </div>` : 
+                                    '<p class="no-document">No registration document uploaded</p>'
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        openModal('viewDetailsModal');
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Error fetching employer details', 'error');
+    }
+}
+
+// Add this utility function to check if a file is an image
+function isImageFile(url) {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    return imageExtensions.some(ext => url.toLowerCase().endsWith(ext));
+}
+
+// Add these additional styles
+const additionalStyles = `
+    <style>
+        /* Document preview styles */
+        .document-item {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .document-item label {
+            display: block;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.75rem;
+        }
+
+        .document-preview {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .document-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .document-link.primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .document-link.secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .document-link:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .document-image {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: #f1f5f9;
+        }
+
+        .document-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .document-file {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: #f1f5f9;
+            color: #64748b;
+            gap: 0.5rem;
+        }
+
+        .document-file i {
+            font-size: 2rem;
+            color: #94a3b8;
+        }
+
+        .no-document {
+            color: #94a3b8;
+            font-style: italic;
+            padding: 1rem;
+            text-align: center;
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .documents-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .document-actions {
+                flex-direction: column;
+            }
+
+            .document-link {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+`;
+
+// Add the additional styles to the document head
+document.head.insertAdjacentHTML('beforeend', additionalStyles);
+
+// Add these styles to your existing CSS
+const styles = `
+    <style>
+        .detail-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .detail-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .detail-group {
+            margin-bottom: 1rem;
+        }
+
+        .detail-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+
+        .detail-value.description {
+            white-space: pre-line;
+            max-height: 100px;
+            overflow-y: auto;
+            padding: 0.5rem;
+            background: #f8fafc;
+            border-radius: 4px;
+        }
+
+        .website-link {
+            color: #3b82f6;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .website-link:hover {
+            text-decoration: underline;
+        }
+
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .document-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: #f1f5f9;
+            border-radius: 6px;
+            color: #475569;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .document-link:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        .no-document {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .detail-card {
+                padding: 1rem;
+            }
+        }
+
+        /* Enhanced modal styles */
+        .modal-content {
+            max-width: 900px;
+            margin: 2rem;
+            max-height: 85vh;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+    </style>
+`;
+
+// Add the styles to the document head
+document.head.insertAdjacentHTML('beforeend', styles);
+
+// Update the approveEmployer function to handle real-time updates
+async function approveEmployer(employerId) {
+    if (!confirm('Are you sure you want to approve this employer?')) return;
+    
+    try {
+        const response = await fetch(`/secret-admin/employer/${employerId}/approve/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to approve employer');
+        }
+        
+        const data = await response.json();
+        
+        // Remove the approved employer row from pending table
+        const employerRow = document.querySelector(`tr[data-employer-id="${employerId}"]`);
+        if (employerRow) {
+            employerRow.remove();
+        }
+
+        // Add the employer to the approved table
+        const approvedTableBody = document.querySelector('.section.mt-6 table tbody');
+        if (approvedTableBody) {
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${data.company_name}</td>
+                <td>${data.registration_type}</td>
+                <td>${new Date().toLocaleDateString()}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-icon view" onclick="viewEmployerDetails(${employerId})" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            approvedTableBody.insertBefore(newRow, approvedTableBody.firstChild);
+        }
+
+        // Update counts
+        updateCounts();
+        
+        showToast('Employer successfully approved', 'success');
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Error approving employer', 'error');
+    }
+}
+
+// Add this function after the approveEmployer function but before the event listeners
+async function rejectEmployer(employerId) {
+    selectedEmployerId = employerId;
+    document.getElementById('rejectionReason').value = ''; // Clear previous reason
+    openModal('rejectionModal');
+}
+
+// Update the reject handler to handle real-time updates
+document.getElementById('confirmReject').addEventListener('click', async () => {
+    const reason = document.getElementById('rejectionReason').value.trim();
+    if (!reason) {
+        showToast('Please provide a reason for rejection', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/secret-admin/employer/${selectedEmployerId}/reject/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ rejection_reason: reason })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to reject employer');
+        }
+
+        // Remove from pending section
+        const employerRow = document.querySelector(`tr[data-employer-id="${selectedEmployerId}"]`);
+        if (employerRow) {
+            employerRow.remove();
+        }
+
+        // Add to rejected section
+        const rejectedTableBody = document.querySelector('.section.mt-6:last-child table tbody');
+        if (rejectedTableBody) {
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${data.employer.company_name}</td>
+                <td>${data.employer.registration_type}</td>
+                <td>${new Date().toLocaleDateString()}</td>
+                <td>
+                    <span class="rejection-reason" title="${reason}">
+                        ${reason.length > 50 ? reason.substring(0, 47) + '...' : reason}
+                    </span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-icon view" onclick="viewEmployerDetails(${selectedEmployerId})" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon reconsider" onclick="reconsiderEmployer(${selectedEmployerId})" title="Reconsider Application">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            // If there's a "No rejected applications" row, remove it
+            const noRejectedRow = rejectedTableBody.querySelector('tr td[colspan="5"]');
+            if (noRejectedRow) {
+                noRejectedRow.closest('tr').remove();
+            }
+            
+            rejectedTableBody.insertBefore(newRow, rejectedTableBody.firstChild);
+        }
+
+        // Update counts
+        updateCounts();
+        
+        // Close the modal
+        closeModal('rejectionModal');
+        
+        // Show success message
+        showToast(data.message || 'Employer application rejected successfully', 'success');
+        
+        // Reset the selected employer ID
+        selectedEmployerId = null;
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showToast(error.message || 'Error rejecting employer', 'error');
+    }
+});
+
+// Add function to reconsider a rejected application
+async function reconsiderEmployer(employerId) {
+    if (!confirm('Are you sure you want to reconsider this application? It will be moved back to pending applications.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/secret-admin/employer/${employerId}/reconsider/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to reconsider application');
+        }
+
+        // Remove from rejected section
+        const rejectedRow = document.querySelector(`.section.mt-6:last-child tr[data-employer-id="${employerId}"]`);
+        if (rejectedRow) {
+            rejectedRow.remove();
+        }
+
+        // Add to pending section
+        const pendingTableBody = document.querySelector('.section:not(.mt-6) table tbody');
+        if (pendingTableBody) {
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-employer-id', employerId);
+            newRow.innerHTML = `
+                <td>${data.employer.company_name}</td>
+                <td>${data.employer.registration_type}</td>
+                <td>
+                    <div class="document-links">
+                        ${data.employer.business_permit_url ? `
+                            <a href="${data.employer.business_permit_url}" target="_blank" class="document-link">
+                                <i class="fas fa-file-alt"></i>
+                                Business Permit
+                            </a>
+                        ` : ''}
+                        ${data.employer.registration_document_url ? `
+                            <a href="${data.employer.registration_document_url}" target="_blank" class="document-link">
+                                <i class="fas fa-file-alt"></i>
+                                Registration
+                            </a>
+                        ` : ''}
+                    </div>
+                </td>
+                <td>${new Date().toLocaleDateString()}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-icon view" onclick="viewEmployerDetails(${employerId})" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon approve" onclick="approveEmployer(${employerId})" title="Approve">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn-icon reject" onclick="rejectEmployer(${employerId})" title="Reject">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            pendingTableBody.insertBefore(newRow, pendingTableBody.firstChild);
+        }
+
+        // Update counts
+        updateCounts();
+
+        showToast('Application moved back to pending review', 'success');
+    } catch (error) {
+        console.error('Error:', error);
+        showToast(error.message || 'Error reconsidering application', 'error');
+    }
+}
+
+// Update the updateCounts function to include rejected applications
+function updateCounts() {
+    const pendingCount = document.querySelector('.section:not(.mt-6) tbody').children.length;
+    const approvedCount = document.querySelector('.section.mt-6:not(:last-child) tbody').children.length;
+    const rejectedCount = document.querySelector('.section.mt-6:last-child tbody').children.length;
+    
+    document.querySelector('.section:not(.mt-6) h2').textContent = `Pending Approvals (${pendingCount})`;
+    document.querySelector('.section.mt-6:not(:last-child) h2').textContent = `Recently Approved (${approvedCount})`;
+    document.querySelector('.section.mt-6:last-child h2').textContent = `Rejected Applications (${rejectedCount})`;
+}
+
+// Add data-employer-id to your table rows in the template
+// Update your table rows in the template to include data-employer-id
+
+// Utility functions
+function openModal(modalId) {
+    document.getElementById(modalId).classList.add('active');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Event Listeners for modals
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+});
+
+document.querySelectorAll('.close-modal').forEach(button => {
+    button.addEventListener('click', () => {
+        button.closest('.modal').classList.remove('active');
+    });
+});
+
+// Initialize tooltips if any
+document.addEventListener('DOMContentLoaded', () => {
+    // Add any initialization code here
+    console.log('Approval dashboard initialized');
+});
+</script>
+{% endblock %}
+

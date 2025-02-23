@@ -46,7 +46,7 @@ def employer_signup(request):
                     employer.registration_document = request.FILES['registration_document']
                 
                 employer.save()
-                messages.success(request, "Company account created successfully! Please wait for verification before logging in.")
+                messages.success(request, "Company account created successfully! Please wait for admin approval before logging in.")
                 return redirect('employer_login')
             except Exception as e:
                 print(f"Error during signup: {str(e)}")  # For debugging
@@ -61,6 +61,7 @@ def employer_signup(request):
         form = EmployerSignupForm()
     return render(request, 'employer/employer_signup.html', {'form': form})
 
+# Update the employer_login view to check approval status
 def employer_login(request):
     if request.method == "POST":
         form = EmployerLoginForm(request.POST)
@@ -73,14 +74,23 @@ def employer_login(request):
                 messages.error(request, "Username not found. Please check your username or sign up.")
                 return render(request, 'employer/employer_login.html', {'form': form})
             
-            if not check_password(password, user.password):
-                messages.error(request, "Incorrect password. Please try again.")
+            if not user.is_active:
+                messages.error(request, "Your account has been deactivated. Please contact support.")
                 return render(request, 'employer/employer_login.html', {'form': form})
             
-            request.session['employer_id'] = user.id
-            request.session['employer_username'] = username
-            messages.success(request, f"Welcome back, {username}!")
-            return redirect('employer_home')
+            if not user.is_approved:
+                messages.error(request, "Your account is pending approval. Please wait for admin approval.")
+                return render(request, 'employer/employer_login.html', {'form': form})
+            
+            if check_password(password, user.password):
+                request.session['employer_id'] = user.id
+                request.session['employer_username'] = username
+                messages.success(request, f"Welcome back, {username}!")
+                return redirect('employer_home')
+            else:
+                messages.error(request, "Incorrect password. Please try again.")
+        else:
+            messages.error(request, "Invalid form submission. Please check your input.")
     else:
         form = EmployerLoginForm()
     return render(request, 'employer/employer_login.html', {'form': form})

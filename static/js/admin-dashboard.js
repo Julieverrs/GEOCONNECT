@@ -1,96 +1,100 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Toast notification function
-    function showToast(message, type = "info") {
-      const toast = document.createElement("div")
-      toast.className = `toast toast-${type}`
-      toast.innerHTML = `
-              <div class="toast-content">
-                  <span class="toast-icon">
-                      ${
-                        type === "success"
-                          ? '<i class="fas fa-check-circle"></i>'
-                          : '<i class="fas fa-exclamation-circle"></i>'
-                      }
-                  </span>
-                  <span class="toast-message">${message}</span>
-              </div>
-              <button class="toast-close">
-                  <i class="fas fa-times"></i>
-              </button>
-          `
-  
-      document.body.appendChild(toast)
-  
-      // Auto remove after 3 seconds
-      setTimeout(() => {
-        toast.classList.add("toast-closing")
-        setTimeout(() => toast.remove(), 300)
-      }, 3000)
-  
-      // Close button handler
-      toast.querySelector(".toast-close").addEventListener("click", () => {
-        toast.classList.add("toast-closing")
-        setTimeout(() => toast.remove(), 300)
-      })
-    }
-  
-    // Tab switching
-    const tabs = document.querySelectorAll(".tab-btn")
-    const tabContents = document.querySelectorAll(".tab-content")
-  
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        tabs.forEach((t) => t.classList.remove("active"))
-        tabContents.forEach((c) => c.classList.remove("active"))
-  
-        tab.classList.add("active")
-        document.getElementById(`${tab.dataset.tab}-content`).classList.add("active")
+  // Tab switching functionality
+  const tabButtons = document.querySelectorAll(".tab-btn")
+  const tabContents = document.querySelectorAll(".tab-content")
+
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      // Remove active class from all buttons and contents
+      tabButtons.forEach((btn) => btn.classList.remove("active"))
+      tabContents.forEach((content) => content.classList.remove("active"))
+
+      // Add active class to clicked button and corresponding content
+      button.classList.add("active")
+      const contentId = `${button.getAttribute("data-tab")}-content`
+      document.getElementById(contentId).classList.add("active")
+    })
+  })
+
+  // Toast notification function
+  function showToast(message, type = "info") {
+    const toast = document.createElement("div")
+    toast.className = `toast toast-${type}`
+    toast.innerHTML = `
+            <div class="toast-content">
+                <span class="toast-icon">
+                    ${
+                      type === "success"
+                        ? '<i class="fas fa-check-circle"></i>'
+                        : '<i class="fas fa-exclamation-circle"></i>'
+                    }
+                </span>
+                <span class="toast-message">${message}</span>
+            </div>
+            <button class="toast-close">
+                <i class="fas fa-times"></i>
+            </button>
+        `
+
+    const toastContainer = document.getElementById("toastContainer")
+    toastContainer.appendChild(toast)
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+      toast.classList.add("toast-closing")
+      setTimeout(() => toast.remove(), 300)
+    }, 3000)
+
+    // Close button handler
+    toast.querySelector(".toast-close").addEventListener("click", () => {
+      toast.classList.add("toast-closing")
+      setTimeout(() => toast.remove(), 300)
+    })
+  }
+
+  // Search functionality
+  document.querySelectorAll(".search-box input").forEach((input) => {
+    input.addEventListener("input", function () {
+      const searchTerm = this.value.toLowerCase()
+      const tableBody = this.closest(".table-container").querySelector("tbody")
+      const rows = tableBody.querySelectorAll("tr")
+
+      rows.forEach((row) => {
+        const text = row.textContent.toLowerCase()
+        row.style.display = text.includes(searchTerm) ? "" : "none"
       })
     })
-  
-    // Search functionality
-    document.querySelectorAll(".search-box input").forEach((input) => {
-      input.addEventListener("input", function () {
-        const searchTerm = this.value.toLowerCase()
-        const tableBody = this.closest(".table-container").querySelector("tbody")
-        const rows = tableBody.querySelectorAll("tr")
-  
-        rows.forEach((row) => {
-          const text = row.textContent.toLowerCase()
-          row.style.display = text.includes(searchTerm) ? "" : "none"
-        })
-      })
-    })
-  
-    // Get CSRF token
-    function getCookie(name) {
-      let cookieValue = null
-      if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";")
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim()
-          if (cookie.substring(0, name.length + 1) === name + "=") {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
-            break
-          }
+  })
+
+  // Get CSRF token
+  function getCookie(name) {
+    let cookieValue = null
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";")
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim()
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
+          break
         }
       }
-      return cookieValue
     }
-  
-    // View user details
-    window.viewUser = async (type, id) => {
-      try {
-        const response = await fetch(`/admin-panel/${type}/${id}/`)
-        if (!response.ok) throw new Error("Failed to fetch user details")
-  
-        const data = await response.json()
-        const modalBody = document.querySelector("#userModal .modal-body")
-  
-        let detailsHtml = `<div class="user-details">`
-  
-        if (type === "employer") {
-          detailsHtml += `
+    return cookieValue
+  }
+
+  // View user details
+  window.viewUser = async (type, id) => {
+    try {
+      const response = await fetch(`/admin-panel/${type}/${id}/`)
+      if (!response.ok) throw new Error("Failed to fetch user details")
+
+      const data = await response.json()
+      const modalBody = document.querySelector("#userModal .modal-body")
+
+      let detailsHtml = `<div class="user-details">`
+
+      if (type === "employer") {
+        detailsHtml += `
                       <div class="detail-group">
                           <label>Company Name</label>
                           <p>${data.company_name || "N/A"}</p>
@@ -108,9 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
                           <p>${data.industry || "N/A"}</p>
                       </div>
                   `
-        }
-  
-        detailsHtml += `
+      }
+
+      detailsHtml += `
                   <div class="detail-group">
                       <label>Username</label>
                       <p>${data.username}</p>
@@ -128,96 +132,95 @@ document.addEventListener("DOMContentLoaded", () => {
                       <p>${data.date_joined}</p>
                   </div>
               </div>`
-  
-        modalBody.innerHTML = detailsHtml
-        document.getElementById("userModal").classList.add("active")
-      } catch (error) {
-        console.error("Error:", error)
-        showToast("Error fetching user details", "error")
-      }
+
+      modalBody.innerHTML = detailsHtml
+      document.getElementById("userModal").classList.add("active")
+    } catch (error) {
+      console.error("Error:", error)
+      showToast("Error fetching user details", "error")
     }
-  
-    // Toggle user status
-    window.toggleStatus = async (type, id) => {
-      try {
-        const response = await fetch(`/admin-panel/${type}/${id}/toggle-status/`, {
-          method: "POST",
-          headers: {
-            "X-CSRFToken": getCookie("csrftoken"),
-          },
-        })
-  
-        if (!response.ok) throw new Error("Failed to toggle status")
-  
-        const data = await response.json()
-        showToast(data.message, "success")
-        setTimeout(() => location.reload(), 1000)
-      } catch (error) {
-        console.error("Error:", error)
-        showToast("Error toggling status", "error")
-      }
-    }
-  
-    // Toggle employer verification
-    window.toggleVerification = async (id) => {
-      try {
-        const response = await fetch(`/admin-panel/employer/${id}/toggle-verification/`, {
-          method: "POST",
-          headers: {
-            "X-CSRFToken": getCookie("csrftoken"),
-          },
-        })
-  
-        if (!response.ok) throw new Error("Failed to toggle verification")
-  
-        const data = await response.json()
-        showToast(data.message, "success")
-        setTimeout(() => location.reload(), 1000)
-      } catch (error) {
-        console.error("Error:", error)
-        showToast("Error toggling verification", "error")
-      }
-    }
-  
-    // Delete user
-    window.deleteUser = async (type, id) => {
-      if (!confirm(`Are you sure you want to delete this ${type}? This action cannot be undone.`)) {
-        return
-      }
-  
-      try {
-        const response = await fetch(`/admin-panel/${type}/${id}/delete/`, {
-          method: "DELETE",
-          headers: {
-            "X-CSRFToken": getCookie("csrftoken"),
-          },
-        })
-  
-        if (!response.ok) throw new Error("Failed to delete user")
-  
-        const data = await response.json()
-        showToast(data.message, "success")
-        setTimeout(() => location.reload(), 1000)
-      } catch (error) {
-        console.error("Error:", error)
-        showToast("Error deleting user", "error")
-      }
-    }
-  
-    // Close modals
-    document.querySelectorAll(".modal").forEach((modal) => {
-      modal.addEventListener("click", (e) => {
-        if (e.target === modal) {
-          modal.classList.remove("active")
-        }
+  }
+
+  // Toggle user status
+  window.toggleStatus = async (type, id) => {
+    try {
+      const response = await fetch(`/admin-panel/${type}/${id}/toggle-status/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
       })
-    })
-  
-    document.querySelectorAll(".close-modal").forEach((button) => {
-      button.addEventListener("click", () => {
-        button.closest(".modal").classList.remove("active")
+
+      if (!response.ok) throw new Error("Failed to toggle status")
+
+      const data = await response.json()
+      showToast(data.message, "success")
+      setTimeout(() => location.reload(), 1000)
+    } catch (error) {
+      console.error("Error:", error)
+      showToast("Error toggling status", "error")
+    }
+  }
+
+  // Toggle employer verification
+  window.toggleVerification = async (id) => {
+    try {
+      const response = await fetch(`/admin-panel/employer/${id}/toggle-verification/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
       })
+
+      if (!response.ok) throw new Error("Failed to toggle verification")
+
+      const data = await response.json()
+      showToast(data.message, "success")
+      setTimeout(() => location.reload(), 1000)
+    } catch (error) {
+      console.error("Error:", error)
+      showToast("Error toggling verification", "error")
+    }
+  }
+
+  // Delete user
+  window.deleteUser = async (type, id) => {
+    if (!confirm(`Are you sure you want to delete this ${type}? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/admin-panel/${type}/${id}/delete/`, {
+        method: "DELETE",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+      })
+
+      if (!response.ok) throw new Error("Failed to delete user")
+
+      const data = await response.json()
+      showToast(data.message, "success")
+      setTimeout(() => location.reload(), 1000)
+    } catch (error) {
+      console.error("Error:", error)
+      showToast("Error deleting user", "error")
+    }
+  }
+
+  // Close modals
+  document.querySelectorAll(".modal").forEach((modal) => {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.remove("active")
+      }
     })
   })
-  
-  
+
+  document.querySelectorAll(".close-modal").forEach((button) => {
+    button.addEventListener("click", () => {
+      button.closest(".modal").classList.remove("active")
+    })
+  })
+})
+

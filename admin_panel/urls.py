@@ -1,18 +1,25 @@
 from django.urls import path
 from . import views
 
+app_name = 'admin_panel'
+
 urlpatterns = [
-    path('secret-admin-login/', views.admin_login, name='admin_login'),
-    path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
-    path('logout/', views.admin_logout, name='admin_logout'),
+    path('login/', views.admin_login, name='login'),
+    path('logout/', views.admin_logout, name='logout'),
+    path('dashboard/', views.admin_dashboard, name='dashboard'),
+    path('approvals/', views.approval_dashboard, name='approvals'),
+    path('employee-approvals/', views.employee_approval_dashboard, name='employee_approvals'),
     
-    # API endpoints
-    path('employee/<int:user_id>/', views.get_user_details, {'user_type': 'employee'}, name='get_employee_details'),
-    path('employer/<int:user_id>/', views.get_user_details, {'user_type': 'employer'}, name='get_employer_details'),
-    path('employee/<int:user_id>/toggle-status/', views.toggle_user_status, {'user_type': 'employee'}, name='toggle_employee_status'),
-    path('employer/<int:user_id>/toggle-status/', views.toggle_user_status, {'user_type': 'employer'}, name='toggle_employer_status'),
-    path('employer/<int:employer_id>/toggle-verification/', views.toggle_employer_verification, name='toggle_employer_verification'),
-    path('employee/<int:user_id>/delete/', views.delete_user, {'user_type': 'employee'}, name='delete_employee'),
-    path('employer/<int:user_id>/delete/', views.delete_user, {'user_type': 'employer'}, name='delete_employer'),
+    # Employee approval endpoints
+    path('employee/<int:employee_id>/details/', views.get_employee_details, name='get_employee_details'),
+    path('employee/<int:employee_id>/approve/', views.approve_employee, name='approve_employee'),
+    path('employee/<int:employee_id>/reject/', views.reject_employee, name='reject_employee'),
+    path('employee/<int:employee_id>/reconsider/', views.reconsider_employee, name='reconsider_employee'),
+    
+    # Existing employer endpoints
+    path('employer/<int:employer_id>/details/', views.get_employer_details, name='get_employer_details'),
+    path('employer/<int:employer_id>/approve/', views.approve_employer, name='approve_employer'),
+    path('employer/<int:employer_id>/reject/', views.reject_employer, name='reject_employer'),
+    path('employer/<int:employer_id>/reconsider/', views.reconsider_employer, name='reconsider_employer'),
 ]
 
