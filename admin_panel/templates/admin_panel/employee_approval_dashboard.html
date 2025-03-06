@@ -7,269 +7,160 @@
 <link rel="stylesheet" href="{% static 'css/admin_panel.css' %}">
 <link rel="stylesheet" href="{% static 'css/employee_approval.css' %}">
 <style>
-    /* Additional styles for the approval dashboard */
-    .toast {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 4px;
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        min-width: 300px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        animation: slideIn 0.3s ease-out;
-    }
-
-    .toast-success {
-        background-color: #4caf50;
-        color: white;
-    }
-
-    .toast-error {
-        background-color: #f44336;
-        color: white;
-    }
-
-    .toast-info {
-        background-color: #2196f3;
-        color: white;
-    }
-
-    .toast-closing {
-        animation: slideOut 0.3s ease-out forwards;
-    }
-
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-
-    .document-links {
-        display: flex;
-        gap: 10px;
-    }
-
-    .document-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 4px 8px;
-        border-radius: 4px;
-        background-color: #f0f0f0;
-        color: #333;
-        text-decoration: none;
-        font-size: 0.9em;
-    }
-
-    .document-link:hover {
-        background-color: #e0e0e0;
-    }
-
+    /* Modal Styles */
     .modal {
         display: none;
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
-        height: 100%;
+        height: 100%;d
         background-color: rgba(0, 0, 0, 0.5);
         z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
     }
 
     .modal.active {
         display: flex;
+        opacity: 1;
         align-items: center;
         justify-content: center;
     }
 
     .modal-content {
         background-color: white;
-        padding: 20px;
         border-radius: 8px;
         width: 90%;
-        max-width: 600px;
-        max-height: 80vh;
+        max-width: 800px;
+        max-height: 90vh;
         overflow-y: auto;
+        position: relative;
+        transform: translateY(-20px);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .modal.active .modal-content {
+        transform: translateY(0);
     }
 
     .modal-header {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #eee;
+        justify-content: space-between;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
     }
 
     .close-modal {
         background: none;
         border: none;
-        font-size: 24px;
+        font-size: 1.5rem;
         cursor: pointer;
-        color: #666;
+        color: #6b7280;
+        padding: 0.25rem;
+        line-height: 1;
     }
 
     .close-modal:hover {
-        color: #333;
+        color: #374151;
     }
 
-    .detail-group {
-        margin-bottom: 15px;
-    }
-
-    .detail-group label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 5px;
-        color: #666;
-    }
-
-    .detail-group p {
-        margin: 0;
-        color: #333;
-    }
-
-    .btn-icon {
-        padding: 6px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        margin: 0 2px;
-    }
-
-    .btn-icon.view {
-        background-color: #2196f3;
-        color: white;
-    }
-
-    .btn-icon.approve {
-        background-color: #4caf50;
-        color: white;
-    }
-
-    .btn-icon.reject {
-        background-color: #f44336;
-        color: white;
-    }
-
-    .btn-icon:hover {
-        opacity: 0.9;
+    .modal-body {
+        padding: 1rem;
     }
 
     .modal-actions {
+        padding: 1rem;
+        border-top: 1px solid #e5e7eb;
         display: flex;
         justify-content: flex-end;
-        gap: 10px;
-        margin-top: 20px;
+        gap: 0.5rem;
     }
 
-    .btn-secondary {
-        background-color: #9e9e9e;
-        color: white;
-        padding: 8px 16px;
-        border: none;
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
         border-radius: 4px;
+        font-size: 1rem;
+    }
+
+    /* Toast Styles */
+    .toast {
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transform: translateY(0);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .toast.toast-closing {
+        transform: translateY(100%);
+    }
+
+    .toast-success {
+        border-left: 4px solid #10b981;
+    }
+
+    .toast-error {
+        border-left: 4px solid #ef4444;
+    }
+
+    .toast-info {
+        border-left: 4px solid #3b82f6;
+    }
+
+    /* Button Styles */
+    .btn-secondary {
+        background-color: #6b7280;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        border: none;
         cursor: pointer;
     }
 
     .btn-danger {
-        background-color: #f44336;
+        background-color: #ef4444;
         color: white;
-        padding: 8px 16px;
-        border: none;
+        padding: 0.5rem 1rem;
         border-radius: 4px;
+        border: none;
         cursor: pointer;
     }
 
-    /* Debug info styles */
-    .debug-info {
-        background-color: #f8f9fa;
-        padding: 10px;
-        margin-bottom: 20px;
-        border-radius: 4px;
+    .btn-secondary:hover {
+        background-color: #4b5563;
     }
 
-    /* Rejection reason styles */
-    .rejection-reason {
-        display: inline-block;
-        max-width: 300px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        cursor: help;
-    }
-
-    /* Button styles for rejected section */
-    .btn-icon.reconsider {
-        background-color: #8b5cf6;
-        color: white;
-    }
-
-    .btn-icon.reconsider:hover {
-        background-color: #7c3aed;
-    }
-
-    /* Status badge for rejected */
-    .status-badge.rejected {
-        background-color: #fee2e2;
-        color: #dc2626;
-    }
-
-    /* Add any employee-specific styles */
-    .employee-info {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
-    }
-
-    .skill-tag {
-        display: inline-block;
-        background: #e2e8f0;
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.875rem;
-        margin: 0.25rem;
-        color: #475569;
-    }
-
-    .education-item {
-        border-left: 2px solid #e2e8f0;
-        padding-left: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .education-item:last-child {
-        margin-bottom: 0;
-    }
-
-    .certification-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: #f1f5f9;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        margin: 0.25rem;
+    .btn-danger:hover {
+        background-color: #dc2626;
     }
 </style>
 {% endblock %}
@@ -284,11 +175,14 @@
 </div>
 {% endif %}
 
-<div class="admin-dashboard">
+<div class="admin-dashboard container-fluid">
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <h2>Admin Panel</h2>
+            <h2>
+                <i class="fas fa-shield-alt"></i>
+                Admin Panel
+            </h2>
         </div>
         <nav class="sidebar-nav">
             <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
@@ -311,151 +205,151 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content px-4 py-3 w-full">
         <div class="content-header">
             <h1>Employee Approvals</h1>
         </div>
 
-        <!-- Update in the Pending Approvals section -->
-<div class="section">
-    <div class="section-header">
-        <h2>Pending Approvals ({{ pending_employees.count }})</h2>
-    </div>
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Documents</th>
-                    <th>Date Applied</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for employee in pending_employees %}
-                <tr data-employee-id="{{ employee.id }}">
-                    <td>{{ employee.username }}</td>
-                    <td>
-                        <div class="document-links">
-                            {% if employee.document %}
-                            <a href="{{ employee.document.url }}" target="_blank" class="document-link">
-                                <i class="fas fa-file-alt"></i>
-                                Resume/CV
-                            </a>
-                            {% endif %}
-                        </div>
-                    </td>
-                    <td>{{ employee.date_joined|date:"M d, Y" }}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-icon view" onclick="viewEmployeeDetails({{ employee.id }})" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-icon approve" onclick="approveEmployee({{ employee.id }})" title="Approve">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button class="btn-icon reject" onclick="rejectEmployee({{ employee.id }})" title="Reject">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center">No pending approvals</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+        <div class="table-container w-full max-w-full overflow-x-auto my-4">
+            <!-- Pending Approvals -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Pending Approvals ({{ pending_employees.count }})</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Documents</th>
+                                <th>Date Applied</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in pending_employees %}
+                            <tr data-employee-id="{{ employee.id }}">
+                                <td>{{ employee.username }}</td>
+                                <td>
+                                    <div class="document-links">
+                                        {% if employee.document %}
+                                        <a href="{{ employee.document.url }}" target="_blank" class="document-link">
+                                            <i class="fas fa-file-alt"></i>
+                                            Resume/CV
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>{{ employee.date_joined|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon view" onclick="viewEmployeeDetails({{ employee.id }})" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon approve" onclick="approveEmployee({{ employee.id }})" title="Approve">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="btn-icon reject" onclick="rejectEmployee({{ employee.id }})" title="Reject">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No pending approvals</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-        <!-- Update in the Recently Approved section -->
-<div class="section mt-6">
-    <div class="section-header">
-        <h2>Recently Approved ({{ approved_employees.count }})</h2>
-    </div>
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Approval Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for employee in approved_employees %}
-                <tr>
-                    <td>{{ employee.username }}</td>
-                    <td>{{ employee.approval_date|date:"M d, Y" }}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-icon view" onclick="viewEmployeeDetails({{ employee.id }})" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="3" class="text-center">No approved employees</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+            <!-- Recently Approved -->
+            <div class="section mt-6">
+                <div class="section-header">
+                    <h2>Recently Approved ({{ approved_employees.count }})</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Approval Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in approved_employees %}
+                            <tr>
+                                <td>{{ employee.username }}</td>
+                                <td>{{ employee.approval_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon view" onclick="viewEmployeeDetails({{ employee.id }})" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">No approved employees</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-<!-- Update in the Rejected Applications section -->
-<div class="section mt-6">
-    <div class="section-header">
-        <h2>Rejected Applications ({{ rejected_employees.count }})</h2>
-    </div>
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Rejection Date</th>
-                    <th>Rejection Reason</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for employee in rejected_employees %}
-                <tr data-employee-id="{{ employee.id }}">
-                    <td>{{ employee.username }}</td>
-                    <td>{{ employee.date_joined|date:"M d, Y" }}</td>
-                    <td>
-                        <span class="rejection-reason" title="{{ employee.rejection_reason }}">
-                            {{ employee.rejection_reason|truncatechars:50 }}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-icon view" onclick="viewEmployeeDetails({{ employee.id }})" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-icon reconsider" onclick="reconsiderEmployee({{ employee.id }})" title="Reconsider Application">
-                                <i class="fas fa-redo"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center">No rejected applications</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+            <!-- Rejected Applications -->
+            <div class="section mt-6">
+                <div class="section-header">
+                    <h2>Rejected Applications ({{ rejected_employees.count }})</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Rejection Date</th>
+                                <th>Rejection Reason</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in rejected_employees %}
+                            <tr data-employee-id="{{ employee.id }}">
+                                <td>{{ employee.username }}</td>
+                                <td>{{ employee.date_joined|date:"M d, Y" }}</td>
+                                <td>
+                                    <span class="rejection-reason" title="{{ employee.rejection_reason }}">
+                                        {{ employee.rejection_reason|truncatechars:50 }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon view" onclick="viewEmployeeDetails({{ employee.id }})" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon reconsider" onclick="reconsiderEmployee({{ employee.id }})" title="Reconsider Application">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No rejected applications</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </main>
-</div>
-
-<!-- View Details Modal -->
+    <!-- View Details Modal -->
 <div class="modal" id="viewDetailsModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -486,6 +380,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 
 {% endblock %}

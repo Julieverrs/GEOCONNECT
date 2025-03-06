@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.hashers import make_password, check_password
 from django.http import JsonResponse
 from django.contrib import messages
-from .models import Employer, Job
+from .models import Employer, Job, JobApplication # Import JobApplication model
 from .forms import EmployerSignupForm, EmployerLoginForm, JobPostForm
 from django.http import HttpResponse
 from django.core.paginator import Paginator
@@ -20,6 +20,8 @@ from django.conf import settings
 from django.utils import timezone
 from .forms import EmployerPasswordResetForm, EmployerSetPasswordForm
 from .tokens import employer_password_reset_token
+from datetime import datetime # Import datetime for interview_date
+
 
 def employer_signup(request):
     if request.method == "POST":
@@ -147,10 +149,11 @@ def create_job(request):
                 title=data['jobTitle'],
                 location=data['location'],
                 job_type=data['jobType'],
-                work_setup=data['workSetup'],  # Add this line
+                work_setup=data['workSetup'],
                 description=data['description'],
                 salary_range=data['salary'],
-                experience_level=data['experience']
+                experience_level=data['experience'],
+                requirements=data['requirements']  # Add this line
             )
             
             return JsonResponse({
@@ -160,10 +163,11 @@ def create_job(request):
                     'title': job.title,
                     'location': job.location,
                     'job_type': job.get_job_type_display(),
-                    'work_setup': job.get_work_setup_display(),  # Add this line
+                    'work_setup': job.get_work_setup_display(),
                     'description': job.description,
                     'salary_range': job.salary_range,
                     'experience_level': job.get_experience_level_display(),
+                    'requirements': job.requirements,  # Add this line
                     'status': 'Active',
                     'applications_count': 0
                 }
@@ -212,7 +216,11 @@ def search_jobs(request):
             'title': job.title,
             'location': job.location,
             'job_type': job.get_job_type_display(),
+            'work_setup': job.get_work_setup_display(),
             'description': job.description,
+            'requirements': job.requirements,
+            'salary_range': job.salary_range,
+            'experience_level': job.get_experience_level_display(),
             'status': job.status,
             'applications_count': job.applications_count,
             'created_at': job.created_at.strftime('%Y-%m-%d')
@@ -240,10 +248,12 @@ def get_job(request, job_id):
             'title': job.title,
             'location': job.location,
             'job_type': job.job_type,
+            'work_setup': job.work_setup,
             'description': job.description,
             'salary_range': job.salary_range,
             'experience_level': job.experience_level,
             'status': job.status,
+            'requirements': job.requirements,
             'applications_count': job.applications_count
         }
         return JsonResponse({'job': job_data})
@@ -268,6 +278,7 @@ def edit_job(request, job_id):
         job.salary_range = data['salary']
         job.experience_level = data['experience']
         job.status = data['status']
+        job.requirements = data['requirements']  # Add this line
         job.save()
         
         return JsonResponse({
@@ -280,7 +291,8 @@ def edit_job(request, job_id):
                 'description': job.description,
                 'salary_range': job.salary_range,
                 'experience_level': job.get_experience_level_display(),
-                'status': job.get_status_display(),
+                'status': job.status,
+                'requirements': job.requirements,  # Add this line
                 'applications_count': job.applications_count
             }
         })
@@ -407,7 +419,11 @@ def search_jobs(request):
             'title': job.title,
             'location': job.location,
             'job_type': job.get_job_type_display(),
+            'work_setup': job.get_work_setup_display(),
             'description': job.description,
+            'requirements': job.requirements,
+            'salary_range': job.salary_range,
+            'experience_level': job.get_experience_level_display(),
             'status': job.status,
             'applications_count': job.applications_count,
             'created_at': job.created_at.strftime('%Y-%m-%d')
@@ -505,4 +521,108 @@ def employer_password_reset_confirm(request, uidb64, token):
         'form': form,
         'validlink': validlink,
     })
+
+# Add these new views while keeping existing ones
+
+def view_applications(request):
+    if not request.session.get('employer_username'):
+        messages.error(request, "Please login to access this page.")
+        return redirect('employer_login')
+    
+    employer = Employer.objects.get(username=request.session['employer_username'])
+    
+    # Get all jobs for this employer
+    jobs = Job.objects.filter(employer=employer)
+    
+    # Get filter parameters
+    job_id = request.GET.get('job')
+    status = request.GET.get('status')
+    
+    # Base queryset
+    applications = JobApplication.objects.filter(job__employer=employer)
+    
+    # Apply filters
+    if job_id:
+        applications = applications.filter(job_id=job_id)
+    if status:
+        applications = applications.filter(status=status)
+    
+    context = {
+        'applications': applications,
+        'jobs': jobs,
+        'status_choices': JobApplication.STATUS_CHOICES,
+        'selected_job': job_id,
+        'selected_status': status
+    }
+    
+    return render(request, 'employer/view_applications.html', context)
+
+def application_detail(request, application_id):
+    if not request.session.get('employer_username'):
+        return JsonResponse({'error': 'Not authenticated'}, status=403)
+    
+    try:
+        employer = Employer.objects.get(username=request.session['employer_username'])
+        application = JobApplication.objects.get(
+            id=application_id,
+            job__employer=employer
+        )
+        
+        application_data = {
+            'id': application.id,
+            'job_title': application.job.title,
+            'employee_name': application.employee.get_full_name(),
+            'status': application.status,
+            'application_date': application.application_date.strftime('%Y-%m-%d %H:%M'),
+            'resume_url': application.resume.url if application.resume else None,
+            'cover_letter': application.cover_letter,
+            'employer_notes': application.employer_notes,
+            'interview_date': application.interview_date.strftime('%Y-%m-%d %H:%M') if application.interview_date else None
+        }
+        
+        return JsonResponse({'application': application_data})
+    except JobApplication.DoesNotExist:
+        return JsonResponse({'error': 'Application not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@require_POST
+def update_application_status(request, application_id):
+    if not request.session.get('employer_username'):
+        return JsonResponse({'error': 'Not authenticated'}, status=403)
+    
+    try:
+        employer = Employer.objects.get(username=request.session['employer_username'])
+        application = JobApplication.objects.get(
+            id=application_id,
+            job__employer=employer
+        )
+        
+        data = json.loads(request.body)
+        new_status = data.get('status')
+        notes = data.get('notes', '')
+        interview_date = data.get('interview_date')
+        
+        if new_status not in dict(JobApplication.STATUS_CHOICES):
+            return JsonResponse({'error': 'Invalid status'}, status=400)
+        
+        application.status = new_status
+        application.employer_notes = notes
+        
+        if interview_date and new_status == 'scheduled_interview':
+            try:
+                application.interview_date = datetime.strptime(interview_date, '%Y-%m-%dT%H:%M')
+            except ValueError:
+                return JsonResponse({'error': 'Invalid interview date format'}, status=400)
+        
+        application.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Application status updated to {new_status}'
+        })
+    except JobApplication.DoesNotExist:
+        return JsonResponse({'error': 'Application not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 

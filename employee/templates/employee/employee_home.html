@@ -1,6 +1,10 @@
 {% extends 'employee/base.html' %}
 {% load static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/employee_home.css' %}">
+{% endblock %}
+
 {% block content %}
 <!-- Improved Navigation -->
 <nav class="navbar navbar-expand-lg fixed-top">
@@ -38,13 +42,15 @@
             <div class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                     <div class="avatar-sm me-2">
-                        <img src="{% static 'images/default-avatar.png' %}" alt="Profile" class="rounded-circle">
+                        <img src="{% if employee.avatar %}{{ employee.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
+                             alt="Profile" 
+                             class="rounded-circle">
                     </div>
                     <span>{{ username }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal" id="profileSettingsLink">
                             <i class="fas fa-user-cog"></i> Profile Settings
                         </a>
                     </li>
@@ -124,7 +130,7 @@
     </div>
 </section>
 
-<!-- Jobs Section -->
+<!-- Inside the jobs section -->
 <section id="jobs" class="section">
     <div class="container">
         <div class="section-header text-center mb-5">
@@ -143,17 +149,19 @@
                 <div class="col-md-3">
                     <select id="jobCategory" class="form-select">
                         <option value="">All Categories</option>
-                        <option value="tech">Technology</option>
-                        <option value="marketing">Marketing</option>
-                        <option value="design">Design</option>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Internship">Internship</option>
+                        <option value="Temporary">Temporary</option>
                     </select>
                 </div>
                 <div class="col-md-3">
                     <select id="jobLocation" class="form-select">
                         <option value="">All Locations</option>
-                        <option value="remote">Remote</option>
-                        <option value="onsite">On-site</option>
-                        <option value="hybrid">Hybrid</option>
+                        <option value="On-site">On-site</option>
+                        <option value="Remote">Remote</option>
+                        <option value="Hybrid">Hybrid</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -164,7 +172,108 @@
             </div>
         </div>
 
-        <div id="jobsGrid" class="row"></div>
+        <div id="jobsGrid">
+            <div class="row jobs-container">
+                {% with total_jobs=jobs.count %}
+                {% for job in jobs|slice:":6" %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="job-card">
+                        <!-- Company Logo/Badge -->
+                        <div class="company-badge">
+                            <div class="company-initial">{{ job.employer.company_name|slice:":1" }}</div>
+                        </div>
+                        
+                        <!-- Job Header -->
+                        <div class="job-card-header">
+                            <h3 class="job-title">{{ job.title }}</h3>
+                            <div class="company-name">
+                                <i class="fas fa-building me-2"></i>
+                                {{ job.employer.company_name }}
+                            </div>
+                        </div>
+                        
+                        <!-- Job Details -->
+                        <div class="job-card-body">
+                            <div class="job-badges mb-3">
+                                <span class="badge bg-primary">{{ job.job_type }}</span>
+                                <span class="badge bg-info">{{ job.work_setup }}</span>
+                            </div>
+                            
+                            <div class="job-details">
+                                <div class="job-detail-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>{{ job.location }}</span>
+                                </div>
+                                <div class="job-detail-item">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span>{{ job.salary_range }}</span>
+                                </div>
+                                <div class="job-detail-item">
+                                    <i class="fas fa-briefcase"></i>
+                                    <span>{{ job.experience_level }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="job-description">
+                                {{ job.description|truncatechars:120 }}
+                            </div>
+                        </div>
+                        
+                        <!-- Job Footer -->
+                        <div class="job-card-footer">
+                            <div class="job-posted">
+                                <i class="far fa-calendar-alt me-1"></i>
+                                <small>Posted {{ job.created_at|date:"F d, Y" }}</small>
+                            </div>
+                            <div class="job-actions">
+                                <button type="button" class="btn btn-outline-primary btn-sm view-job-btn me-2" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#viewJobModal"
+                                        data-job-id="{{ job.id }}" 
+                                        data-job-title="{{ job.title }}" 
+                                        data-company="{{ job.employer.company_name }}"
+                                        data-location="{{ job.location }}"
+                                        data-job-type="{{ job.job_type }}"
+                                        data-work-setup="{{ job.work_setup }}"
+                                        data-salary="{{ job.salary_range }}"
+                                        data-experience="{{ job.experience_level }}"
+                                        data-description="{{ job.description }}"
+                                        data-requirements="{{ job.requirements }}"
+                                        data-qualifications="{{ job.qualifications }}"
+                                        data-benefits="{{ job.benefits }}"
+                                        data-posted="{{ job.created_at|date:'F d, Y' }}">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button type="button" class="btn btn-primary btn-sm apply-now-btn" 
+                                        onclick="console.log('Button clicked for job: {{ job.title }}');"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#applyJobModal"
+                                        data-job-id="{{ job.id }}" 
+                                        data-job-title="{{ job.title }}" 
+                                        data-company="{{ job.employer.company_name }}">
+                                    Apply Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">
+                        No jobs available at the moment.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% if total_jobs > 6 %}
+            <div class="view-all-container text-center mt-4 mb-4">
+                <button id="viewAllJobs" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-list me-2"></i>View All Jobs ({{ total_jobs }})
+                </button>
+            </div>
+            {% endif %}
+            {% endwith %}
+        </div>
     </div>
 </section>
 
@@ -322,46 +431,86 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="profileForm">
-                    <div class="row">
-                        <div class="col-md-4 text-center mb-4 mb-md-0">
-                            <div class="avatar-upload">
-                                <div class="avatar-preview mb-3">
-                                    <img src="{% static 'images/default-avatar.png' %}" alt="Profile Picture" class="rounded-circle img-fluid" id="avatarPreview">
-                                </div>
-                                <div class="avatar-edit">
-                                    <input type='file' id="avatarUpload" accept=".png, .jpg, .jpeg" />
-                                    <label for="avatarUpload" class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-camera me-2"></i>Change Photo
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-8">
-                            <div class="mb-3">
-                                <label for="fullName" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="fullName" value="{{ employee.username }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" value="{{ employee.email }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="phone" placeholder="Enter your phone number">
-                            </div>
-                            <div class="mb-3">
-                                <label for="location" class="form-label">Location</label>
-                                <input type="text" class="form-control" id="location" placeholder="City, Country">
-                            </div>
-                            <div class="mb-3">
-                                <label for="bio" class="form-label">Bio</label>
-                                <textarea class="form-control" id="bio" rows="3" placeholder="Tell us about yourself"></textarea>
-                            </div>
-                        </div>
+    <form id="profileForm">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-4">
+                <div class="avatar-upload text-center">
+                    <div class="avatar-preview">
+                        <img src="{% if employee.avatar %}{{ employee.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
+                             alt="Profile Picture" 
+                             id="avatarPreview">
                     </div>
-                </form>
+                    <div class="avatar-edit">
+                        <input type='file' 
+                               id="avatarUpload" 
+                               name="avatar" 
+                               accept=".png, .jpg, .jpeg"
+                               class="d-none" />
+                        <label for="avatarUpload">
+                            <i class="fas fa-camera"></i>
+                            Change Photo
+                        </label>
+                    </div>
+                    <div class="avatar-help">
+                        Recommended: Square image, max 2MB
+                    </div>
+                </div>
             </div>
+            <div class="col-md-8">
+                <div class="profile-form-section">
+                    <div class="mb-3">
+                        <label for="fullName" class="form-label">Full Name</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="fullName" 
+                               name="full_name"
+                               value="{{ employee.full_name|default:employee.username }}"
+                               placeholder="Enter your full name"
+                               required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" 
+                               class="form-control" 
+                               id="email" 
+                               name="email"
+                               value="{{ employee.email }}" 
+                               readonly>
+                        <small class="text-muted">Contact support to change email</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" 
+                               class="form-control" 
+                               id="phone" 
+                               name="phone"
+                               value="{{ employee.phone|default:'' }}"
+                               placeholder="Enter your phone number">
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="location" 
+                               name="location"
+                               value="{{ employee.location|default:'' }}"
+                               placeholder="City, Country">
+                    </div>
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">Bio</label>
+                        <textarea class="form-control" 
+                                  id="bio" 
+                                  name="bio"
+                                  rows="3" 
+                                  placeholder="Tell us about yourself">{{ employee.bio|default:'' }}</textarea>
+                        <small class="text-muted">Brief description about yourself</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="saveProfile">Save Changes</button>
@@ -370,33 +519,577 @@
     </div>
 </div>
 
-<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
-
-{% if messages %}
-<div id="messages" style="display: none;">
-    {% for message in messages %}
-        <div class="django-message" data-type="{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
+<!-- Job Application Modal -->
+<div class="modal fade" id="applyJobModal" tabindex="-1" aria-labelledby="applyJobModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="applyJobModalLabel">Apply for <span id="jobTitleSpan"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="jobApplicationForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" id="jobId" name="job_id">
+                    
+                    <div class="job-details-section mb-4">
+                        <div class="alert alert-info">
+                            <div class="d-flex align-items-center">
+                                <div class="job-company-logo me-3">
+                                    <i class="fas fa-building fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0" id="jobCompanySpan"></h6>
+                                    <p class="mb-0 small" id="jobTitleDetail"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="application-form-section">
+                        <h6 class="section-title mb-3">Personal Information</h6>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="applicantName" class="form-label">Full Name</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="applicantName" 
+                                       name="applicant_name"
+                                       value="{{ employee.full_name|default:employee.username }}"
+                                       required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="applicantEmail" class="form-label">Email</label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="applicantEmail" 
+                                       name="applicant_email"
+                                       value="{{ employee.email }}" 
+                                       required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="applicantPhone" class="form-label">Phone Number</label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="applicantPhone" 
+                                       name="applicant_phone"
+                                       value="{{ employee.phone|default:'' }}"
+                                       required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="applicantLocation" class="form-label">Current Location</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="applicantLocation" 
+                                       name="applicant_location"
+                                       value="{{ employee.location|default:'' }}"
+                                       required>
+                            </div>
+                        </div>
+                        
+                        <h6 class="section-title mb-3 mt-4">Resume/CV</h6>
+                        
+                        <div class="mb-3">
+                            <label for="resumeUpload" class="form-label">Upload Resume/CV</label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="resumeUpload" 
+                                   name="resume"
+                                   accept=".pdf,.doc,.docx"
+                                   required>
+                            <div class="form-text">Accepted formats: PDF, DOC, DOCX. Max size: 5MB</div>
+                        </div>
+                        
+                        <h6 class="section-title mb-3 mt-4">Additional Information</h6>
+                        
+                        <div class="mb-3">
+                            <label for="coverLetter" class="form-label">Cover Letter</label>
+                            <textarea class="form-control" 
+                                      id="coverLetter" 
+                                      name="cover_letter"
+                                      rows="4" 
+                                      placeholder="Introduce yourself and explain why you're a good fit for this position"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="portfolioLink" class="form-label">Portfolio Link (Optional)</label>
+                            <input type="url" 
+                                   class="form-control" 
+                                   id="portfolioLink" 
+                                   name="portfolio_link"
+                                   placeholder="https://yourportfolio.com">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="linkedinProfile" class="form-label">LinkedIn Profile (Optional)</label>
+                            <input type="url" 
+                                   class="form-control" 
+                                   id="linkedinProfile" 
+                                   name="linkedin_profile"
+                                   placeholder="https://linkedin.com/in/yourprofile">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="additionalInfo" class="form-label">Additional Information (Optional)</label>
+                            <textarea class="form-control" 
+                                      id="additionalInfo" 
+                                      name="additional_info"
+                                      rows="3" 
+                                      placeholder="Any other information you'd like to share"></textarea>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                            <label class="form-check-label" for="termsCheck">
+                                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a> and consent to the processing of my personal data.
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitApplication">Submit Application</button>
+            </div>
+        </div>
+    </div>
 </div>
-{% endif %}
 
-{% if messages %}
+<!-- View Job Details Modal -->
+<div class="modal fade" id="viewJobModal" tabindex="-1" aria-labelledby="viewJobModalLabel" aria-hidden="true" data-job-id="">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewJobModalLabel">Job Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="job-view-header mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="job-view-company-badge me-3">
+                            <div class="company-initial" id="viewJobCompanyInitial"></div>
+                        </div>
+                        <div>
+                            <h3 class="job-view-title" id="viewJobTitle"></h3>
+                            <div class="job-view-company" id="viewJobCompany"></div>
+                        </div>
+                    </div>
+                    <div class="job-view-badges mb-3">
+                        <span class="badge bg-primary me-2" id="viewJobType"></span>
+                        <span class="badge bg-info" id="viewJobWorkSetup"></span>
+                    </div>
+                    <div class="job-view-meta">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="job-view-meta-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span id="viewJobLocation"></span>
+                                </div>
+                                <div class="job-view-meta-item">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span id="viewJobSalary"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="job-view-meta-item">
+                                    <i class="fas fa-briefcase"></i>
+                                    <span id="viewJobExperience"></span>
+                                </div>
+                                <div class="job-view-meta-item">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span id="viewJobPosted"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="job-view-content">
+                    <div class="job-view-section">
+                        <h5 class="job-view-section-title">Job Description</h5>
+                        <div class="job-view-section-content" id="viewJobDescription"></div>
+                    </div>
+                    
+                    <div class="job-view-section">
+                        <h5 class="job-view-section-title">Requirements</h5>
+                        <div class="job-view-section-content" id="viewJobRequirements"></div>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary apply-from-view-btn">Apply Now</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Application Terms</h6>
+                <p>By submitting this application, you agree to the following terms:</p>
+                <ul>
+                    <li>All information provided is accurate and truthful.</li>
+                    <li>You authorize GeoConnect to share your application with the employer.</li>
+                    <li>You understand that submitting an application does not guarantee an interview or job offer.</li>
+                    <li>You consent to being contacted by GeoConnect and the employer regarding this application.</li>
+                </ul>
+                
+                <h6>Data Privacy</h6>
+                <p>GeoConnect is committed to protecting your personal data:</p>
+                <ul>
+                    <li>Your data will only be used for job application purposes.</li>
+                    <li>Your resume and personal information will be shared only with the employer you're applying to.</li>
+                    <li>Your data will be stored securely and in accordance with data protection regulations.</li>
+                    <li>You have the right to request access to, correction of, or deletion of your personal data.</li>
+                </ul>
+                
+                <h6>Communication</h6>
+                <p>By applying, you agree to receive communications related to:</p>
+                <ul>
+                <p>By applying, you agree to receive communications related to:</p>
+                <ul>
+                    <li>Updates on your application status</li>
+                    <li>Interview requests and scheduling</li>
+                    <li>Similar job opportunities that match your profile</li>                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log("Checking for messages");
-        {% for message in messages %}
-            console.log("Message found:", "{{ message }}");
-            {% if 'toast:' in message.message %}
-                toastNotification("{{ message.message|slice:"6:" }}", "{{ message.tags }}");
-            {% else %}
-                toastNotification("{{ message }}", "{{ message.tags }}");
-            {% endif %}
-        {% endfor %}
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded and parsed');
+    
+    // Store the element that triggered the modal
+    var lastFocusedElement = null;
+    
+    // Function to prepare and open the job application modal
+    function prepareJobApplication(jobId, jobTitle, company) {
+        console.log('Preparing job application for:', jobTitle);
+        // Set the values in the modal
+        document.getElementById('jobId').value = jobId;
+        document.getElementById('jobTitleSpan').textContent = jobTitle;
+        document.getElementById('jobCompanySpan').textContent = company;
+        document.getElementById('jobTitleDetail').textContent = jobTitle;
+    }
+    
+    // Add click event listeners to all Apply Now buttons
+    var applyButtons = document.querySelectorAll('.apply-now-btn');
+    console.log('Found ' + applyButtons.length + ' apply buttons');
+    
+    applyButtons.forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            console.log('Apply button clicked via event listener');
+            // Store the button that was clicked
+            lastFocusedElement = this;
+            
+            var jobId = this.getAttribute('data-job-id');
+            var jobTitle = this.getAttribute('data-job-title');
+            var company = this.getAttribute('data-company');
+            console.log('Apply button clicked for job: ' + jobTitle);
+            prepareJobApplication(jobId, jobTitle, company);
+        });
     });
+    
+    // Handle modal hidden event to restore focus
+    var applyJobModal = document.getElementById('applyJobModal');
+    if (applyJobModal) {
+        applyJobModal.addEventListener('hidden.bs.modal', function () {
+            console.log('Modal hidden, restoring focus');
+            // Return focus to the element that opened the modal
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+            
+            // Fix for lingering backdrop
+            document.body.classList.remove('modal-open');
+            var modalBackdrops = document.querySelectorAll('.modal-backdrop');
+            modalBackdrops.forEach(function(backdrop) {
+                backdrop.parentNode.removeChild(backdrop);
+            });
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        });
+        
+        // Add show event listener for debugging
+        applyJobModal.addEventListener('show.bs.modal', function () {
+            console.log('Modal is about to be shown');
+        });
+    } else {
+        console.error('Apply job modal element not found!');
+    }
+    
+    // Direct initialization of Apply Now buttons with Bootstrap modal
+    document.querySelectorAll('.apply-now-btn').forEach(function(button) {
+        button.onclick = function() {
+            console.log('Apply button clicked via onclick');
+            var jobId = this.getAttribute('data-job-id');
+            var jobTitle = this.getAttribute('data-job-title');
+            var company = this.getAttribute('data-company');
+            
+            prepareJobApplication(jobId, jobTitle, company);
+            
+            // Explicitly show the modal
+            var applyModal = new bootstrap.Modal(document.getElementById('applyJobModal'));
+            applyModal.show();
+        };
+    });
+    
+    // Fix for any existing modal backdrops on page load
+    function cleanupModalBackdrops() {
+        if (!document.querySelector('.modal.show')) {
+            document.body.classList.remove('modal-open');
+            var modalBackdrops = document.querySelectorAll('.modal-backdrop');
+            modalBackdrops.forEach(function(backdrop) {
+                backdrop.parentNode.removeChild(backdrop);
+            });
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+    }
+    
+    // Run cleanup on page load
+    cleanupModalBackdrops();
+    
+    // Add event listener for ESC key to properly close modals
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            cleanupModalBackdrops();
+        }
+    });
+    
+    // View Job Details functionality
+    var viewButtons = document.querySelectorAll('.view-job-btn');
+    var viewJobModal = document.getElementById('viewJobModal');
+    
+    function prepareJobDetails(button) {
+        // Get job details from data attributes
+        var jobId = button.getAttribute('data-job-id');
+        var jobTitle = button.getAttribute('data-job-title');
+        var company = button.getAttribute('data-company');
+        var location = button.getAttribute('data-location');
+        var jobType = button.getAttribute('data-job-type');
+        var workSetup = button.getAttribute('data-work-setup');
+        var salary = button.getAttribute('data-salary');
+        var experience = button.getAttribute('data-experience');
+        var description = button.getAttribute('data-description');
+        var requirements = button.getAttribute('data-requirements');
+        var qualifications = button.getAttribute('data-qualifications');
+        var benefits = button.getAttribute('data-benefits');
+        var posted = button.getAttribute('data-posted');
+        
+        // Set company initial
+        document.getElementById('viewJobCompanyInitial').textContent = company.charAt(0);
+        
+        // Set values in the modal
+        document.getElementById('viewJobTitle').textContent = jobTitle;
+        document.getElementById('viewJobCompany').textContent = company;
+        document.getElementById('viewJobLocation').textContent = location;
+        document.getElementById('viewJobType').textContent = jobType;
+        document.getElementById('viewJobWorkSetup').textContent = workSetup;
+        document.getElementById('viewJobSalary').textContent = salary;
+        document.getElementById('viewJobExperience').textContent = experience;
+        document.getElementById('viewJobPosted').textContent = 'Posted ' + posted;
+        
+        // Set content sections
+        document.getElementById('viewJobDescription').innerHTML = description;
+        document.getElementById('viewJobRequirements').innerHTML = requirements || 'No specific requirements provided.';
+        
+        // Set job ID on the modal
+        document.getElementById('viewJobModal').setAttribute('data-job-id', jobId);
+    }
+    
+    viewButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            // Store the button that was clicked
+            lastFocusedElement = this;
+            
+            // Prepare job details
+            prepareJobDetails(this);
+        });
+    });
+    
+    // Handle view modal hidden event
+    if (viewJobModal) {
+        viewJobModal.addEventListener('hidden.bs.modal', function () {
+            // Return focus to the element that opened the modal
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+            
+            // Fix for lingering backdrop
+            document.body.classList.remove('modal-open');
+            var modalBackdrops = document.querySelectorAll('.modal-backdrop');
+            modalBackdrops.forEach(function(backdrop) {
+                backdrop.parentNode.removeChild(backdrop);
+            });
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        });
+    }
+});
 </script>
-{% endif %}
 
+<script>
+// Add this script to handle the terms modal focus management
+document.addEventListener('DOMContentLoaded', function() {
+    var termsModal = document.getElementById('termsModal');
+    var termsLink = document.querySelector('a[data-bs-target="#termsModal"]');
+    
+    termsModal.addEventListener('hidden.bs.modal', function () {
+        // Return focus to the terms link when the terms modal is closed
+        if (termsLink) {
+            termsLink.focus();
+        }
+        
+        // Fix for lingering backdrop
+        document.body.classList.remove('modal-open');
+        var modalBackdrops = document.querySelectorAll('.modal-backdrop');
+        modalBackdrops.forEach(function(backdrop) {
+            backdrop.parentNode.removeChild(backdrop);
+        });
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    });
+});
+</script>
+
+<style>
+/* Ensure modals are visible and not blocked by other elements */
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+/* Fix any potential issues with fixed elements */
+body.modal-open {
+    overflow: hidden;
+    padding-right: 0 !important;
+}
+
+/* Ensure buttons are clickable */
+.apply-now-btn, .view-job-btn {
+    position: relative;
+    z-index: 1;
+}
+
+/* Fix for modal backdrop issues */
+.modal-backdrop.show {
+    opacity: 0.5;
+}
+
+/* Ensure modal backdrop is removed properly */
+.modal-backdrop.fade {
+    transition: opacity 0.15s linear;
+}
+
+/* Job actions container */
+.job-actions {
+    display: flex;
+    align-items: center;
+}
+
+/* View Job Modal Styles */
+.job-view-header {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+}
+
+.job-view-company-badge {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.job-view-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.job-view-company {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.job-view-meta {
+    margin-top: 1rem;
+}
+
+.job-view-meta-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.job-view-meta-item i {
+    width: 20px;
+    color: var(--primary-color);
+    margin-right: 10px;
+}
+
+.job-view-section {
+    margin-bottom: 1.5rem;
+}
+
+.job-view-section-title {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.job-view-section-content {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #444;
+}
+
+/* Responsive adjustments for job actions */
+@media (max-width: 576px) {
+    .job-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .job-actions .btn {
+        width: 100%;
+    }
+}
+</style>
 {% endblock %}
-<script src="{% static 'js/notifications.js' %}"></script>
-<script src="{% static 'js/employee_home.js' %}"></script>
+
+{% block extra_js %}
+<script src="{% static 'js/job-application.js' %}"></script>
+{% endblock %}
 

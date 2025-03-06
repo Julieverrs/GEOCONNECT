@@ -85,21 +85,26 @@ class Employer(models.Model):
 
 class Job(models.Model):
     WORK_SETUP_CHOICES = [
-        ('on-site', 'On-site'),
-        ('hybrid', 'Hybrid'),
-        ('remote', 'Remote'),
+        ('On-site', 'On-site'),
+        ('Hybrid', 'Hybrid'),
+        ('Remote', 'Remote'),
     ]
     
-    JOB_TYPE_CHOICES = [
-        ('full-time', 'Full-time'),
-        ('part-time', 'Part-time'),
-        ('contract', 'Contract'),
+    JOB_TYPES = [
+        ('Full-time', 'Full-time'),
+        ('Part-time', 'Part-time'),
+        ('Contract', 'Contract'),
+        ('Temporary', 'Temporary'),
+        ('Internship', 'Internship'),
     ]
     
-    EXPERIENCE_CHOICES = [
-        ('entry', 'Entry Level'),
-        ('mid', 'Mid Level'),
-        ('senior', 'Senior Level'),
+    EXPERIENCE_LEVELS = [
+        ('Entry Level', 'Entry Level'),
+        ('Junior', 'Junior'),
+        ('Mid Level', 'Mid Level'),
+        ('Senior', 'Senior'),
+        ('Lead', 'Lead'),
+        ('Expert', 'Expert'),
     ]
 
     STATUS_CHOICES = [
@@ -110,19 +115,50 @@ class Job(models.Model):
     employer = models.ForeignKey('Employer', on_delete=models.CASCADE, related_name='jobs')
     title = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
-    job_type = models.CharField(max_length=20, choices=JOB_TYPE_CHOICES)
+    job_type = models.CharField(max_length=20, choices=JOB_TYPES)
     work_setup = models.CharField(max_length=20, choices=WORK_SETUP_CHOICES)
     description = models.TextField()
     salary_range = models.CharField(max_length=100)
-    experience_level = models.CharField(max_length=20, choices=EXPERIENCE_CHOICES)
+    experience_level = models.CharField(max_length=20, choices=EXPERIENCE_LEVELS)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     applications_count = models.IntegerField(default=0)
+    requirements = models.TextField(blank=True, help_text='List the job requirements')
 
     class Meta:
         ordering = ['-created_at']
 
     def __str__(self):
         return self.title
+
+
+class JobApplication(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('under_review', 'Under Review'),
+        ('shortlisted', 'Shortlisted'),
+        ('rejected', 'Rejected'),
+        ('scheduled_interview', 'Interview Scheduled'),
+        ('interviewed', 'Interviewed'),
+        ('offered', 'Job Offered'),
+        ('hired', 'Hired'),
+        ('declined', 'Declined')
+    ]
+
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
+    employee = models.ForeignKey('employee.Employee', on_delete=models.CASCADE, related_name='employer_applications')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    application_date = models.DateTimeField(auto_now_add=True)
+    resume = models.FileField(upload_to='resumes/', null=True, blank=True)
+    cover_letter = models.TextField(blank=True)
+    employer_notes = models.TextField(blank=True)
+    interview_date = models.DateTimeField(null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.employee.username}'s application for {self.job.title}"
+
+    class Meta:
+        ordering = ['-application_date']
 

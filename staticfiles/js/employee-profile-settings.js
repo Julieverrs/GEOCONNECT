@@ -1,104 +1,79 @@
 // Employee Profile Settings Functionality
 function initializeEmployeeProfileSettings() {
-  const profileModal = document.getElementById("profileModal")
-  const tabButtons = document.querySelectorAll(".tab-button")
-  const tabContents = document.querySelectorAll(".tab-content")
-
-  // Load profile data
-  window.loadProfileData = async () => {
-    try {
-      const response = await fetch("/employee/profile/get/")
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      const data = await response.json()
-      console.log("Debug - Fetched profile data:", data)
-
-      if (data.profile) {
-        // Fill personal information form
-        document.getElementById("username").value = data.profile.username || ""
-        document.getElementById("email").value = data.profile.email || ""
-        document.getElementById("firstName").value = data.profile.first_name || ""
-        document.getElementById("lastName").value = data.profile.last_name || ""
-        document.getElementById("phone").value = data.profile.phone || ""
-        document.getElementById("location").value = data.profile.location || ""
-        document.getElementById("bio").value = data.profile.bio || ""
-
-        // Fill professional information form
-        // (Add this when you implement the professional tab)
-
-        // Fill preferences form
-        // (Add this when you implement the preferences tab)
-      }
-    } catch (error) {
-      console.error("Error loading profile:", error)
-      alert("Error loading profile data")
-    }
-  }
-
-  // Handle form submissions
-  const personalInfoForm = document.getElementById("personalInfoForm")
-
-  personalInfoForm.addEventListener("submit", async (e) => {
-    e.preventDefault()
-    await updateProfile("personal")
-  })
-
-  async function updateProfile(formType) {
-    const formData = new FormData(personalInfoForm)
-    const data = Object.fromEntries(formData.entries())
-
-    try {
-      const response = await fetch("/employee/profile/update/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify(data),
+    // Get form elements
+    const personalProfileForm = document.getElementById("personalProfileForm")
+    const avatarUpload = document.getElementById("avatarUpload")
+    const avatarPreview = document.getElementById("avatarPreview")
+    const saveProfileBtn = document.getElementById("saveProfile")
+  
+    // Handle avatar preview
+    if (avatarUpload) {
+      avatarUpload.addEventListener("change", (e) => {
+        const file = e.target.files[0]
+        if (file && avatarPreview) {
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            avatarPreview.src = e.target.result
+          }
+          reader.readAsDataURL(file)
+        }
       })
-
-      const result = await response.json()
-
-      if (result.success) {
-        alert(`${formType.charAt(0).toUpperCase() + formType.slice(1)} information updated successfully`)
-      } else {
-        alert(result.error || "Error updating profile")
-      }
-    } catch (error) {
-      console.error("Error:", error)
-      alert("An error occurred while updating profile")
+    }
+  
+    // Handle profile form submission
+    if (saveProfileBtn) {
+      saveProfileBtn.addEventListener("click", async (e) => {
+        e.preventDefault()
+  
+        const formData = new FormData(document.getElementById("profileForm"))
+  
+        try {
+          const response = await fetch("/employee/profile/update/", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: formData,
+          })
+  
+          const data = await response.json()
+  
+          if (data.success) {
+            // Show success message using the existing toast system
+            // Assuming toastNotification is a globally available function or imported
+            toastNotification("Profile updated successfully", "success")
+            // Close the modal
+            // Assuming bootstrap is a globally available object or imported
+            const profileModal = bootstrap.Modal.getInstance(document.getElementById("profileModal"))
+            profileModal.hide()
+          } else {
+            toastNotification(data.error || "Error updating profile", "error")
+          }
+        } catch (error) {
+          console.error("Error:", error)
+          toastNotification("An error occurred while updating profile", "error")
+        }
+      })
     }
   }
-
-  // Tab switching
-  tabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      tabButtons.forEach((btn) => btn.classList.remove("active"))
-      tabContents.forEach((content) => content.classList.remove("active"))
-
-      button.classList.add("active")
-      document.getElementById(`${button.dataset.tab}Tab`).classList.add("active")
-    })
-  })
-}
-
-// Helper function to get CSRF token
-function getCookie(name) {
-  let cookieValue = null
-  if (document.cookie && document.cookie !== "") {
-    const cookies = document.cookie.split(";")
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim()
-      if (cookie.substring(0, name.length + 1) === name + "=") {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
-        break
+  
+  // Helper function to get CSRF token
+  function getCookie(name) {
+    let cookieValue = null
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";")
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim()
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
+          break
+        }
       }
     }
+    return cookieValue
   }
-  return cookieValue
-}
-
-// Initialize profile settings when DOM is loaded
-document.addEventListener("DOMContentLoaded", initializeEmployeeProfileSettings)
-
+  
+  // Initialize when DOM is loaded
+  document.addEventListener("DOMContentLoaded", initializeEmployeeProfileSettings)
+  
+  

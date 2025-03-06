@@ -1,23 +1,21 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.core.exceptions import PermissionDenied
-from django.views.decorators.csrf import csrf_exempt  # Add this import
-from .forms import AdminLoginForm
-from .models import AdminUser
-from employee.models import Employee
-from employer.models import Employer
-from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 import json
 from django.core.mail import send_mail
 from django.conf import settings
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_POST
-from django.conf import settings
+
+# Update these imports to use the correct model locations
+from employer.models import Employer  # Changed from .models
+from employee.models import Employee  # Changed from .models
+from .forms import AdminLoginForm
+from .models import AdminUser
 
 
 def is_admin(user):
@@ -124,7 +122,11 @@ def get_employer_details(request, employer_id):
             'registration_type': employer.registration_type,
             'registration_number': employer.registration_number,
             'registration_date': employer.registration_date.strftime('%Y-%m-%d') if employer.registration_date else None,
-            'date_joined': employer.date_joined.strftime('%Y-%m-%d')
+            'date_joined': employer.date_joined.strftime('%Y-%m-%d'),
+            'is_active': employer.is_active,
+            'is_verified': employer.is_verified,
+            'business_permit_url': employer.business_permit.url if employer.business_permit else None,
+            'registration_document_url': employer.registration_document.url if employer.registration_document else None,
         }
         return JsonResponse(data)
     except Employer.DoesNotExist:
@@ -302,7 +304,6 @@ The GEOCONNECT Team'''
         
 @login_required
 @user_passes_test(is_admin)
-@require_http_methods(["GET"])
 def get_employer_details(request, employer_id):
     try:
         employer = Employer.objects.get(id=employer_id)
@@ -317,7 +318,8 @@ def get_employer_details(request, employer_id):
             'registration_number': employer.registration_number,
             'registration_date': employer.registration_date.strftime('%Y-%m-%d') if employer.registration_date else None,
             'date_joined': employer.date_joined.strftime('%Y-%m-%d'),
-            # Add document URLs
+            'is_active': employer.is_active,
+            'is_verified': employer.is_verified,
             'business_permit_url': employer.business_permit.url if employer.business_permit else None,
             'registration_document_url': employer.registration_document.url if employer.registration_document else None,
         }
@@ -337,28 +339,33 @@ def admin_logout(request):
 @login_required
 @user_passes_test(is_admin)
 @require_http_methods(["GET"])
-def get_user_details(request, user_type, user_id):
+def get_user_details(request, user_id, user_type):
     try:
         if user_type == 'employee':
             user = Employee.objects.get(id=user_id)
             data = {
-                'username': user.username,
-                'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
+                'email': user.email,
                 'phone': user.phone,
                 'location': user.location,
                 'job_title': user.job_title,
                 'years_of_experience': user.years_of_experience,
                 'document': user.document.url if user.document else None,
+                'date_joined': user.date_joined.strftime('%Y-%m-%d'),
                 'is_active': user.is_active,
-                'date_joined': user.date_joined.strftime('%Y-%m-%d')
+                'skills': user.skills,
+                'education': user.education,
+                'certifications': user.certifications,
+                'preferred_job_type': user.preferred_job_type,
+                'expected_salary': str(user.expected_salary) if user.expected_salary else None,
+                'remote_work_preference': user.remote_work_preference,
+                'willing_to_relocate': user.willing_to_relocate,
             }
         else:  # employer
             user = Employer.objects.get(id=user_id)
             data = {
                 'company_name': user.company_name,
-                'username': user.username,
                 'email': user.email,
                 'company_description': user.company_description,
                 'company_website': user.company_website,
@@ -367,9 +374,9 @@ def get_user_details(request, user_type, user_id):
                 'registration_type': user.registration_type,
                 'registration_number': user.registration_number,
                 'registration_date': user.registration_date.strftime('%Y-%m-%d') if user.registration_date else None,
-                'is_verified': user.is_verified,
+                'date_joined': user.date_joined.strftime('%Y-%m-%d'),
                 'is_active': user.is_active,
-                'date_joined': user.date_joined.strftime('%Y-%m-%d')
+                'is_verified': user.is_verified,
             }
         return JsonResponse(data)
     except (Employee.DoesNotExist, Employer.DoesNotExist):
@@ -419,25 +426,28 @@ def toggle_employer_verification(request, employer_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-@login_required
-@user_passes_test(is_admin)
-@require_http_methods(["DELETE"])
-def delete_user(request, user_type, user_id):
+@require_http_methods(["POST"])
+def delete_user(request, type, id):
     try:
-        if user_type == 'employee':
-            user = Employee.objects.get(id=user_id)
+        if type == 'employer':
+            user = get_object_or_404(Employer, id=id)
+        elif type == 'employee':
+            user = get_object_or_404(Employee, id=id)
         else:
-            user = Employer.objects.get(id=user_id)
+            return JsonResponse({'error': 'Invalid user type'}, status=400)
         
+        # Delete the user
         user.delete()
+        
         return JsonResponse({
-            'success': True,
-            'message': f'{user_type.capitalize()} deleted successfully'
+            'message': f'{type.capitalize()} deleted successfully',
+            'status': 'success'
         })
-    except (Employee.DoesNotExist, Employer.DoesNotExist):
-        return JsonResponse({'error': 'User not found'}, status=404)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({
+            'error': str(e),
+            'status': 'error'
+        }, status=500)
 
 # Add these new employee approval functions
 @login_required

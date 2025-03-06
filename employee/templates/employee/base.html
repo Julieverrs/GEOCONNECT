@@ -13,14 +13,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="{% static 'css/employee_home.css' %}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     {% block content %}
     {% endblock %}
 
+    <!-- jQuery (if needed) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" 
+        crossorigin="anonymous"></script>
+
     <!-- Custom JS -->
-    <script src="{% static 'js/employee_home.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/notifications.js' %}"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
+

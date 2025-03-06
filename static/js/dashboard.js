@@ -1,21 +1,19 @@
-// Add this function at the beginning of your dashboard.js file
-async function getCompanyLocation() {
-  try {
-    const response = await fetch("/employer/profile/get/")
-    const data = await response.json()
+// Add these variables at the top of your file to track map instances
+//let currentMap = null
+//let currentMarker = null
 
-    if (data.profile) {
-      return {
-        address: data.profile.company_location || "",
-        latitude: data.profile.latitude || "",
-        longitude: data.profile.longitude || "",
-      }
-    }
-  } catch (error) {
-    console.error("Error fetching company location:", error)
-  }
-  return null
-}
+// Add this at the top of your file to define the standard options
+const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Temporary", "Internship"]
+
+const EXPERIENCE_LEVELS = ["Entry Level", "Junior", "Mid Level", "Senior", "Lead", "Expert"]
+
+// Add this at the top of your file with the other constants
+const WORK_SETUPS = ["On-site", "Hybrid", "Remote"]
+
+// Remove this function entirely
+// async function getCompanyLocation() {
+//   // ... removing this function
+// }
 
 document.addEventListener("DOMContentLoaded", () => {
   // Profile Dropdown
@@ -41,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const jobForm = document.querySelector(".job-form")
 
   function openModal() {
+    const createJobModal = document.getElementById("createJobModal")
     createJobModal.classList.add("active")
     document.body.style.overflow = "hidden"
   }
@@ -52,31 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Modify the createJobBtn click handler
-  createJobBtn.addEventListener("click", async () => {
-    // Get company location before opening modal
-    const companyLocation = await getCompanyLocation()
-
-    if (companyLocation) {
-      // Pre-fill the location field
-      document.getElementById("location").value = companyLocation.address
-
-      // Open modal
-      openModal()
-
-      // Initialize map with company location
-      setTimeout(() => {
-        initMap("map", companyLocation.address, {
-          lat: Number.parseFloat(companyLocation.latitude),
-          lng: Number.parseFloat(companyLocation.longitude),
-        })
-      }, 100)
-    } else {
-      // If no company location, just open modal normally
-      openModal()
-      setTimeout(() => {
-        initMap("map")
-      }, 100)
-    }
+  createJobBtn.addEventListener("click", () => {
+    // Simply open modal
+    openModal()
   })
   closeModal.addEventListener("click", closeModalHandler)
   cancelBtn.addEventListener("click", closeModalHandler)
@@ -111,10 +88,27 @@ document.addEventListener("DOMContentLoaded", () => {
       jobTitle: document.getElementById("jobTitle").value,
       location: document.getElementById("location").value,
       jobType: document.getElementById("jobType").value,
-      workSetup: document.getElementById("workSetup").value, // Add this line
+      workSetup: document.getElementById("workSetup").value,
       description: document.getElementById("description").value,
       salary: document.getElementById("salary").value,
       experience: document.getElementById("experience").value,
+      requirements: document.getElementById("requirements").value || "",
+    }
+
+    // Validate job type, experience level, and work setup
+    if (!JOB_TYPES.includes(formData.jobType)) {
+      showNotification("Invalid job type selected", "error")
+      return
+    }
+
+    if (!EXPERIENCE_LEVELS.includes(formData.experience)) {
+      showNotification("Invalid experience level selected", "error")
+      return
+    }
+
+    if (!WORK_SETUPS.includes(formData.workSetup)) {
+      showNotification("Invalid work setup selected", "error")
+      return
     }
 
     try {
@@ -130,7 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json()
 
       if (data.success) {
-        // Add new job card to the grid
         addJobCard(data.job)
         closeModalHandler()
         showNotification("Job posted successfully!", "success")
@@ -183,6 +176,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     </svg>
                     ${job.work_setup}
                 </span>
+            </div>
+            <div class="requirements">
+                <h4>Requirements:</h4>
+                <p>${job.requirements || "No requirements specified"}</p>
             </div>
         </div>
         <div class="job-card-footer">
@@ -251,16 +248,44 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json()
 
       if (data.job) {
-        document.getElementById("viewJobTitle").textContent = data.job.title
-        document.getElementById("viewJobLocation").textContent = data.job.location
-        document.getElementById("viewJobType").textContent = data.job.job_type
-        document.getElementById("viewJobExperience").textContent = data.job.experience_level
-        document.getElementById("viewJobSalary").textContent = data.job.salary_range
-        document.getElementById("viewJobDescription").textContent = data.job.description
-        document.getElementById("viewJobStatus").textContent = data.job.status
+        // Make sure we have all elements before setting their content
+        const elements = {
+          title: document.getElementById("viewJobTitle"),
+          location: document.getElementById("viewJobLocation"),
+          type: document.getElementById("viewJobType"),
+          workSetup: document.getElementById("viewWorkSetup"),
+          experience: document.getElementById("viewJobExperience"),
+          salary: document.getElementById("viewJobSalary"),
+          description: document.getElementById("viewJobDescription"),
+          status: document.getElementById("viewJobStatus"),
+          requirements: document.getElementById("viewJobRequirements"),
+        }
 
-        viewJobModal.classList.add("active")
-        document.body.style.overflow = "hidden"
+        // Check if all elements exist
+        for (const [key, element] of Object.entries(elements)) {
+          if (!element) {
+            console.error(`Missing element: view${key.charAt(0).toUpperCase() + key.slice(1)}`)
+            return
+          }
+        }
+
+        // Set the content
+        elements.title.textContent = data.job.title
+        elements.location.textContent = data.job.location
+        elements.type.textContent = data.job.job_type
+        elements.workSetup.textContent = data.job.work_setup || "Not specified"
+        elements.experience.textContent = data.job.experience_level
+        elements.salary.textContent = data.job.salary_range
+        elements.description.textContent = data.job.description
+        elements.status.textContent = data.job.status
+        elements.requirements.textContent = data.job.requirements || "No requirements specified"
+
+        // Show the modal
+        const viewJobModal = document.getElementById("viewJobModal")
+        if (viewJobModal) {
+          viewJobModal.classList.add("active")
+          document.body.style.overflow = "hidden"
+        }
       }
     } catch (error) {
       console.error("Error:", error)
@@ -275,22 +300,75 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json()
 
       if (data.job) {
-        document.getElementById("editJobId").value = data.job.id
-        document.getElementById("editJobTitle").value = data.job.title
-        document.getElementById("editLocation").value = data.job.location
-        document.getElementById("editJobType").value = data.job.job_type
-        document.getElementById("editDescription").value = data.job.description
-        document.getElementById("editSalary").value = data.job.salary_range
-        document.getElementById("editExperience").value = data.job.experience_level
-        document.getElementById("editStatus").value = data.job.status.toLowerCase()
+        // Make sure we have all elements before setting their values
+        const elements = {
+          id: document.getElementById("editJobId"),
+          title: document.getElementById("editJobTitle"),
+          location: document.getElementById("editLocation"),
+          type: document.getElementById("editJobType"),
+          workSetup: document.getElementById("editWorkSetup"),
+          description: document.getElementById("editDescription"),
+          salary: document.getElementById("editSalary"),
+          experience: document.getElementById("editExperience"),
+          status: document.getElementById("editStatus"),
+          requirements: document.getElementById("editRequirements"),
+        }
 
-        editJobModal.classList.add("active")
-        document.body.style.overflow = "hidden"
+        // Check if all elements exist
+        for (const [key, element] of Object.entries(elements)) {
+          if (!element) {
+            console.error(`Missing element: edit${key.charAt(0).toUpperCase() + key.slice(1)}`)
+            return
+          }
+        }
 
-        // Initialize map for edit modal
-        setTimeout(() => {
-          initMap("editMap", data.job.location)
-        }, 100)
+        // Set the values
+        elements.id.value = data.job.id
+        elements.title.value = data.job.title
+        elements.location.value = data.job.location
+        elements.type.value = data.job.job_type
+        elements.workSetup.value = data.job.work_setup
+        elements.description.value = data.job.description
+        elements.salary.value = data.job.salary_range
+        elements.experience.value = data.job.experience_level
+        elements.status.value = data.job.status.toLowerCase()
+        elements.requirements.value = data.job.requirements || ""
+
+        // Ensure the correct options are selected
+        const jobTypeSelect = elements.type
+        const experienceSelect = elements.experience
+        const workSetupSelect = elements.workSetup
+
+        // Set job type
+        for (let i = 0; i < jobTypeSelect.options.length; i++) {
+          if (jobTypeSelect.options[i].value === data.job.job_type) {
+            jobTypeSelect.selectedIndex = i
+            break
+          }
+        }
+
+        // Set experience level
+        for (let i = 0; i < experienceSelect.options.length; i++) {
+          if (experienceSelect.options[i].value === data.job.experience_level) {
+            experienceSelect.selectedIndex = i
+            break
+          }
+        }
+
+        // Set work setup
+        for (let i = 0; i < workSetupSelect.options.length; i++) {
+          if (workSetupSelect.options[i].value === data.job.work_setup) {
+            workSetupSelect.selectedIndex = i
+            break
+          }
+        }
+
+        // Show the modal
+        const editJobModal = document.getElementById("editJobModal")
+        if (editJobModal) {
+          editJobModal.classList.add("active")
+          document.body.style.overflow = "hidden"
+        }
       }
     } catch (error) {
       console.error("Error:", error)
@@ -307,10 +385,28 @@ document.addEventListener("DOMContentLoaded", () => {
       jobTitle: document.getElementById("editJobTitle").value,
       location: document.getElementById("editLocation").value,
       jobType: document.getElementById("editJobType").value,
+      workSetup: document.getElementById("editWorkSetup").value,
       description: document.getElementById("editDescription").value,
       salary: document.getElementById("editSalary").value,
       experience: document.getElementById("editExperience").value,
       status: document.getElementById("editStatus").value,
+      requirements: document.getElementById("editRequirements").value || "",
+    }
+
+    // Validate job type, experience level, and work setup
+    if (!JOB_TYPES.includes(formData.jobType)) {
+      showNotification("Invalid job type selected", "error")
+      return
+    }
+
+    if (!EXPERIENCE_LEVELS.includes(formData.experience)) {
+      showNotification("Invalid experience level selected", "error")
+      return
+    }
+
+    if (!WORK_SETUPS.includes(formData.workSetup)) {
+      showNotification("Invalid work setup selected", "error")
+      return
     }
 
     try {
@@ -343,26 +439,33 @@ document.addEventListener("DOMContentLoaded", () => {
     if (jobCard) {
       jobCard.innerHTML = `
       <div class="job-card-header">
-          <h3>${job.title}</h3>
-          <span class="status-badge ${job.status.toLowerCase()}">${job.status}</span>
+          <h3>${escapeHtml(job.title)}</h3>
+          <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
       </div>
       <div class="job-card-content">
-          <p>${job.description}</p>
+          <p>${escapeHtml(job.description)}</p>
           <div class="job-meta">
               <span class="job-location">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke-width="2"/>
-                      <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z" stroke-width="2"/>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"/>
+                      <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"/>
                   </svg>
-                  ${job.location}
+                  ${escapeHtml(job.location)}
               </span>
               <span class="job-type">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path d="M12 8V12L15 15" stroke-width="2" stroke-linecap="round"/>
-                      <circle cx="12" cy="12" r="9" stroke-width="2"/>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 8V12L15 15"/>
+                      <circle cx="12" cy="12" r="9"/>
                   </svg>
-                  ${job.job_type}
+                  ${escapeHtml(job.job_type)}
               </span>
+              <span class="work-setup">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke-width="2"/>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke-width="2"/>
+                    </svg>
+                    ${escapeHtml(job.work_setup)}
+                </span>
           </div>
       </div>
       <div class="job-card-footer">
@@ -477,13 +580,13 @@ document.addEventListener("DOMContentLoaded", () => {
         profileModal.classList.remove("active")
         document.body.style.overflow = ""
         // Show success notification
-        toastNotification("Company profile updated successfully", "success")
+        showToast("Company profile updated successfully", "success")
       } else {
-        toastNotification(data.error || "Error updating profile", "error")
+        showToast(data.error || "Error updating profile", "error")
       }
     } catch (error) {
       console.error("Error:", error)
-      toastNotification("An error occurred while updating profile", "error")
+      showToast("An error occurred while updating profile", "error")
     }
   })
 
@@ -512,13 +615,13 @@ document.addEventListener("DOMContentLoaded", () => {
         profileModal.classList.remove("active")
         document.body.style.overflow = ""
         // Show success notification
-        toastNotification("Account settings updated successfully", "success")
+        showToast("Account settings updated successfully", "success")
       } else {
-        toastNotification(data.error || "Error updating account", "error")
+        showToast(data.error || "Error updating account", "error")
       }
     } catch (error) {
       console.error("Error:", error)
-      toastNotification("An error occurred while updating account", "error")
+      showToast("An error occurred while updating account", "error")
     }
   })
 
@@ -530,7 +633,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmPassword = document.getElementById("confirmPassword").value
 
     if (newPassword !== confirmPassword) {
-      toastNotification("New passwords do not match", "error")
+      showToast("New passwords do not match", "error")
       return
     }
 
@@ -556,14 +659,14 @@ document.addEventListener("DOMContentLoaded", () => {
         profileModal.classList.remove("active")
         document.body.style.overflow = ""
         // Show success notification
-        toastNotification("Password changed successfully", "success")
+        showToast("Password changed successfully", "success")
         changePasswordForm.reset()
       } else {
-        toastNotification(data.error || "Error changing password", "error")
+        showToast(data.error || "Error changing password", "error")
       }
     } catch (error) {
       console.error("Error:", error)
-      toastNotification("An error occurred while changing password", "error")
+      showToast("An error occurred while changing password", "error")
     }
   })
 
@@ -599,49 +702,63 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (jobs.length === 0) {
       jobsGrid.innerHTML = `
-              <div class="no-jobs">
-                  <p>No jobs found matching your criteria</p>
-              </div>
-          `
+            <div class="no-jobs">
+                <p>No jobs found matching your criteria</p>
+            </div>
+        `
       return
     }
 
     jobsGrid.innerHTML = jobs
       .map(
         (job) => `
-          <div class="job-card" data-job-id="${job.id}">
-              <div class="job-card-header">
-                  <h3>${job.title}</h3>
-                  <span class="status-badge ${job.status.toLowerCase()}">${job.status}</span>
-              </div>
-              <div class="job-card-content">
-                  <p>${job.description}</p>
-                  <div class="job-meta">
-                      <span class="job-location">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                              <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke-width="2"/>
-                              <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z" stroke-width="2"/>
-                          </svg>
-                          ${job.location}
-                      </span>
-                      <span class="job-type">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                              <path d="M12 8V12L15 15" stroke-width="2" stroke-linecap="round"/>
-                              <circle cx="12" cy="12" r="9" stroke-width="2"/>
-                          </svg>
-                          ${job.job_type}
-                      </span>
-                  </div>
-              </div>
-              <div class="job-card-footer">
-                  <span class="applications-count">${job.applications_count} applications</span>
-                  <div class="card-actions">
-                      <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
-                      <button class="action-button view" onclick="viewJob(${job.id})">View</button>
-                  </div>
-              </div>
-          </div>
-      `,
+        <div class="job-card" data-job-id="${job.id}">
+            <div class="job-card-header">
+                <h3>${escapeHtml(job.title)}</h3>
+                <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
+            </div>
+            <div class="job-card-content">
+                <p>${escapeHtml(job.description)}</p>
+                <div class="job-meta">
+                    <span class="job-location">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"/>
+                            <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"/>
+                        </svg>
+                        ${escapeHtml(job.location)}
+                    </span>
+                    <span class="job-type">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 8V12L15 15"/>
+                            <circle cx="12" cy="12" r="9"/>
+                        </svg>
+                        ${escapeHtml(job.job_type)}
+                    </span>
+                    <span class="work-setup">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z"/>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke-width="2"/>
+                        </svg>
+                        ${job.work_setup || "Not specified"}
+                    </span>
+                </div>
+                <div class="requirements">
+                    <h4>Requirements:</h4>
+                    <p>${job.requirements || "No requirements specified"}</p>
+                </div>
+            </div>
+            <div class="job-card-footer">
+                <span class="applications-count">${job.applications_count} applications</span>
+                <div class="card-actions">
+                    <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
+                    <button class="action-button view" onclick="viewJob(${job.id})">View</button>
+                    <button class="action-button status-toggle" onclick="updateJobStatus(${job.id}, '${job.status === "Active" ? "Closed" : "Active"}')">
+                        ${job.status === "Active" ? "Close Job" : "Reopen Job"}
+                    </button>
+                </div>
+            </div>
+        </div>
+    `,
       )
       .join("")
   }
@@ -718,42 +835,42 @@ document.addEventListener("DOMContentLoaded", () => {
   // Function to create job card (modified to include status toggle)
   function createJobCard(job) {
     return `
-        <div class="job-card" data-job-id="${job.id}">
-            <div class="job-card-header">
-                <h3>${escapeHtml(job.title)}</h3>
-                <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
-            </div>
-            <div class="job-card-content">
-                <p>${escapeHtml(job.description)}</p>
-                <div class="job-meta">
-                    <span class="job-location">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke-width="2"/>
-                            <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z" stroke-width="2"/>
-                        </svg>
-                        ${escapeHtml(job.location)}
-                    </span>
-                    <span class="job-type">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M12 8V12L15 15" stroke-width="2" stroke-linecap="round"/>
-                            <circle cx="12" cy="12" r="9" stroke-width="2"/>
-                        </svg>
-                        ${escapeHtml(job.job_type)}
-                    </span>
-                </div>
-            </div>
-            <div class="job-card-footer">
-                <span class="applications-count">${job.applications_count} applications</span>
-                <div class="card-actions">
-                    <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
-                    <button class="action-button view" onclick="viewJob(${job.id})">View</button>
-                    <button class="action-button status-toggle" onclick="updateJobStatus(${job.id}, '${job.status === "Active" ? "Closed" : "Active"}')">
-                        ${job.status === "Active" ? "Close Job" : "Reopen Job"}
-                    </button>
-                </div>
-            </div>
-        </div>
-    `
+          <div class="job-card" data-job-id="${job.id}">
+              <div class="job-card-header">
+                  <h3>${escapeHtml(job.title)}</h3>
+                  <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
+              </div>
+              <div class="job-card-content">
+                  <p>${escapeHtml(job.description)}</p>
+                  <div class="job-meta">
+                      <span class="job-location">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke-width="2"/>
+                              <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"/>
+                          </svg>
+                          ${escapeHtml(job.location)}
+                      </span>
+                      <span class="job-type">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M12 8V12L15 15"/>
+                              <circle cx="12" cy="12" r="9"/>
+                          </svg>
+                          ${escapeHtml(job.job_type)}
+                      </span>
+                  </div>
+              </div>
+              <div class="job-card-footer">
+                  <span class="applications-count">${job.applications_count} applications</span>
+                  <div class="card-actions">
+                      <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
+                      <button class="action-button view" onclick="viewJob(${job.id})">View</button>
+                      <button class="action-button status-toggle" onclick="updateJobStatus(${job.id}, '${job.status === "Active" ? "Closed" : "Active"}')">
+                          ${job.status === "Active" ? "Close Job" : "Reopen Job"}
+                      </button>
+                  </div>
+              </div>
+          </div>
+      `
   }
 
   // Function to update jobs grid (modified to use createJobCard)
@@ -762,10 +879,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (jobs.length === 0) {
       jobsGrid.innerHTML = `
-            <div class="no-jobs">
-                <p>No jobs found matching your criteria</p>
-            </div>
-        `
+              <div class="no-jobs">
+                  <p>No jobs found matching your criteria</p>
+              </div>
+          `
       return
     }
 
@@ -774,296 +891,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ... (existing code)
 
-  // OpenStreetMap integration
-  let map, marker
+  // Remove or comment out these variables at the top
+  // let currentMap = null
+  // let currentMarker = null
 
-  // Import Leaflet library
-  //import * as L from "leaflet" //Removed as per update request
+  // Remove or comment out the initMap function and all map-related code
+  // function initMap(mapElementId, initialLocation = "", initialCoords = null) { ... }
 
-  // Add this function to handle location search
-  function handleLocationSearch(mapElementId) {
-    const searchModal = document.createElement("div")
-    searchModal.className = "modal location-search-modal"
-    searchModal.innerHTML = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Search Location</h2>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="search-input-group">
-                    <input type="text" 
-                           id="locationSearchInput" 
-                           placeholder="Enter location to search..."
-                           class="location-search-input">
-                    <button type="button" id="performSearch" class="search-button">
-                        Search
-                    </button>
-                </div>
-                <div id="searchResults" class="search-results"></div>
-            </div>
-        </div>
-    `
+  // Remove or comment out the updateLocationInput function
+  // async function updateLocationInput(mapElementId, latlng) { ... }
 
-    document.body.appendChild(searchModal)
-    searchModal.classList.add("active")
-
-    const searchInput = document.getElementById("locationSearchInput")
-    const searchButton = document.getElementById("performSearch")
-    const resultsContainer = document.getElementById("searchResults")
-    const closeBtn = searchModal.querySelector(".close-modal")
-
-    // Close modal handler
-    function closeSearchModal() {
-      searchModal.classList.remove("active")
-      setTimeout(() => searchModal.remove(), 300)
-    }
-
-    closeBtn.addEventListener("click", closeSearchModal)
-    searchModal.addEventListener("click", (e) => {
-      if (e.target === searchModal) closeSearchModal()
-    })
-
-    // Search handler
-    async function performLocationSearch() {
-      const query = searchInput.value.trim()
-      if (!query) return
-
-      try {
-        resultsContainer.innerHTML = '<div class="loading">Searching...</div>'
-
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`,
-        )
-        const data = await response.json()
-
-        if (data.length === 0) {
-          resultsContainer.innerHTML = '<div class="no-results">No locations found</div>'
-          return
-        }
-
-        resultsContainer.innerHTML = data
-          .map(
-            (result) => `
-                <div class="search-result-item" data-lat="${result.lat}" data-lon="${result.lon}">
-                    <span class="location-name">${result.display_name}</span>
-                </div>
-            `,
-          )
-          .join("")
-
-        // Add click handlers to results
-        document.querySelectorAll(".search-result-item").forEach((item) => {
-          item.addEventListener("click", () => {
-            const lat = Number.parseFloat(item.dataset.lat)
-            const lon = Number.parseFloat(item.dataset.lon)
-            const locationName = item.querySelector(".location-name").textContent
-
-            // Update map and input
-            const map = window.currentMap
-            const marker = window.currentMarker
-            if (map && marker) {
-              const latlng = L.latLng(lat, lon)
-              marker.setLatLng(latlng)
-              map.setView(latlng, 13)
-              document.getElementById(mapElementId === "map" ? "location" : "editLocation").value = locationName
-            }
-
-            closeSearchModal()
-          })
-        })
-      } catch (error) {
-        console.error("Error searching locations:", error)
-        resultsContainer.innerHTML = '<div class="error">Error searching locations</div>'
-      }
-    }
-
-    searchButton.addEventListener("click", performLocationSearch)
-    searchInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault()
-        performLocationSearch()
-      }
-    })
-
-    // Focus input when modal opens
-    setTimeout(() => searchInput.focus(), 100)
-  }
-
-  // Modify your existing initMap function
-  function initMap(mapElementId, initialLocation = "", initialCoords = null) {
-    const mapContainer = document.getElementById(mapElementId)
-    if (!mapContainer) return
-
-    // Default to Manila if no coordinates provided
-    const defaultLocation = [14.5995, 120.9842]
-    const zoom = initialCoords ? 13 : 10
-    const center = initialCoords ? [initialCoords.lat, initialCoords.lng] : defaultLocation
-
-    const map = L.map(mapElementId).setView(center, zoom)
-    window.currentMap = map // Store reference to current map
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map)
-
-    const marker = L.marker(center, { draggable: true }).addTo(map)
-    window.currentMarker = marker // Store reference to current marker
-
-    // Update location input when marker is moved
-    marker.on("dragend", async (event) => {
-      const latlng = event.target.getLatLng()
-      await updateLocationInput(mapElementId, latlng)
-    })
-
-    // Update location when map is clicked
-    map.on("click", async (e) => {
-      marker.setLatLng(e.latlng)
-      await updateLocationInput(mapElementId, e.latlng)
-    })
-
-    // Add search button functionality
-    const searchButton = document.getElementById(mapElementId === "map" ? "locationSearchBtn" : "editLocationSearchBtn")
-
-    searchButton?.addEventListener("click", () => {
-      handleLocationSearch(mapElementId)
-    })
-
-    // Force a map redraw
-    setTimeout(() => {
-      map.invalidateSize()
-    }, 100)
-
-    return { map, marker }
-  }
-
-  // Add these styles to your CSS
-  const styles = `
-.location-search-modal .modal-content {
-    max-width: 500px;
-}
-
-.search-input-group {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.location-search-input {
-    flex: 1;
-    padding: 0.625rem;
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.search-button {
-    padding: 0.625rem 1rem;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    font-weight: 500;
-}
-
-.search-results {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.search-result-item {
-    padding: 0.75rem;
-    border-bottom: 1px solid var(--border-color);
-    cursor: pointer;
-}
-
-.search-result-item:hover {
-    background-color: var(--background-gray);
-}
-
-.location-name {
-    font-size: 0.875rem;
-}
-
-.loading, .no-results, .error {
-    padding: 1rem;
-    text-align: center;
-    color: var(--text-secondary);
-}
-
-.error {
-    color: #dc2626;
-}
-`
-
-  // Add styles to document
-  const styleSheet = document.createElement("style")
-  styleSheet.textContent = styles
-  document.head.appendChild(styleSheet)
-  async function updateLocationInput(mapElementId, latlng) {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`,
-      )
-      const data = await response.json()
-
-      if (data.display_name) {
-        const inputId = mapElementId === "map" ? "location" : "editLocation"
-        document.getElementById(inputId).value = data.display_name
-      }
-    } catch (error) {
-      console.error("Error reverse geocoding:", error)
-    }
-  }
-
-  // Debounce function to limit API calls
-  function debounce(func, wait) {
-    let timeout
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout)
-        func(...args)
-      }
-      clearTimeout(timeout)
-      timeout = setTimeout(later, wait)
-    }
-  }
-
-  function showNotification(message, type) {
-    console.log(message, type) // Temporary - replace with actual notification logic
-    // TODO: Implement a proper notification system
-  }
-
-  function getCookie(name) {
-    let cookieValue = null
-    if (document.cookie && document.cookie !== "") {
-      const cookies = document.cookie.split(";")
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim()
-        if (cookie.substring(0, name.length + 1) === name + "=") {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
-          break
-        }
-      }
-    }
-    return cookieValue
-  }
-
-  // Modify the existing createJobBtn event listener
-
-  // Function to open modal (assuming it's defined elsewhere)
-  function openModal() {
-    const createJobModal = document.getElementById("createJobModal")
-    createJobModal.classList.add("active")
-    document.body.style.overflow = "hidden"
-  }
-
-  // Function to close edit modal
-  function closeEditModalHandler() {
-    editJobModal.classList.remove("active")
-    document.body.style.overflow = ""
-  }
+  // Remove or comment out the handleLocationSearch function
+  // async function handleLocationSearch(mapElementId) { ... }
 
   // Declare escapeHtml function
   function escapeHtml(unsafe) {
@@ -1076,7 +915,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Declare L variable
-  const L = window.L
+  //const L = window.L
 
   // Add this toast notification function
   function showToast(message, type) {
@@ -1102,17 +941,17 @@ document.addEventListener("DOMContentLoaded", () => {
     icon.className = "toast-icon"
     if (type === "success") {
       icon.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-        `
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+          `
     } else if (type === "error") {
       icon.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-        `
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+          `
     }
     content.appendChild(icon)
 
@@ -1128,11 +967,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeButton = document.createElement("button")
     closeButton.className = "toast-close"
     closeButton.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-    `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+      `
     closeButton.addEventListener("click", () => {
       toast.classList.add("toast-closing")
       setTimeout(() => {
@@ -1172,7 +1011,93 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // Declare toastNotification variable
-  const toastNotification = showToast
+  function updateJobCard(job) {
+    const jobCard = document.querySelector(`.job-card[data-job-id="${job.id}"]`)
+    if (jobCard) {
+      jobCard.innerHTML = `
+          <div class="job-card-header">
+              <h3>${escapeHtml(job.title)}</h3>
+              <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
+          </div>
+          <div class="job-card-content">
+              <p>${escapeHtml(job.description)}</p>
+              <div class="job-meta">
+                  <span class="job-location">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"/>
+                          <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"/>
+                      </svg>
+                      ${escapeHtml(job.location)}
+                  </span>
+                  <span class="job-type">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M12 8V12L15 15"/>
+                          <circle cx="12" cy="12" r="9"/>
+                      </svg>
+                      ${escapeHtml(job.job_type)}
+                  </span>
+                  <span class="work-setup">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z"/>
+                          <path d="M16 21V5C16 3.89543 15.1046 3 14 3H10C8.89543 3 8 3.89543 8 5V21"/>
+                      </svg>
+                      ${job.work_setup || "Not specified"}
+                  </span>
+              </div>
+          </div>
+          <div class="job-card-footer">
+              <span class="applications-count">${job.applications_count} applications</span>
+              <div class="card-actions">
+                  <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
+                  <button class="action-button view" onclick="viewJob(${job.id})">View</button>
+              </div>
+          </div>
+          `
+    }
+  }
+
+  function createJobCard(job) {
+    return `
+          <div class="job-card" data-job-id="${job.id}">
+              <div class="job-card-header">
+                  <h3>${escapeHtml(job.title)}</h3>
+                  <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
+              </div>
+              <div class="job-card-content">
+                  <p>${escapeHtml(job.description)}</p>
+                  <div class="job-meta">
+                      <span class="job-location">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"/>
+                              <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"/>
+                          </svg>
+                          ${escapeHtml(job.location)}
+                      </span>
+                      <span class="job-type">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M12 8V12L15 15"/>
+                              <circle cx="12" cy="12" r="9"/>
+                          </svg>
+                          ${escapeHtml(job.job_type)}
+                      </span>
+                      <span class="work-setup">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z"/>
+                              <path d="M16 21V5C16 3.89543 15.1046 3 14 3H10C8.89543 3 8 3.89543 8 5V21"/>
+                          </svg>
+                          ${job.work_setup || "Not specified"}
+                      </span>
+                  </div>
+              </div>
+              <div class="job-card-footer">
+                  <span class="applications-count">${job.applications_count} applications</span>
+                  <div class="card-actions">
+                      <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
+                      <button class="action-button view" onclick="viewJob(${job.id})">View</button>
+                  </div>
+              </div>
+          </div>
+      `
+  }
 })
 

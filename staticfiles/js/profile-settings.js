@@ -7,47 +7,25 @@ function initializeProfileSettings() {
   const tabContents = document.querySelectorAll(".tab-content")
   let companyLocationMap, companyLocationMarker
 
-  // Load profile data
-  async function loadProfileData() {
-    try {
-      const response = await fetch("/employer/profile/get/")
-      const data = await response.json()
-
-      if (data.profile) {
-        // Fill company profile form
-        document.getElementById("companyName").value = data.profile.company_name || ""
-        document.getElementById("companyDescription").value = data.profile.company_description || ""
-        document.getElementById("companyWebsite").value = data.profile.company_website || ""
-        document.getElementById("companyLocation").value = data.profile.company_location || ""
-        document.getElementById("industry").value = data.profile.industry || ""
-        document.getElementById("companyLatitude").value = data.profile.latitude || ""
-        document.getElementById("companyLongitude").value = data.profile.longitude || ""
-
-        // Fill account settings
-        document.getElementById("username").value = data.profile.username
-        document.getElementById("email").value = data.profile.email
-
-        // Initialize map with company location
-        initializeCompanyLocationMap(data.profile.latitude, data.profile.longitude, data.profile.company_location)
-      }
-    } catch (error) {
-      console.error("Error loading profile:", error)
-      showNotification("Error loading profile data", "error")
-    }
-  }
-
   function initializeCompanyLocationMap(latitude, longitude, initialLocation) {
+    // Wait for the tab to be visible before initializing the map
+    if (!document.getElementById("companyLocationMap")) {
+      console.error("Map container not found")
+      return
+    }
+
     if (companyLocationMap) {
       companyLocationMap.remove()
     }
 
-    const defaultLocation = [0, 0]
-    const zoom = latitude && longitude ? 13 : 2
+    const defaultLocation = [14.5995, 120.9842] // Default to Manila
+    const zoom = latitude && longitude ? 13 : 10
     const center = latitude && longitude ? [latitude, longitude] : defaultLocation
 
     companyLocationMap = L.map("companyLocationMap").setView(center, zoom)
+
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors",
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(companyLocationMap)
 
     companyLocationMarker = L.marker(center, { draggable: true }).addTo(companyLocationMap)
@@ -65,34 +43,82 @@ function initializeProfileSettings() {
       companyLocationMarker.setLatLng(e.latlng)
       updateLocationInput(e.latlng)
     })
+
+    // Force a map redraw after initialization
+    setTimeout(() => {
+      companyLocationMap.invalidateSize()
+    }, 100)
   }
 
-  function searchLocation(query) {
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.length > 0) {
-          const { lat, lon } = data[0]
-          const latlng = L.latLng(lat, lon)
-          companyLocationMarker.setLatLng(latlng)
-          companyLocationMap.setView(latlng, 13)
-          updateLocationInput(latlng)
-        }
-      })
-      .catch((error) => console.error("Error:", error))
+  async function searchLocation(query) {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+      )
+      const data = await response.json()
+
+      if (data.length > 0) {
+        const { lat, lon } = data[0]
+        const latlng = L.latLng(lat, lon)
+        companyLocationMarker.setLatLng(latlng)
+        companyLocationMap.setView(latlng, 13)
+        updateLocationInput(latlng)
+      } else {
+        showNotification("Location not found", "error")
+      }
+    } catch (error) {
+      console.error("Error searching location:", error)
+      showNotification("Error searching location", "error")
+    }
   }
 
-  function updateLocationInput(latlng) {
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.display_name) {
-          document.getElementById("companyLocation").value = data.display_name
-          document.getElementById("companyLatitude").value = latlng.lat
-          document.getElementById("companyLongitude").value = latlng.lng
-        }
-      })
-      .catch((error) => console.error("Error:", error))
+  async function updateLocationInput(latlng) {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`,
+      )
+      const data = await response.json()
+
+      if (data.display_name) {
+        document.getElementById("companyLocation").value = data.display_name
+        document.getElementById("companyLatitude").value = latlng.lat
+        document.getElementById("companyLongitude").value = latlng.lng
+      }
+    } catch (error) {
+      console.error("Error reverse geocoding:", error)
+    }
+  }
+
+  // Load profile data
+  async function loadProfileData() {
+    try {
+      const response = await fetch("/employer/profile/get/")
+      const data = await response.json()
+
+      if (data.profile) {
+        // Fill company profile form
+        document.getElementById("companyName").value = data.profile.company_name || ""
+        document.getElementById("companyDescription").value = data.profile.company_description || ""
+        document.getElementById("companyWebsite").value = data.profile.company_website || ""
+        document.getElementById("companyLocation").value = data.profile.company_location || ""
+        document.getElementById("industry").value = data.profile.industry || ""
+        document.getElementById("companyLatitude").value = data.profile.latitude || ""
+        document.getElementById("companyLongitude").value = data.profile.longitude || ""
+
+        // Initialize map with company location
+        const lat = data.profile.latitude
+        const lng = data.profile.longitude
+        const location = data.profile.company_location
+
+        // Wait for the tab to be visible before initializing the map
+        setTimeout(() => {
+          initializeCompanyLocationMap(lat, lng, location)
+        }, 100)
+      }
+    } catch (error) {
+      console.error("Error loading profile:", error)
+      showNotification("Error loading profile data", "error")
+    }
   }
 
   // Handle form submissions
@@ -100,7 +126,7 @@ function initializeProfileSettings() {
   const accountSettingsForm = document.getElementById("accountSettingsForm")
   const changePasswordForm = document.getElementById("changePasswordForm")
 
-  companyProfileForm.addEventListener("submit", async (e) => {
+  companyProfileForm?.addEventListener("submit", async (e) => {
     e.preventDefault()
 
     const formData = {
@@ -137,14 +163,14 @@ function initializeProfileSettings() {
   })
 
   // Event Listeners
-  profileSettingsLink.addEventListener("click", (e) => {
+  profileSettingsLink?.addEventListener("click", (e) => {
     e.preventDefault()
     profileModal.classList.add("active")
     document.body.style.overflow = "hidden"
     loadProfileData()
   })
 
-  closeProfileModal.addEventListener("click", () => {
+  closeProfileModal?.addEventListener("click", () => {
     profileModal.classList.remove("active")
     document.body.style.overflow = ""
   })
@@ -156,30 +182,74 @@ function initializeProfileSettings() {
       tabContents.forEach((content) => content.classList.remove("active"))
 
       button.classList.add("active")
-      document.getElementById(`${button.dataset.tab}Tab`).classList.add("active")
+      const tabContent = document.getElementById(`${button.dataset.tab}Tab`)
+      tabContent.classList.add("active")
 
+      // Reinitialize map when company tab is activated
       if (button.dataset.tab === "company") {
         setTimeout(() => {
-          companyLocationMap.invalidateSize()
-        }, 0)
+          if (companyLocationMap) {
+            companyLocationMap.invalidateSize()
+          }
+        }, 100)
       }
     })
   })
 
   // Company location search
   const companyLocationSearchBtn = document.getElementById("companyLocationSearchBtn")
-  companyLocationSearchBtn.addEventListener("click", () => {
-    const locationInput = document.getElementById("companyLocation")
-    searchLocation(locationInput.value)
+  const companyLocationInput = document.getElementById("companyLocation")
+
+  companyLocationSearchBtn?.addEventListener("click", () => {
+    const query = companyLocationInput.value.trim()
+    if (query) {
+      searchLocation(query)
+    }
+  })
+
+  // Allow searching by pressing Enter in the location input
+  companyLocationInput?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      const query = companyLocationInput.value.trim()
+      if (query) {
+        searchLocation(query)
+      }
+    }
   })
 }
 
 // Helper function to show notifications
 function showNotification(message, type) {
-  // Implementation to display notification. Replace with your actual notification logic.
-  console.log(`Notification: ${message} (${type})`)
-  // Example using an alert (replace with a better notification system in a real application)
-  alert(message)
+  const toastContainer = document.getElementById("toastContainer")
+  if (!toastContainer) return
+
+  const toast = document.createElement("div")
+  toast.className = `toast show ${type}`
+  toast.setAttribute("role", "alert")
+  toast.setAttribute("aria-live", "assertive")
+  toast.setAttribute("aria-atomic", "true")
+
+  toast.innerHTML = `
+    <div class="toast-header">
+      <strong class="me-auto">${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      ${message}
+    </div>
+  `
+
+  toastContainer.appendChild(toast)
+
+  // Initialize Bootstrap toast
+  const bsToast = new bootstrap.Toast(toast)
+  bsToast.show()
+
+  // Remove toast after it's hidden
+  toast.addEventListener("hidden.bs.toast", () => {
+    toast.remove()
+  })
 }
 
 // Helper function to get CSRF token
@@ -198,6 +268,6 @@ function getCookie(name) {
   return cookieValue
 }
 
-// Initialize profile settings when DOM is loaded
+// Initialize when DOM is loaded
 document.addEventListener("DOMContentLoaded", initializeProfileSettings)
 

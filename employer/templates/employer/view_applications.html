@@ -1,0 +1,592 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/employer_home.css' %}">
+<style>
+    /* Main Layout Styles */
+    .applications-dashboard {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .dashboard-header h1 {
+        font-size: 28px;
+        color: #2c3e50;
+        margin: 0;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #3498db;
+    }
+
+    /* Back Button Styles */
+    .back-navigation {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        color: #495057;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+        background-color: #e9ecef;
+        color: #212529;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .back-button i {
+        margin-right: 8px;
+    }
+
+    /* Filter Controls */
+    .filter-controls {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .filter-select {
+        padding: 10px 15px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        background-color: white;
+        min-width: 180px;
+        font-size: 14px;
+        color: #495057;
+        cursor: pointer;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .filter-select:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    /* Applications Grid */
+    .applications-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .application-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid #e9ecef;
+    }
+
+    .application-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .application-header {
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .application-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #343a40;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+
+    .application-content {
+        padding: 15px;
+    }
+
+    .applicant-info {
+        margin-bottom: 10px;
+    }
+
+    .applicant-name {
+        font-weight: 600;
+        margin: 0 0 5px 0;
+        color: #495057;
+    }
+
+    .application-date {
+        font-size: 13px;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    .interview-info {
+        font-size: 13px;
+        background-color: #e8f4fd;
+        padding: 8px;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+
+    .interview-info p {
+        margin: 0;
+        color: #0056b3;
+    }
+
+    .application-footer {
+        padding: 15px;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    /* Status Badge */
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+
+    .status-badge.pending {
+        background-color: #ffeeba;
+        color: #856404;
+    }
+
+    .status-badge.reviewing {
+        background-color: #b8daff;
+        color: #004085;
+    }
+
+    .status-badge.interview {
+        background-color: #c3e6cb;
+        color: #155724;
+    }
+
+    .status-badge.rejected {
+        background-color: #f5c6cb;
+        color: #721c24;
+    }
+
+    .status-badge.hired {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    /* Buttons */
+    .view-application-btn, .update-status-btn {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .view-application-btn {
+        background-color: #e9ecef;
+        color: #495057;
+    }
+
+    .view-application-btn:hover {
+        background-color: #dee2e6;
+    }
+
+    .update-status-btn {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .update-status-btn:hover {
+        background-color: #0069d9;
+    }
+
+    /* No Applications Message */
+    .no-applications {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 40px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border: 1px dashed #ced4da;
+    }
+
+    .no-applications p {
+        font-size: 16px;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        width: 80%;
+        max-width: 700px;
+        animation: modalFadeIn 0.3s;
+    }
+
+    @keyframes modalFadeIn {
+        from {opacity: 0; transform: translateY(-20px);}
+        to {opacity: 1; transform: translateY(0);}
+    }
+
+    .modal-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 20px;
+        color: #343a40;
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #6c757d;
+    }
+
+    .close-modal:hover {
+        color: #343a40;
+    }
+
+    .modal-body {
+        padding: 20px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .detail-section {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .detail-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .detail-section h3 {
+        font-size: 16px;
+        color: #495057;
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+
+    .cover-letter-content {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .notes-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        resize: vertical;
+    }
+
+    .modal-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .close-modal-btn, .save-notes-btn, .save-status-btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        border: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .close-modal-btn {
+        background-color: #e9ecef;
+        color: #495057;
+    }
+
+    .close-modal-btn:hover {
+        background-color: #dee2e6;
+    }
+
+    .save-notes-btn, .save-status-btn {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .save-notes-btn:hover, .save-status-btn:hover {
+        background-color: #218838;
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .form-group select, .form-group input, .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .form-group select:focus, .form-group input:focus, .form-group textarea:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .filter-controls {
+            width: 100%;
+            flex-direction: column;
+            margin-top: 15px;
+        }
+
+        .applications-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-content {
+            width: 95%;
+            margin: 10% auto;
+        }
+
+        .application-footer {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .view-application-btn, .update-status-btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Back Button -->
+<div class="back-navigation">
+    <a href="{% url 'employer_home' %}" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+    </a>
+</div>
+
+<!-- Applications Dashboard -->
+<div class="applications-dashboard">
+    <div class="dashboard-header">
+        <h1>Job Applications</h1>
+        <div class="filter-controls">
+            <select id="jobFilter" class="filter-select">
+                <option value="">All Jobs</option>
+                {% for job in jobs %}
+                <option value="{{ job.id }}" {% if selected_job == job.id %}selected{% endif %}>
+                    {{ job.title }}
+                </option>
+                {% endfor %}
+            </select>
+            
+            <select id="statusFilter" class="filter-select">
+                <option value="">All Statuses</option>
+                {% for status_code, status_label in status_choices %}
+                <option value="{{ status_code }}" {% if selected_status == status_code %}selected{% endif %}>
+                    {{ status_label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="applications-grid">
+        {% for application in applications %}
+        <div class="application-card" data-application-id="{{ application.id }}">
+            <div class="application-header">
+                <h3>{{ application.job.title }}</h3>
+                <span class="status-badge {{ application.status }}">
+                    {{ application.get_status_display }}
+                </span>
+            </div>
+            <div class="application-content">
+                <div class="applicant-info">
+                    <p class="applicant-name">{{ application.employee.get_full_name }}</p>
+                    <p class="application-date">Applied: {{ application.application_date|date:"M d, Y" }}</p>
+                </div>
+                {% if application.interview_date %}
+                <div class="interview-info">
+                    <p>Interview scheduled for: {{ application.interview_date|date:"M d, Y H:i" }}</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="application-footer">
+                <button class="view-application-btn" onclick="viewApplication({{ application.id }})">
+                    View Details
+                </button>
+                <button class="update-status-btn" onclick="openStatusUpdate({{ application.id }})">
+                    Update Status
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-applications">
+            <p>No applications found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Application Detail Modal -->
+<div id="applicationDetailModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Application Details</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="detail-section">
+                <h3>Job Information</h3>
+                <p id="jobTitle"></p>
+                <p id="applicationDate"></p>
+                <p id="currentStatus"></p>
+            </div>
+            
+            <div class="detail-section">
+                <h3>Applicant Information</h3>
+                <p id="applicantName"></p>
+                <div id="resumeSection">
+                    <p>Resume: <a id="resumeLink" target="_blank">View Resume</a></p>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h3>Cover Letter</h3>
+                <div id="coverLetter" class="cover-letter-content"></div>
+            </div>
+            
+            <div class="detail-section">
+                <h3>Notes</h3>
+                <textarea id="employerNotes" class="notes-input" rows="4"></textarea>
+            </div>
+            
+            {% if application.interview_date %}
+            <div class="detail-section">
+                <h3>Interview Details</h3>
+                <p id="interviewDate"></p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="modal-footer">
+            <button class="close-modal-btn">Close</button>
+            <button class="save-notes-btn">Save Notes</button>
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div id="statusUpdateModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Update Application Status</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="statusUpdateForm">
+                <div class="form-group">
+                    <label for="newStatus">New Status</label>
+                    <select id="newStatus" required>
+                        {% for status_code, status_label in status_choices %}
+                        <option value="{{ status_code }}">{{ status_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div id="interviewDateGroup" class="form-group" style="display: none;">
+                    <label for="interviewDateTime">Interview Date & Time</label>
+                    <input type="datetime-local" id="interviewDateTime">
+                </div>
+                
+                <div class="form-group">
+                    <label for="statusNotes">Notes</label>
+                    <textarea id="statusNotes" rows="3"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="close-modal-btn">Cancel</button>
+            <button class="save-status-btn">Update Status</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/applications.js' %}"></script>
+{% endblock %}
+

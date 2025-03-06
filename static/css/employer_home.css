@@ -68,9 +68,17 @@ body {
   color: var(--primary-color);
 }
 
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 /* Profile Dropdown */
 .profile-dropdown {
   position: relative;
+  margin-left: 1rem;
 }
 
 .profile-trigger {
@@ -150,6 +158,28 @@ body {
 
 .text-red {
   color: #dc2626;
+}
+
+.view-applications-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #4f46e5;
+  color: white;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.view-applications-button:hover {
+  background-color: #4338ca;
+}
+
+.view-applications-button svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Main Content */
@@ -910,5 +940,78 @@ body {
 .toast svg {
   width: 1rem;
   height: 1rem;
+}
+
+@media (max-width: 640px) {
+  .view-applications-button span {
+    display: none;
+  }
+
+  .view-applications-button {
+    padding: 0.5rem;
+  }
+
+  .view-applications-button svg {
+    margin: 0;
+  }
+}
+
+/* Back Navigation Styles */
+.back-navigation {
+  padding: 1rem 2rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  color: #495057;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.back-button:hover {
+  background-color: #f8f9fa;
+  color: #212529;
+  text-decoration: none;
+  transform: translateX(-2px);
+}
+
+.back-button i {
+  font-size: 0.875rem;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .back-navigation {
+    padding: 0.75rem 1rem;
+  }
+
+  .back-button {
+    padding: 0.375rem 0.75rem;
+  }
+
+  .back-button span {
+    display: none; /* Hide text on mobile, show only icon */
+  }
+}
+
+/* Add hover effect to show text on mobile when hovering */
+@media (max-width: 768px) {
+  .back-button:hover span {
+    display: inline;
+    margin-left: 0.25rem;
+  }
+}
+
+/* Ensure the applications dashboard adjusts for the back button */
+.applications-dashboard {
+  padding-top: 1rem;
 }
 

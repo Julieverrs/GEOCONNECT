@@ -54,9 +54,13 @@ class EmployerLoginForm(forms.Form):
 class JobPostForm(forms.ModelForm):
     class Meta:
         model = Job
-        fields = ['title', 'location', 'job_type', 'description', 'salary_range', 'experience_level']
+        fields = [
+            'title', 'location', 'job_type', 'description', 
+            'salary_range', 'experience_level', 'requirements'  # Added requirements
+        ]
         widgets = {
             'description': forms.Textarea(attrs={'rows': 5}),
+            'requirements': forms.Textarea(attrs={'rows': 5}),
         }
 
 class EmployerPasswordResetForm(forms.Form):
