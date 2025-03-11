@@ -9,7 +9,9 @@ urlpatterns = [
     path('reset/', views.password_reset, name='password_reset'),
     path('reset/<uidb64>/<token>/', views.password_reset_confirm, name='password_reset_confirm'),
     path('filter-jobs/', views.filter_jobs, name='filter_jobs'),
-    path('update-profile/', views.update_profile, name='employee_update_profile'),  # Updated this line
+    path('profile/update/', views.update_profile, name='update_profile'),
     path('apply-job/', views.apply_job, name='apply_job'),  # New URL for job applications
+    path('remove-resume/', views.remove_resume, name='remove_resume'),
+    path('resume-analyzer/', views.resume_analyzer, name='resume_analyzer'),
 ]
 

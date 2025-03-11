@@ -136,6 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
+  // Update the addJobCard function
   function addJobCard(job) {
     const jobsGrid = document.querySelector(".jobs-grid")
     const noJobs = jobsGrid.querySelector(".no-jobs")
@@ -148,47 +149,63 @@ document.addEventListener("DOMContentLoaded", () => {
     jobCard.dataset.jobId = job.id
 
     jobCard.innerHTML = `
-        <div class="job-card-header">
-            <h3>${job.title}</h3>
-            <span class="status-badge active">Active</span>
-        </div>
-        <div class="job-card-content">
-            <p>${job.description}</p>
-            <div class="job-meta">
-                <span class="job-location">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke-width="2"/>
-                        <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z" stroke-width="2"/>
-                    </svg>
-                    ${job.location}
-                </span>
-                <span class="job-type">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M12 8V12L15 15" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="12" cy="12" r="9" stroke-width="2"/>
-                    </svg>
-                    ${job.job_type}
-                </span>
-                <span class="work-setup">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke-width="2"/>
-                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke-width="2"/>
-                    </svg>
-                    ${job.work_setup}
-                </span>
+    <div class="job-card-header">
+        <h3>${escapeHtml(job.title)}</h3>
+        <span class="status-badge active">Active</span>
+    </div>
+    <div class="job-card-content">
+        <p>${escapeHtml(job.description)}</p>
+        <div class="job-meta">
+            ${
+              job.work_setup
+                ? `
+            <div class="job-type">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                ${escapeHtml(job.work_setup)}
             </div>
-            <div class="requirements">
-                <h4>Requirements:</h4>
-                <p>${job.requirements || "No requirements specified"}</p>
+            `
+                : ""
+            }
+            ${
+              job.job_type
+                ? `
+            <div class="job-type">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                ${escapeHtml(job.job_type)}
             </div>
-        </div>
-        <div class="job-card-footer">
-            <span class="applications-count">0 applications</span>
-            <div class="card-actions">
-                <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
-                <button class="action-button view" onclick="viewJob(${job.id})">View</button>
+            `
+                : ""
+            }
+            ${
+              job.experience_level
+                ? `
+            <div class="job-type">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 9L12 5L2 9L12 13L22 9V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M6 11.5V16.5C6 16.5 8 18.5 12 18.5C16 18.5 18 16.5 18 16.5V11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                ${escapeHtml(job.experience_level)}
             </div>
+            `
+                : ""
+            }
         </div>
+    </div>
+    <div class="job-card-footer">
+        <div class="applications-count">
+            ${job.applications_count || 0} Applications
+        </div>
+        <div class="card-actions">
+            <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
+            <button class="action-button view" onclick="viewJob(${job.id})">View</button>
+        </div>
+    </div>
     `
 
     jobsGrid.insertBefore(jobCard, jobsGrid.firstChild)
@@ -422,7 +439,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json()
 
       if (data.success) {
-        updateJobCard(data.job)
+        updateJobCardFunc(data.job)
         closeEditModalHandler()
         showNotification("Job updated successfully!", "success")
       } else {
@@ -434,71 +451,78 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  function updateJobCard(job) {
+  // Update the updateJobCardFunc function
+  function updateJobCardFunc(job) {
     const jobCard = document.querySelector(`.job-card[data-job-id="${job.id}"]`)
     if (jobCard) {
       jobCard.innerHTML = `
-      <div class="job-card-header">
-          <h3>${escapeHtml(job.title)}</h3>
-          <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
-      </div>
-      <div class="job-card-content">
-          <p>${escapeHtml(job.description)}</p>
-          <div class="job-meta">
-              <span class="job-location">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"/>
-                      <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"/>
-                  </svg>
-                  ${escapeHtml(job.location)}
-              </span>
-              <span class="job-type">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M12 8V12L15 15"/>
-                      <circle cx="12" cy="12" r="9"/>
-                  </svg>
-                  ${escapeHtml(job.job_type)}
-              </span>
-              <span class="work-setup">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke-width="2"/>
-                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke-width="2"/>
+        <div class="job-card-header">
+            <h3>${escapeHtml(job.title)}</h3>
+            <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
+        </div>
+        <div class="job-card-content">
+            <p>${escapeHtml(job.description)}</p>
+            <div class="job-meta">
+                ${
+                  job.work_setup
+                    ? `
+                <div class="job-type">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     ${escapeHtml(job.work_setup)}
-                </span>
-          </div>
-      </div>
-      <div class="job-card-footer">
-          <span class="applications-count">${job.applications_count} applications</span>
-          <div class="card-actions">
-              <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
-              <button class="action-button view" onclick="viewJob(${job.id})">View</button>
-          </div>
-      </div>
-    `
+                </div>
+                `
+                    : ""
+                }
+                ${
+                  job.job_type
+                    ? `
+                <div class="job-type">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    ${escapeHtml(job.job_type)}
+                </div>
+                `
+                    : ""
+                }
+                ${
+                  job.experience_level
+                    ? `
+                <div class="job-type">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 9L12 5L2 9L12 13L22 9V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6 11.5V16.5C6 16.5 8 18.5 12 18.5C16 18.5 18 16.5 18 16.5V11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    ${escapeHtml(job.experience_level)}
+                </div>
+                `
+                    : ""
+                }
+            </div>
+        </div>
+        <div class="job-card-footer">
+            <div class="applications-count">
+                ${job.applications_count || 0} Applications
+            </div>
+            <div class="card-actions">
+                <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
+                <button class="action-button view" onclick="viewJob(${job.id})">View</button>
+            </div>
+        </div>
+        `
     }
   }
 
   // Assuming showNotification is defined elsewhere and accessible.  If not, define it here:
-  function showNotification(message, type) {
-    //Implementation for showing notifications.  Could use an alert, a custom element, etc.
-    alert(message) //Replace with proper notification implementation.
-  }
+  //function showNotification(message, type) {
+  //Implementation for showing notifications.  Could use an alert, a custom element, etc.
+  //  alert(message) //Replace with proper notification implementation.
+  //}
 
-  function getCookie(name) {
-    let cookieValue = null
-    if (document.cookie && document.cookie !== "") {
-      const cookies = document.cookie.split(";")
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim()
-        if (cookie.substring(0, name.length + 1) === name + "=") {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
-          break
-        }
-      }
-    }
-    return cookieValue
-  }
   // Profile Settings Handling
   const profileModal = document.getElementById("profileModal")
   const profileSettingsLink = document.querySelector('.dropdown-item[href="#"]') // Update the selector based on your menu item
@@ -688,7 +712,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json()
 
       if (data.jobs) {
-        updateJobsGrid(data.jobs)
+        updateJobsGridFunc(data.jobs)
         updateJobsCount(data.total)
       }
     } catch (error) {
@@ -697,70 +721,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function updateJobsGrid(jobs) {
+  // Also update the updateJobsGridFunc function to use the updated createJobCardFunc
+  function updateJobsGridFunc(jobs) {
     const jobsGrid = document.querySelector(".jobs-grid")
 
     if (jobs.length === 0) {
       jobsGrid.innerHTML = `
-            <div class="no-jobs">
-                <p>No jobs found matching your criteria</p>
-            </div>
-        `
+          <div class="no-jobs">
+              <p>No jobs found matching your criteria</p>
+          </div>
+      `
       return
     }
 
-    jobsGrid.innerHTML = jobs
-      .map(
-        (job) => `
-        <div class="job-card" data-job-id="${job.id}">
-            <div class="job-card-header">
-                <h3>${escapeHtml(job.title)}</h3>
-                <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
-            </div>
-            <div class="job-card-content">
-                <p>${escapeHtml(job.description)}</p>
-                <div class="job-meta">
-                    <span class="job-location">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"/>
-                            <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"/>
-                        </svg>
-                        ${escapeHtml(job.location)}
-                    </span>
-                    <span class="job-type">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 8V12L15 15"/>
-                            <circle cx="12" cy="12" r="9"/>
-                        </svg>
-                        ${escapeHtml(job.job_type)}
-                    </span>
-                    <span class="work-setup">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z"/>
-                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke-width="2"/>
-                        </svg>
-                        ${job.work_setup || "Not specified"}
-                    </span>
-                </div>
-                <div class="requirements">
-                    <h4>Requirements:</h4>
-                    <p>${job.requirements || "No requirements specified"}</p>
-                </div>
-            </div>
-            <div class="job-card-footer">
-                <span class="applications-count">${job.applications_count} applications</span>
-                <div class="card-actions">
-                    <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
-                    <button class="action-button view" onclick="viewJob(${job.id})">View</button>
-                    <button class="action-button status-toggle" onclick="updateJobStatus(${job.id}, '${job.status === "Active" ? "Closed" : "Active"}')">
-                        ${job.status === "Active" ? "Close Job" : "Reopen Job"}
-                    </button>
-                </div>
-            </div>
-        </div>
-    `,
-      )
-      .join("")
+    jobsGrid.innerHTML = jobs.map((job) => createJobCardFunc(job)).join("")
   }
 
   function updateJobsCount(total) {
@@ -832,45 +806,69 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Function to create job card (modified to include status toggle)
-  function createJobCard(job) {
+  // Update the createJobCardFunc function
+  function createJobCardFunc(job) {
     return `
-          <div class="job-card" data-job-id="${job.id}">
-              <div class="job-card-header">
-                  <h3>${escapeHtml(job.title)}</h3>
-                  <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
-              </div>
-              <div class="job-card-content">
-                  <p>${escapeHtml(job.description)}</p>
-                  <div class="job-meta">
-                      <span class="job-location">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                              <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke-width="2"/>
-                              <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"/>
-                          </svg>
-                          ${escapeHtml(job.location)}
-                      </span>
-                      <span class="job-type">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                              <path d="M12 8V12L15 15"/>
-                              <circle cx="12" cy="12" r="9"/>
-                          </svg>
-                          ${escapeHtml(job.job_type)}
-                      </span>
-                  </div>
-              </div>
-              <div class="job-card-footer">
-                  <span class="applications-count">${job.applications_count} applications</span>
-                  <div class="card-actions">
-                      <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
-                      <button class="action-button view" onclick="viewJob(${job.id})">View</button>
-                      <button class="action-button status-toggle" onclick="updateJobStatus(${job.id}, '${job.status === "Active" ? "Closed" : "Active"}')">
-                          ${job.status === "Active" ? "Close Job" : "Reopen Job"}
-                      </button>
-                  </div>
-              </div>
-          </div>
-      `
+    <div class="job-card" data-job-id="${job.id}">
+        <div class="job-card-header">
+            <h3>${escapeHtml(job.title)}</h3>
+            <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
+        </div>
+        <div class="job-card-content">
+            <p>${escapeHtml(job.description)}</p>
+            <div class="job-meta">
+                ${
+                  job.work_setup
+                    ? `
+                <div class="job-type">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    ${escapeHtml(job.work_setup)}
+                </div>
+                `
+                    : ""
+                }
+                ${
+                  job.job_type
+                    ? `
+                <div class="job-type">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    ${escapeHtml(job.job_type)}
+                </div>
+                `
+                    : ""
+                }
+                ${
+                  job.experience_level
+                    ? `
+                <div class="job-type">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 9L12 5L2 9L12 13L22 9V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6 11.5V16.5C6 16.5 8 18.5 12 18.5C16 18.5 18 16.5 18 16.5V11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    ${escapeHtml(job.experience_level)}
+                </div>
+                `
+                    : ""
+                }
+            </div>
+        </div>
+        <div class="job-card-footer">
+            <div class="applications-count">
+                ${job.applications_count || 0} Applications
+            </div>
+            <div class="card-actions">
+                <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
+                <button class="action-button view" onclick="viewJob(${job.id})">View</button>
+            </div>
+        </div>
+    </div>
+    `
   }
 
   // Function to update jobs grid (modified to use createJobCard)
@@ -886,7 +884,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return
     }
 
-    jobsGrid.innerHTML = jobs.map((job) => createJobCard(job)).join("")
+    jobsGrid.innerHTML = jobs.map((job) => createJobCardFunc(job)).join("")
   }
 
   // ... (existing code)
@@ -1011,93 +1009,92 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
+  // Update the updateJobCard function
   function updateJobCard(job) {
     const jobCard = document.querySelector(`.job-card[data-job-id="${job.id}"]`)
     if (jobCard) {
       jobCard.innerHTML = `
-          <div class="job-card-header">
-              <h3>${escapeHtml(job.title)}</h3>
-              <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
-          </div>
-          <div class="job-card-content">
-              <p>${escapeHtml(job.description)}</p>
-              <div class="job-meta">
-                  <span class="job-location">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"/>
-                          <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"/>
-                      </svg>
-                      ${escapeHtml(job.location)}
-                  </span>
-                  <span class="job-type">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M12 8V12L15 15"/>
-                          <circle cx="12" cy="12" r="9"/>
-                      </svg>
-                      ${escapeHtml(job.job_type)}
-                  </span>
-                  <span class="work-setup">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z"/>
-                          <path d="M16 21V5C16 3.89543 15.1046 3 14 3H10C8.89543 3 8 3.89543 8 5V21"/>
-                      </svg>
-                      ${job.work_setup || "Not specified"}
-                  </span>
-              </div>
-          </div>
-          <div class="job-card-footer">
-              <span class="applications-count">${job.applications_count} applications</span>
-              <div class="card-actions">
-                  <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
-                  <button class="action-button view" onclick="viewJob(${job.id})">View</button>
-              </div>
-          </div>
-          `
+        <div class="job-card-header">
+            <h3>${escapeHtml(job.title)}</h3>
+            <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
+        </div>
+        <div class="job-card-content">
+            <p>${escapeHtml(job.description)}</p>
+            <div class="job-meta">
+                ${
+                  job.work_setup
+                    ? `
+                <div class="job-type">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    ${escapeHtml(job.work_setup)}
+                </div>
+                `
+                    : ""
+                }
+                ${
+                  job.job_type
+                    ? `
+                <div class="job-type">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    ${escapeHtml(job.job_type)}
+                </div>
+                `
+                    : ""
+                }
+                ${
+                  job.experience_level
+                    ? `
+                <div class="job-type">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 9L12 5L2 9L12 13L22 9V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6 11.5V16.5C6 16.5 8 18.5 12 18.5C16 18.5 18 16.5 18 16.5V11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    ${escapeHtml(job.experience_level)}
+                </div>
+                `
+                    : ""
+                }
+            </div>
+        </div>
+        <div class="job-card-footer">
+            <div class="applications-count">
+                ${job.applications_count || 0} Applications
+            </div>
+            <div class="card-actions">
+                <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
+                <button class="action-button view" onclick="viewJob(${job.id})">View</button>
+            </div>
+        </div>
+        `
     }
   }
 
+  // Update the createJobCard function
   function createJobCard(job) {
     return `
-          <div class="job-card" data-job-id="${job.id}">
-              <div class="job-card-header">
-                  <h3>${escapeHtml(job.title)}</h3>
-                  <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
-              </div>
-              <div class="job-card-content">
-                  <p>${escapeHtml(job.description)}</p>
-                  <div class="job-meta">
-                      <span class="job-location">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                              <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"/>
-                              <path d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"/>
-                          </svg>
-                          ${escapeHtml(job.location)}
-                      </span>
-                      <span class="job-type">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                              <path d="M12 8V12L15 15"/>
-                              <circle cx="12" cy="12" r="9"/>
-                          </svg>
-                          ${escapeHtml(job.job_type)}
-                      </span>
-                      <span class="work-setup">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                              <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z"/>
-                              <path d="M16 21V5C16 3.89543 15.1046 3 14 3H10C8.89543 3 8 3.89543 8 5V21"/>
-                          </svg>
-                          ${job.work_setup || "Not specified"}
-                      </span>
-                  </div>
-              </div>
-              <div class="job-card-footer">
-                  <span class="applications-count">${job.applications_count} applications</span>
-                  <div class="card-actions">
-                      <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
-                      <button class="action-button view" onclick="viewJob(${job.id})">View</button>
-                  </div>
-              </div>
-          </div>
-      `
+        <div class="job-card" data-job-id="${job.id}">
+            <div class="job-card-header">
+                <h3>${escapeHtml(job.title)}</h3>
+                <span class="status-badge ${job.status.toLowerCase()}">${escapeHtml(job.status)}</span>
+            </div>
+            <div class="job-card-content">
+                <p>${escapeHtml(job.description)}</p>
+            </div>
+            <div class="job-card-footer">
+            <span class="applications-count">${job.applications_count} applications</span>
+                <div class="card-actions">
+                    <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
+                    <button class="action-button view" onclick="viewJob(${job.id})">View</button>
+                </div>
+            </div>
+        </div>
+    `
   }
 })
 

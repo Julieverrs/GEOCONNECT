@@ -976,3 +976,48 @@ body.modal-open {
   }
 }
 
+/* Enhanced Resume Display Styles */
+.current-resume-container {
+  transition: all 0.3s ease;
+}
+
+.current-resume-container:hover {
+  transform: translateY(-2px);
+}
+
+.current-resume-container .card {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.current-resume-container:hover .card {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.resume-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resume-icon i {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.1));
+}
+
+.resume-details {
+  overflow: hidden;
+}
+
+.resume-actions .btn {
+  transition: all 0.2s ease;
+}
+
+.resume-actions .btn:hover {
+  transform: translateY(-2px);
+}
+

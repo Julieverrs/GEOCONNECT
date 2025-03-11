@@ -6,127 +6,142 @@
 {% endblock %}
 
 {% block content %}
-<!-- Improved Navigation -->
-<nav class="navbar navbar-expand-lg fixed-top">
-    <div class="container">
-        <a class="navbar-brand" href="#home">
-            <img src="{% static 'images/logo.png' %}" alt="GeoConnect Logo" height="30">
-            GeoConnect
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="#home">
-                        <i class="fas fa-home"></i> Home
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#jobs">
-                        <i class="fas fa-briefcase"></i> Jobs
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#contact">
-                        <i class="fas fa-envelope"></i> Contact
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#about">
-                        <i class="fas fa-info-circle"></i> About
-                    </a>
-                </li>
+<!-- Fixed Header -->
+<header class="dashboard-header">
+    <div class="header-container">
+        <div class="logo-section">
+            <img src="{% static 'images/rocket-icon.svg' %}" alt="GeoConnect Logo" class="header-logo">
+            <span class="logo-text">GeoConnect</span>
+        </div>
+        
+        <!-- Navigation links in header -->
+        <div class="header-nav">
+            <ul class="nav-links">
+                <li><a href="#home" class="active">
+                    <i class="fas fa-home"></i> Home
+                </a></li>
+                <li><a href="#jobs">
+                    <i class="fas fa-briefcase"></i> Jobs
+                </a></li>
+                <li><a href="#contact">
+                    <i class="fas fa-envelope"></i> Contact
+                </a></li>
+                <li><a href="#about">
+                    <i class="fas fa-info-circle"></i> About
+                </a></li>
             </ul>
-            <div class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                    <div class="avatar-sm me-2">
-                        <img src="{% if employee.avatar %}{{ employee.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
-                             alt="Profile" 
-                             class="rounded-circle">
+        </div>
+        
+        <div class="header-actions">
+            <div class="profile-dropdown">
+                <button class="profile-trigger" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            {% if employee.avatar %}
+                                <img src="{{ employee.avatar.url }}" alt="Profile" class="rounded-circle">
+                            {% else %}
+                                {{ username|first|upper }}
+                            {% endif %}
+                        </div>
+                        <span class="profile-name">{{ username }}</span>
                     </div>
-                    <span>{{ username }}</span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal" id="profileSettingsLink">
-                            <i class="fas fa-user-cog"></i> Profile Settings
-                        </a>
-                    </li>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal" id="profileSettingsLink">
+                        <i class="fas fa-user-cog"></i> Profile Settings
+                    </a></li>
+                    <li><a class="dropdown-item" href="/employee/resume-analyzer/" id="resumeAnalyzerLink">
+                        <i class="fas fa-brain"></i> Resume Analyzer
+                    </a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item" href="{% url 'employee_logout' %}">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
-                    </li>
+                    <li><a class="dropdown-item text-danger" href="{% url 'employee_logout' %}">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a></li>
                 </ul>
             </div>
         </div>
     </div>
-</nav>
+</header>
 
 <!-- Home Section -->
-<section id="home" class="section">
-    <div class="container">
-        <div class="welcome-card">
-            <div class="row align-items-center">
-                <div class="col-lg-8">
-                    <h1 class="mb-4">Welcome back, {{ username }}!</h1>
-                    <p class="lead text-muted">Find your dream job and take the next step in your career.</p>
-                </div>
-                <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
-                    <button class="btn btn-primary btn-lg" id="startJobSearch">
-                        <i class="fas fa-search me-2"></i>Start Job Search
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="dashboard-stats">
-            <div class="row">
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <h3>Applications</h3>
-                        <p class="stat-number">12</p>
-                        <p class="stat-label">Total Applications</p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <h3>Interviews</h3>
-                        <p class="stat-number">3</p>
-                        <p class="stat-label">Scheduled</p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-bookmark"></i>
-                        </div>
-                        <h3>Saved Jobs</h3>
-                        <p class="stat-number">8</p>
-                        <p class="stat-label">Bookmarked</p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-eye"></i>
-                        </div>
-                        <h3>Profile Views</h3>
-                        <p class="stat-number">45</p>
-                        <p class="stat-label">Last 30 days</p>
+<section id="home" class="section home-section">
+    <div class="home-background">
+        <div class="animated-bg"></div>
+        <div class="particles"></div>
+    </div>
+    <div class="container h-100">
+        <div class="row h-100 align-items-center">
+            <div class="col-lg-12">
+                <div class="welcome-content text-center">
+                    <h1 class="welcome-title">Welcome back, <span class="highlight">{{ username }}</span>!</h1>
+                    <p class="welcome-subtitle">Find your dream job and take the next step in your career.</p>
+                    <div class="welcome-actions">
+                        <button class="btn btn-primary btn-lg action-button" id="startJobSearch">
+                            <i class="fas fa-search me-2"></i>Get Recommendations
+                        </button>
+                        <a href="#jobs" class="btn btn-outline-light btn-lg action-button scroll-btn">
+                            <i class="fas fa-briefcase me-2"></i>View Jobs
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+    
+    <div class="stats-container">
+        <div class="container">
+            <div class="dashboard-stats">
+                <div class="row">
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <h3>Applications</h3>
+                            <p class="stat-number">12</p>
+                            <p class="stat-label">Total Applications</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <h3>Interviews</h3>
+                            <p class="stat-number">3</p>
+                            <p class="stat-label">Scheduled</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-bookmark"></i>
+                            </div>
+                            <h3>Saved Jobs</h3>
+                            <p class="stat-number">8</p>
+                            <p class="stat-label">Bookmarked</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <h3>Profile Views</h3>
+                            <p class="stat-number">45</p>
+                            <p class="stat-label">Last 30 days</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="scroll-indicator">
+        <a href="#jobs" class="scroll-down">
+            <span class="scroll-text">Scroll Down</span>
+            <i class="fas fa-chevron-down"></i>
+        </a>
     </div>
 </section>
 
@@ -424,100 +439,96 @@
 
 <!-- Profile Modal -->
 <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="profileModalLabel">Profile Settings</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-    <form id="profileForm">
-        {% csrf_token %}
-        <div class="row">
-            <div class="col-md-4">
-                <div class="avatar-upload text-center">
-                    <div class="avatar-preview">
-                        <img src="{% if employee.avatar %}{{ employee.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
-                             alt="Profile Picture" 
-                             id="avatarPreview">
-                    </div>
-                    <div class="avatar-edit">
-                        <input type='file' 
-                               id="avatarUpload" 
-                               name="avatar" 
-                               accept=".png, .jpg, .jpeg"
-                               class="d-none" />
-                        <label for="avatarUpload">
-                            <i class="fas fa-camera"></i>
-                            Change Photo
-                        </label>
-                    </div>
-                    <div class="avatar-help">
-                        Recommended: Square image, max 2MB
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-8">
-                <div class="profile-form-section">
-                    <div class="mb-3">
-                        <label for="fullName" class="form-label">Full Name</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="fullName" 
-                               name="full_name"
-                               value="{{ employee.full_name|default:employee.username }}"
-                               placeholder="Enter your full name"
-                               required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" 
-                               class="form-control" 
-                               id="email" 
-                               name="email"
-                               value="{{ employee.email }}" 
-                               readonly>
-                        <small class="text-muted">Contact support to change email</small>
-                    </div>
-                    <div class="mb-3">
-                        <label for="phone" class="form-label">Phone Number</label>
-                        <input type="tel" 
-                               class="form-control" 
-                               id="phone" 
-                               name="phone"
-                               value="{{ employee.phone|default:'' }}"
-                               placeholder="Enter your phone number">
-                    </div>
-                    <div class="mb-3">
-                        <label for="location" class="form-label">Location</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="location" 
-                               name="location"
-                               value="{{ employee.location|default:'' }}"
-                               placeholder="City, Country">
-                    </div>
-                    <div class="mb-3">
-                        <label for="bio" class="form-label">Bio</label>
-                        <textarea class="form-control" 
-                                  id="bio" 
-                                  name="bio"
-                                  rows="3" 
-                                  placeholder="Tell us about yourself">{{ employee.bio|default:'' }}</textarea>
-                        <small class="text-muted">Brief description about yourself</small>
-                    </div>
-                </div>
-            </div>
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="profileModalLabel">Edit Profile</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-    </form>
-</div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveProfile">Save Changes</button>
+        <div class="modal-body">
+          <form id="profileForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="text-center mb-4">
+              <img id="avatarPreview" src="{{ employee.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Profile Picture" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
+              <div class="mt-2">
+                <label for="avatarUpload" class="btn btn-sm btn-outline-primary">Change Photo</label>
+                <input type="file" id="avatarUpload" name="avatar" class="d-none" accept="image/jpeg, image/png, image/jpg">
+              </div>
             </div>
+            
+            <div class="mb-3">
+              <label for="fullName" class="form-label">Full Name</label>
+              <input type="text" class="form-control" id="fullName" name="full_name" value="{{ employee.full_name }}">
+            </div>
+            
+            <div class="mb-3">
+              <label for="phone" class="form-label">Phone</label>
+              <input type="tel" class="form-control" id="phone" name="phone" value="{{ employee.phone }}">
+            </div>
+            
+            <div class="mb-3">
+              <label for="location" class="form-label">Location</label>
+              <input type="text" class="form-control" id="location" name="location" value="{{ employee.location }}">
+            </div>
+            
+            <div class="mb-3">
+              <label for="bio" class="form-label">Bio</label>
+              <textarea class="form-control" id="bio" name="bio" rows="3">{{ employee.bio }}</textarea>
+            </div>
+            
+            <!-- Enhanced Resume Upload Field -->
+            <div class="mb-4">
+              <label for="resumeUpload" class="form-label">Resume (PDF, DOC, DOCX)</label>
+              
+              {% if employee.resume %}
+              <div class="current-resume-container mb-3">
+                <div class="card">
+                  <div class="card-body p-3">
+                    <div class="d-flex align-items-center">
+                      <div class="resume-icon me-3">
+                        <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                      </div>
+                      <div class="resume-details flex-grow-1">
+                        <h6 class="mb-0">Current Resume</h6>
+                        <p class="mb-0 small text-truncate">{{ employee.resume.name|default:"resume" }}</p>
+                      </div>
+                      <div class="resume-actions">
+                        <a href="{{ employee.resume.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                          <i class="fas fa-eye me-1"></i> View
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+              
+              <div class="input-group">
+                <input type="file" class="form-control" id="resumeUpload" name="resume" accept=".pdf,.doc,.docx">
+                <label class="input-group-text" for="resumeUpload">Upload New</label>
+              </div>
+              <div class="form-text">
+                Accepted formats: PDF, DOC, DOCX. Max size: 5MB
+              </div>
+            </div>
+            {% if employee.resume %}
+            <div class="resume-container mt-2">
+              <button type="button" id="remove-resume-btn" class="btn btn-danger btn-sm mt-1">
+                <i class="fas fa-trash-alt"></i> Remove Resume
+              </button>
+            </div>
+            {% endif %}
+          </form>
         </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="saveProfile">Save Changes</button>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
+  
+  
 
 <!-- Job Application Modal -->
 <div class="modal fade" id="applyJobModal" tabindex="-1" aria-labelledby="applyJobModalLabel" aria-hidden="true">
@@ -654,6 +665,10 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="submitApplication">Submit Application</button>
+            </div>
+        </div>
+    </div>
+  id="submitApplication">Submit Application</button>
             </div>
         </div>
     </div>
@@ -1086,10 +1101,1001 @@ body.modal-open {
         width: 100%;
     }
 }
+
+/* Enhanced Header and Navigation Styles */
+.navbar {
+    padding: 15px 0;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.navbar-brand img {
+    margin-right: 10px;
+}
+
+.navbar .nav-link {
+    font-size: 1.05rem;
+    font-weight: 500;
+    padding: 0.5rem 1.2rem !important;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.navbar .nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background-color: white;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
+}
+
+.navbar .nav-link:hover::after {
+    width: 70%;
+}
+
+.navbar .nav-link i {
+    margin-right: 6px;
+    font-size: 1.1rem;
+}
+
+.navbar-nav {
+    gap: 5px;
+}
+
+/* Make navbar more prominent when scrolled */
+.navbar-scrolled {
+    padding: 10px 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background-color: var(--primary-color);
+        padding: 15px;
+        border-radius: 0 0 15px 15px;
+        margin-top: 10px;
+    }
+    
+    .navbar-nav {
+        text-align: center;
+    }
+    
+    .nav-item.dropdown {
+        text-align: center;
+        margin-top: 10px;
+    }
+}
+
+/* Update body padding for fixed header */
+body {
+    padding-top: 110px;
+}
+
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background-color: var(--primary-color);
+        padding: 15px;
+        border-radius: 0 0 15px 15px;
+        margin-top: 10px;
+    }
+    
+    .navbar-nav {
+        text-align: center;
+    }
+    
+    .nav-item.dropdown {
+        text-align: center;
+        margin-top: 10px;
+    }
+}
+
+/* Enhanced Header and Navigation Styles */
+.navbar {
+    padding: 15px 0;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.navbar-brand img {
+    margin-right: 10px;
+}
+
+.navbar .nav-link {
+    font-size: 1.05rem;
+    font-weight: 500;
+    padding: 0.5rem 1.2rem !important;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.navbar .nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background-color: white;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
+}
+
+.navbar .nav-link:hover::after {
+    width: 70%;
+}
+
+.navbar .nav-link i {
+    margin-right: 6px;
+    font-size: 1.1rem;
+}
+
+.navbar-nav {
+    gap: 5px;
+}
+
+/* Make navbar more prominent when scrolled */
+.navbar-scrolled {
+    padding: 10px 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background-color: var(--primary-color);
+        padding: 15px;
+        border-radius: 0 0 15px 15px;
+        margin-top: 10px;
+    }
+    
+    .navbar-nav {
+        text-align: center;
+    }
+    
+    .nav-item.dropdown {
+        text-align: center;
+        margin-top: 10px;
+    }
+}
+</style>
+
+<style>
+/* Header Styles - Copied from employer_home.html */
+body {
+    padding-top: 110px; /* Space for fixed header */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Enhanced header styles - FIXED POSITION */
+.dashboard-header {
+    background: linear-gradient(to right, #1a237e, #283593);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1000;
+    height: 110px;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    height: 100%;
+    width: 100%;
+    max-width: 2200px;
+    margin: 0 auto;
+}
+
+/* Logo section improvements */
+.logo-section {
+    display: flex;
+    align-items: center;
+}
+
+.header-logo {
+    height: 45px;
+    width: auto;
+    margin-right: 15px;
+}
+
+.logo-text {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+/* Improved navigation styles */
+.header-nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    margin: 0 20px;
+    position: relative;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    padding: 5px;
+}
+
+.nav-links li {
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a {
+    display: block;
+    padding: 12px 28px;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    border-radius: 25px;
+}
+
+.nav-links a:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.nav-links a.active {
+    background-color: #ffffff;
+    color: #283593;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Profile dropdown enhancements */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.profile-dropdown {
+    position: relative;
+}
+
+.profile-trigger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-name {
+    color: white;
+    font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .header-container {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 15px 20px;
+    }
+
+    .header-nav {
+        order: 3;
+        width: 100%;
+        margin: 15px 0 5px;
+    }
+
+    .nav-links {
+        width: 100%;
+        justify-content: space-between;
+        border-radius: 8px;
+    }
+
+    .nav-links a {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    body {
+        padding-top: 160px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-actions {
+        gap: 10px;
+    }
+    
+    .profile-name {
+        display: none;
+    }
+    
+    .nav-links {
+        padding: 3px;
+    }
+    
+    .nav-links a {
+        padding: 6px 8px;
+        font-size: 13px;
+    }
+}
+
+/* Update body padding for fixed header */
+body {
+    padding-top: 110px;
+}
+</style>
+
+<style>
+/* Enhanced Home Section Styles */
+.home-section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0;
+    margin-top: -110px;
+    padding-top: 110px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+    color: white;
+}
+
+.home-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.animated-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 L0,100 Z" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/></svg>');
+    background-size: 30px 30px;
+    opacity: 0.5;
+    animation: bg-animation 20s linear infinite;
+}
+
+.particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.particles:before,
+.particles:after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(circle, white 1px, transparent 1px);
+    background-size: 50px 50px;
+    background-position: 0 0;
+    opacity: 0.2;
+    animation: particles-animation 60s linear infinite;
+}
+
+.particles:after {
+    background-size: 30px 30px;
+    background-position: 15px 15px;
+    opacity: 0.15;
+    animation-duration: 40s;
+    animation-direction: reverse;
+}
+
+@keyframes bg-animation {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 100% 100%;
+    }
+}
+
+@keyframes particles-animation {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-100%);
+    }
+}
+
+.welcome-content {
+    position: relative;
+    z-index: 1;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    animation: fade-in 1s ease-out;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.welcome-avatar {
+    margin-bottom: 2rem;
+}
+
+.avatar-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-text {
+    font-size: 3rem;
+    font-weight: bold;
+    color: white;
+}
+
+.welcome-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    animation: title-animation 1s ease-out;
+}
+
+@keyframes title-animation {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.highlight {
+    color: #f3a712;
+    position: relative;
+    display: inline-block;
+}
+
+.highlight:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background-color: rgba(243, 167, 18, 0.3);
+    border-radius: 5px;
+}
+
+.welcome-subtitle {
+    font-size: 1.5rem;
+    font-weight: 300;
+    margin-bottom: 2.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    animation: subtitle-animation 1s ease-out 0.3s both;
+}
+
+@keyframes subtitle-animation {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.welcome-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    animation: actions-animation 1s ease-out 0.6s both;
+}
+
+@keyframes actions-animation {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.action-button {
+    padding: 0.75rem 2rem;
+    font-weight: 500;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.action-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.btn-outline-light {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.stats-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    padding: 2rem 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    margin-top: auto;
+    animation: stats-animation 1s ease-out 0.9s both;
+}
+
+@keyframes stats-animation {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dashboard-stats {
+    padding: 0;
+}
+
+.stat-card {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    background-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+    color: #f3a712;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.scroll-indicator {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    animation: bounce 2s infinite;
+}
+
+.scroll-down {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.scroll-down:hover {
+    opacity: 1;
+    color: white;
+}
+
+.scroll-text {
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+}
+
+.scroll-down i {
+    font-size: 1.2rem;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Responsive adjustments for home section */
+@media (max-width: 992px) {
+    .welcome-title {
+        font-size: 2.5rem;
+    }
+    
+    .welcome-subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .welcome-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .action-button {
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: 1rem;
+    }
+    
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .avatar-text {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .welcome-title {
+        font-size: 2rem;
+    }
+    
+    .welcome-subtitle {
+        font-size: 1rem;
+    }
+    
+    .stats-container {
+        padding: 1rem 0;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+}
+
+/* Current Resume Styles */
+.current-resume-container {
+    transition: all 0.3s ease;
+}
+
+.current-resume-container .card {
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    transition: all 0.3s ease;
+}
+
+.current-resume-container .card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.resume-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.resume-details h6 {
+    font-weight: 600;
+    color: #333;
+}
+
+.resume-details p {
+    color: #666;
+}
+
+.resume-actions .btn:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/job-application.js' %}"></script>
 {% endblock %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Highlight active navigation link based on scroll position
+        function updateActiveNavLink() {
+            const sections = document.querySelectorAll('section.section');
+            const navLinks = document.querySelectorAll('.nav-links a');
+            
+            let currentSectionId = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 120;
+                const sectionHeight = section.offsetHeight;
+                const sectionId = section.getAttribute('id');
+                
+                if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+                    currentSectionId = sectionId;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href').substring(1);
+                if (href === currentSectionId) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateActiveNavLink);
+        updateActiveNavLink();
+        
+        // Add smooth scrolling to navigation links
+        document.querySelectorAll('.nav-links a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 110,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Update active link manually
+                    document.querySelectorAll('.nav-links a').forEach(link => {
+                        link.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                }
+            });
+        });
+        
+        // Initialize dropdown functionality if not using Bootstrap's dropdown
+        const profileDropdown = document.querySelector('.profile-dropdown');
+        const profileTrigger = document.querySelector('.profile-trigger');
+        
+        if (profileTrigger && !profileTrigger.getAttribute('data-bs-toggle')) {
+            profileTrigger.addEventListener('click', function() {
+                profileDropdown.classList.toggle('active');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!profileDropdown.contains(event.target)) {
+                    profileDropdown.classList.remove('active');
+                }
+            });
+        }
+    });
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Highlight active navigation link based on scroll position
+        function updateActiveNavLink() {
+            const sections = document.querySelectorAll('section.section');
+            const navLinks = document.querySelectorAll('.nav-links a');
+            
+            let currentSectionId = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 120;
+                const sectionHeight = section.offsetHeight;
+                const sectionId = section.getAttribute('id');
+                
+                if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+                    currentSectionId = sectionId;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href').substring(1);
+                if (href === currentSectionId) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateActiveNavLink);
+        updateActiveNavLink();
+        
+        // Add smooth scrolling to navigation links
+        document.querySelectorAll('.nav-links a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 110,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Update active link manually
+                    document.querySelectorAll('.nav-links a').forEach(link => {
+                        link.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                }
+            });
+        });
+        
+        // Initialize dropdown functionality if not using Bootstrap's dropdown
+        const profileDropdown = document.querySelector('.profile-dropdown');
+        const profileTrigger = document.querySelector('.profile-trigger');
+        
+        if (profileTrigger && !profileTrigger.getAttribute('data-bs-toggle')) {
+            profileTrigger.addEventListener('click', function() {
+                profileDropdown.classList.toggle('active');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!profileDropdown.contains(event.target)) {
+                    profileDropdown.classList.remove('active');
+                }
+            });
+        }
+    });
+</script>
+
+<script>
+// Add this to the existing DOMContentLoaded event listener
+// Enhance the smooth scrolling for the new home section
+document.querySelectorAll('.scroll-btn, .scroll-down').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+            window.scrollTo({
+                top: targetElement.offsetTop - 110,
+                behavior: 'smooth'
+            });
+            
+            // Update active link manually
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === targetId) {
+                    link.classList.add('active');
+                }
+            });
+        }
+    });
+});
+</script>
+
+<script>
+// Add this script to handle the terms modal focus management
+document.addEventListener('DOMContentLoaded', function() {
+    var termsModal = document.getElementById('termsModal');
+    var termsLink = document.querySelector('a[data-bs-target="#termsModal"]');
+    
+    termsModal.addEventListener('hidden.bs.modal', function () {
+        // Return focus to the terms link when the terms modal is closed
+        if (termsLink) {
+            termsLink.focus();
+        }
+        
+        // Fix for lingering backdrop
+        document.body.classList.remove('modal-open');
+        var modalBackdrops = document.querySelectorAll('.modal-backdrop');
+        modalBackdrops.forEach(function(backdrop) {
+            backdrop.parentNode.removeChild(backdrop);
+        });
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    });
+});
+</script>
 

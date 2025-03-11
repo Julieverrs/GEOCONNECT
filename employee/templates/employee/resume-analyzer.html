@@ -1,0 +1,581 @@
+{% extends 'employee/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/employee_home.css' %}">
+<style>
+    .analyzer-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+    .card-header {
+        background: linear-gradient(to right, #1a237e, #283593);
+        color: white;
+        border-radius: 10px 10px 0 0 !important;
+        padding: 20px;
+    }
+    .upload-area {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 30px;
+        text-align: center;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .upload-area:hover, .upload-area.dragover {
+        border-color: #1a237e;
+        background-color: #e8eaf6;
+    }
+    .upload-icon {
+        font-size: 48px;
+        color: #1a237e;
+        margin-bottom: 15px;
+    }
+    .skill-badge {
+        font-size: 0.9rem;
+        margin: 5px;
+        padding: 8px 15px;
+        border-radius: 20px;
+        background-color: #e8eaf6;
+        color: #1a237e;
+        display: inline-block;
+    }
+    .job-card {
+        border-left: 4px solid #1a237e;
+        margin-bottom: 15px;
+        transition: transform 0.3s ease;
+    }
+    .job-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    .match-percentage {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #1a237e;
+    }
+    .progress {
+        height: 10px;
+        border-radius: 5px;
+    }
+    .progress-bar {
+        background-color: #1a237e;
+    }
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        flex-direction: column;
+    }
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        color: #1a237e;
+    }
+    .hidden {
+        display: none;
+    }
+    #extractedText {
+        max-height: 200px;
+        overflow-y: auto;
+        font-size: 0.9rem;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    .highlight {
+        background-color: #ffeb3b;
+        padding: 2px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Fixed Header is already in base.html -->
+
+<div class="loading-overlay hidden" id="loadingOverlay">
+    <div class="spinner-border mb-3" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-center" id="loadingText">Analyzing resume...</p>
+</div>
+
+<div class="analyzer-container">
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="mb-0"><i class="fas fa-file-alt me-2"></i>Resume Analyzer</h3>
+            <p class="mb-0">Upload your resume to get job recommendations based on your skills</p>
+        </div>
+        <div class="card-body">
+            <div class="upload-area mb-4" id="uploadArea">
+                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                <h5>Drag & Drop your resume here</h5>
+                <p class="text-muted">or</p>
+                <input type="file" id="resumeUpload" class="d-none" accept=".pdf,.doc,.docx">
+                <button class="btn btn-primary" id="browseButton">Browse Files</button>
+                <p class="mt-2 text-muted small">Supported formats: PDF, DOC, DOCX</p>
+            </div>
+            
+            <div id="analysisResults" class="hidden">
+                <h4 class="mb-3">Analysis Results</h4>
+                
+                <div class="mb-4">
+                    <h5>Extracted Text</h5>
+                    <div id="extractedText" class="border"></div>
+                </div>
+                
+                <div class="mb-4">
+                    <h5>Identified Skills</h5>
+                    <div id="skillsContainer"></div>
+                </div>
+                
+                <h5 class="mb-3">Job Recommendations</h5>
+                <div id="jobRecommendations"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script>
+    // Set PDF.js worker path
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    
+    // DOM Elements
+    const uploadArea = document.getElementById('uploadArea');
+    const resumeUpload = document.getElementById('resumeUpload');
+    const browseButton = document.getElementById('browseButton');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingText = document.getElementById('loadingText');
+    const analysisResults = document.getElementById('analysisResults');
+    const extractedText = document.getElementById('extractedText');
+    const skillsContainer = document.getElementById('skillsContainer');
+    const jobRecommendations = document.getElementById('jobRecommendations');
+    
+    // Predefined list of skills to look for
+    const skillsList = [
+        "JavaScript", "Python", "Java", "C#", "C++", "Ruby", "PHP", "Swift", "Kotlin", "Go",
+        "React", "Angular", "Vue", "Node.js", "Express", "Django", "Flask", "Spring", "ASP.NET",
+        "HTML", "CSS", "SASS", "LESS", "Bootstrap", "Tailwind CSS", "Material UI",
+        "SQL", "MySQL", "PostgreSQL", "MongoDB", "Firebase", "Oracle", "SQLite",
+        "AWS", "Azure", "Google Cloud", "Docker", "Kubernetes", "Jenkins", "Git", "GitHub",
+        "Machine Learning", "Deep Learning", "Data Science", "AI", "NLP", "Computer Vision",
+        "React Native", "Flutter", "Xamarin", "iOS", "Android", "Mobile Development",
+        "UI/UX", "Figma", "Adobe XD", "Sketch", "Photoshop", "Illustrator",
+        "Agile", "Scrum", "Kanban", "Project Management", "Team Leadership",
+        "Communication", "Problem Solving", "Critical Thinking", "Teamwork", "Time Management"
+    ];
+    
+    // Mock job listings
+    const jobListings = [
+        {
+            title: "Frontend Developer",
+            company: "TechCorp Inc.",
+            location: "Calapan City, Oriental Mindoro",
+            description: "We are looking for a skilled Frontend Developer proficient in React, JavaScript, and modern CSS frameworks.",
+            requiredSkills: ["JavaScript", "React", "HTML", "CSS", "Bootstrap", "Git"]
+        },
+        {
+            title: "Backend Engineer",
+            company: "DataSystems Ltd.",
+            location: "Remote",
+            description: "Join our team as a Backend Engineer with strong Python skills and experience with Django and PostgreSQL.",
+            requiredSkills: ["Python", "Django", "PostgreSQL", "API", "Git", "AWS"]
+        },
+        {
+            title: "Full Stack Developer",
+            company: "Innovate Solutions",
+            location: "Hybrid - Calapan City",
+            description: "Seeking a Full Stack Developer with experience in Node.js, React, and MongoDB to work on exciting projects.",
+            requiredSkills: ["JavaScript", "Node.js", "React", "MongoDB", "HTML", "CSS"]
+        },
+        {
+            title: "Mobile App Developer",
+            company: "AppWorks",
+            location: "Calapan City, Oriental Mindoro",
+            description: "Looking for a Mobile App Developer with experience in React Native or Flutter to join our growing team.",
+            requiredSkills: ["React Native", "JavaScript", "Mobile Development", "Git", "API"]
+        },
+        {
+            title: "UI/UX Designer",
+            company: "Creative Minds",
+            location: "Remote",
+            description: "We need a talented UI/UX Designer with skills in Figma, Adobe XD, and a good understanding of user experience principles.",
+            requiredSkills: ["UI/UX", "Figma", "Adobe XD", "Sketch", "HTML", "CSS"]
+        },
+        {
+            title: "Data Scientist",
+            company: "Analytics Pro",
+            location: "Hybrid - Calapan City",
+            description: "Join our data team as a Data Scientist with strong skills in Python, Machine Learning, and data visualization.",
+            requiredSkills: ["Python", "Machine Learning", "Data Science", "SQL", "Statistics"]
+        },
+        {
+            title: "DevOps Engineer",
+            company: "Cloud Systems",
+            location: "Remote",
+            description: "We're hiring a DevOps Engineer experienced with AWS, Docker, and CI/CD pipelines to improve our infrastructure.",
+            requiredSkills: ["AWS", "Docker", "Kubernetes", "Jenkins", "Git", "Linux"]
+        }
+    ];
+    
+    // Event Listeners
+    browseButton.addEventListener('click', () => {
+        resumeUpload.click();
+    });
+    
+    resumeUpload.addEventListener('change', handleFileUpload);
+    
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        if (e.dataTransfer.files.length) {
+            resumeUpload.files = e.dataTransfer.files;
+            handleFileUpload();
+        }
+    });
+    
+    // Functions
+    async function handleFileUpload() {
+        const file = resumeUpload.files[0];
+        if (!file) return;
+        
+        // Check file type
+        const fileType = file.type;
+        if (!fileType.includes('pdf') && !fileType.includes('word') && !fileType.includes('document')) {
+            alert('Please upload a PDF or Word document');
+            return;
+        }
+        
+        // Show loading overlay
+        loadingOverlay.classList.remove('hidden');
+        loadingText.textContent = 'Extracting text from resume...';
+        
+        try {
+            // Extract text from file
+            let text = '';
+            if (fileType.includes('pdf')) {
+                text = await extractTextFromPDF(file);
+            } else {
+                // For demo purposes, we'll use a mock extraction for Word docs
+                // In a real implementation, you would use a library like mammoth.js
+                text = await mockExtractTextFromWord(file);
+            }
+            
+            loadingText.textContent = 'Analyzing skills...';
+            
+            // Process the extracted text
+            const identifiedSkills = identifySkills(text);
+            
+            loadingText.textContent = 'Finding job matches...';
+            
+            // Get job recommendations
+            const recommendations = getJobRecommendations(identifiedSkills);
+            
+            // Display results
+            displayResults(text, identifiedSkills, recommendations);
+            
+        } catch (error) {
+            console.error('Error processing file:', error);
+            alert('Error processing file. Please try again.');
+        } finally {
+            // Hide loading overlay
+            loadingOverlay.classList.add('hidden');
+        }
+    }
+    
+    async function extractTextFromPDF(file) {
+        return new Promise((resolve, reject) => {
+            const fileReader = new FileReader();
+            
+            fileReader.onload = async function() {
+                try {
+                    const typedArray = new Uint8Array(this.result);
+                    const pdf = await pdfjsLib.getDocument(typedArray).promise;
+                    let text = '';
+                    
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        const strings = content.items.map(item => item.str);
+                        text += strings.join(' ') + '\n';
+                    }
+                    
+                    resolve(text);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            
+            fileReader.onerror = reject;
+            fileReader.readAsArrayBuffer(file);
+        });
+    }
+    
+    async function mockExtractTextFromWord(file) {
+        // This is a mock function for demo purposes
+        // In a real implementation, you would use a library like mammoth.js
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = function() {
+                // Simulate processing time
+                setTimeout(() => {
+                    // Return mock text based on filename
+                    const filename = file.name.toLowerCase();
+                    let mockText = '';
+                    
+                    if (filename.includes('developer') || filename.includes('web')) {
+                        mockText = `
+                        JOHN DOE
+                        Web Developer
+                        
+                        SUMMARY
+                        Experienced web developer with 5 years of experience in JavaScript, React, and Node.js.
+                        Passionate about creating responsive and user-friendly web applications.
+                        
+                        SKILLS
+                        • Programming Languages: JavaScript, HTML, CSS, Python
+                        • Frameworks & Libraries: React, Node.js, Express, Bootstrap
+                        • Tools: Git, GitHub, VS Code, Webpack
+                        • Databases: MongoDB, MySQL
+                        
+                        EXPERIENCE
+                        Senior Frontend Developer
+                        TechSolutions Inc. | 2020 - Present
+                        • Developed responsive web applications using React and Redux
+                        • Implemented modern CSS techniques with Sass and Bootstrap
+                        • Collaborated with UX designers to implement user-friendly interfaces
+                        
+                        Web Developer
+                        Digital Creations | 2018 - 2020
+                        • Built and maintained client websites using JavaScript and PHP
+                        • Created RESTful APIs with Node.js and Express
+                        • Worked with MongoDB and MySQL databases
+                        
+                        EDUCATION
+                        Bachelor of Science in Computer Science
+                        University of Technology | 2014 - 2018
+                        `;
+                    } else if (filename.includes('data') || filename.includes('science')) {
+                        mockText = `
+                        JANE SMITH
+                        Data Scientist
+                        
+                        SUMMARY
+                        Data scientist with expertise in machine learning, statistical analysis, and data visualization.
+                        Experienced in Python, R, and SQL with a strong background in mathematics.
+                        
+                        SKILLS
+                        • Programming Languages: Python, R, SQL
+                        • Machine Learning: Scikit-learn, TensorFlow, Keras
+                        • Data Analysis: Pandas, NumPy, Matplotlib, Seaborn
+                        • Big Data: Spark, Hadoop
+                        • Cloud Platforms: AWS, Google Cloud
+                        
+                        EXPERIENCE
+                        Senior Data Scientist
+                        Analytics Pro | 2019 - Present
+                        • Developed machine learning models for customer segmentation
+                        • Created data pipelines using Python and AWS
+                        • Presented insights to stakeholders using data visualization
+                        
+                        Data Analyst
+                        Insight Data | 2017 - 2019
+                        • Performed statistical analysis on large datasets
+                        • Created dashboards using Tableau and Power BI
+                        • Optimized SQL queries for better performance
+                        
+                        EDUCATION
+                        Master of Science in Data Science
+                        Data University | 2015 - 2017
+                        
+                        Bachelor of Science in Statistics
+                        State University | 2011 - 2015
+                        `;
+                    } else {
+                        mockText = `
+                        ALEX JOHNSON
+                        Software Engineer
+                        
+                        SUMMARY
+                        Versatile software engineer with experience in full-stack development,
+                        mobile applications, and cloud infrastructure.
+                        
+                        SKILLS
+                        • Programming Languages: Java, Python, JavaScript, C#
+                        • Web Development: React, Angular, Node.js, HTML, CSS
+                        • Mobile Development: React Native, Android SDK
+                        • Cloud Services: AWS, Azure, Docker, Kubernetes
+                        • Databases: PostgreSQL, MongoDB, Firebase
+                        
+                        EXPERIENCE
+                        Software Engineer
+                        Tech Innovations | 2018 - Present
+                        • Developed full-stack applications using React and Node.js
+                        • Created mobile apps with React Native for iOS and Android
+                        • Implemented CI/CD pipelines using Jenkins and GitHub Actions
+                        
+                        Junior Developer
+                        Code Solutions | 2016 - 2018
+                        • Built web applications using Angular and Express
+                        • Worked with SQL and NoSQL databases
+                        • Participated in Agile development processes
+                        
+                        EDUCATION
+                        Bachelor of Science in Software Engineering
+                        Tech Institute | 2012 - 2016
+                        `;
+                    }
+                    
+                    resolve(mockText);
+                }, 1500);
+            };
+            reader.readAsText(file);
+        });
+    }
+    
+    function identifySkills(text) {
+        const identifiedSkills = [];
+        const textLower = text.toLowerCase();
+        
+        skillsList.forEach(skill => {
+            const skillLower = skill.toLowerCase();
+            // Check if the skill is mentioned in the text
+            if (textLower.includes(skillLower)) {
+                identifiedSkills.push(skill);
+            }
+        });
+        
+        return identifiedSkills;
+    }
+    
+    function getJobRecommendations(skills) {
+        const recommendations = [];
+        
+        jobListings.forEach(job => {
+            // Calculate match percentage
+            let matchCount = 0;
+            job.requiredSkills.forEach(requiredSkill => {
+                if (skills.includes(requiredSkill)) {
+                    matchCount++;
+                }
+            });
+            
+            const matchPercentage = (matchCount / job.requiredSkills.length) * 100;
+            
+            // Only include jobs with at least 30% match
+            if (matchPercentage >= 30) {
+                recommendations.push({
+                    ...job,
+                    matchPercentage: Math.round(matchPercentage)
+                });
+            }
+        });
+        
+        // Sort by match percentage (highest first)
+        recommendations.sort((a, b) => b.matchPercentage - a.matchPercentage);
+        
+        return recommendations;
+    }
+    
+    function displayResults(text, skills, recommendations) {
+        // Display extracted text with highlighted skills
+        let highlightedText = text;
+        skills.forEach(skill => {
+            const regex = new RegExp(skill, 'gi');
+            highlightedText = highlightedText.replace(regex, match => `<span class="highlight">${match}</span>`);
+        });
+        extractedText.innerHTML = highlightedText.replace(/\n/g, '<br>');
+        
+        // Display identified skills
+        skillsContainer.innerHTML = '';
+        if (skills.length === 0) {
+            skillsContainer.innerHTML = '<p class="text-muted">No skills identified. Try uploading a different resume.</p>';
+        } else {
+            skills.forEach(skill => {
+                const badge = document.createElement('span');
+                badge.className = 'skill-badge';
+                badge.textContent = skill;
+                skillsContainer.appendChild(badge);
+            });
+        }
+        
+        // Display job recommendations
+        jobRecommendations.innerHTML = '';
+        if (recommendations.length === 0) {
+            jobRecommendations.innerHTML = '<p class="text-muted">No matching jobs found based on your skills.</p>';
+        } else {
+            recommendations.forEach(job => {
+                const jobCard = document.createElement('div');
+                jobCard.className = 'card job-card mb-3';
+                
+                // Create matched skills list
+                const matchedSkills = job.requiredSkills.filter(skill => skills.includes(skill));
+                const matchedSkillsHTML = matchedSkills.map(skill => `<span class="skill-badge">${skill}</span>`).join('');
+                
+                jobCard.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0">${job.title}</h5>
+                            <span class="match-percentage">${job.matchPercentage}% Match</span>
+                        </div>
+                        <h6 class="card-subtitle mb-2 text-muted">${job.company} | ${job.location}</h6>
+                        <p class="card-text">${job.description}</p>
+                        
+                        <div class="mb-3">
+                            <div class="progress mb-2">
+                                <div class="progress-bar" role="progressbar" style="width: ${job.matchPercentage}%" 
+                                    aria-valuenow="${job.matchPercentage}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <small class="text-muted">Required Skills:</small>
+                            <div class="mt-1">
+                                ${job.requiredSkills.map(skill => 
+                                    `<span class="skill-badge ${skills.includes(skill) ? 'bg-success text-white' : ''}">${skill}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary btn-sm mt-2">Apply Now</button>
+                    </div>
+                `;
+                
+                jobRecommendations.appendChild(jobCard);
+            });
+        }
+        
+        // Show results section
+        analysisResults.classList.remove('hidden');
+    }
+</script>
+{% endblock %}
+

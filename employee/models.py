@@ -37,6 +37,7 @@ class Employee(models.Model):
     document = models.FileField(upload_to='employee_documents/', blank=True, null=True)
     document_name = models.CharField(max_length=100, blank=True, null=True)
     avatar = models.ImageField(upload_to='employee_avatars/', null=True, blank=True)
+    resume = models.FileField(upload_to='employee_resumes/', null=True, blank=True)
     full_name = models.CharField(max_length=255, null=True, blank=True)
     
     # Approval fields

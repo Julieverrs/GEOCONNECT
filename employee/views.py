@@ -22,6 +22,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 import os
 import uuid
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 def employee_signup(request):
     if request.method == "POST":
@@ -297,6 +299,18 @@ def update_profile(request):
             # Save new avatar
             employee.avatar = request.FILES['avatar']
         
+        # Handle resume upload
+        if 'resume' in request.FILES:
+            # Delete old resume if it exists
+            if hasattr(employee, 'resume') and employee.resume:
+                try:
+                    default_storage.delete(employee.resume.path)
+                except:
+                    pass  # If deletion fails, continue anyway
+            
+            # Save new resume
+            employee.resume = request.FILES['resume']
+        
         employee.save()
         
         response_data = {
@@ -307,6 +321,10 @@ def update_profile(request):
         # Include avatar URL if it was updated
         if 'avatar' in request.FILES:
             response_data['avatar_url'] = employee.avatar.url
+            
+        # Include resume URL if it was updated
+        if 'resume' in request.FILES and hasattr(employee, 'resume') and employee.resume:
+            response_data['resume_url'] = employee.resume.url
         
         return JsonResponse(response_data)
     
@@ -424,3 +442,53 @@ def apply_job(request):
             'success': False,
             'error': str(e)
         }, status=400)
+
+# Add a new view function to handle the resume removal
+
+@employee_login_required
+@require_http_methods(["POST"])
+def remove_resume(request):
+    """Remove the resume file for the logged-in employee."""
+    try:
+        employee = Employee.objects.get(username=request.session.get('employee_username'))
+        
+        # Check if employee has a resume
+        if employee.resume:
+            # Delete the file from storage
+            try:
+                employee.resume.delete(save=False)
+            except Exception as e:
+                print(f"Error deleting resume file: {str(e)}")
+            
+            # Update the employee record
+            employee.resume = None
+            employee.save()
+            
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'error': 'No resume found'})
+    except Employee.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Employee not found'})
+    except Exception as e:
+        print(f"Error in remove_resume: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@employee_login_required
+def resume_analyzer(request):
+    """
+    View for the resume analyzer page.
+    """
+    employee_username = request.session.get('employee_username')
+    
+    # Get the employee object
+    employee = Employee.objects.filter(username=employee_username).first()
+    if not employee:
+        messages.error(request, "User not found.")
+        return redirect('employee_login')
+    
+    context = {
+        'employee': employee,
+        'username': employee_username,
+    }
+    return render(request, 'employee/resume-analyzer.html', context)
+
