@@ -8,7 +8,7 @@ const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Temporary", "Internshi
 const EXPERIENCE_LEVELS = ["Entry Level", "Junior", "Mid Level", "Senior", "Lead", "Expert"]
 
 // Add this at the top of your file with the other constants
-const WORK_SETUPS = ["On-site", "Hybrid", "Remote"]
+const WORK_SETUPS = ["On-site", "Remote"]
 
 // Remove this function entirely
 // async function getCompanyLocation() {

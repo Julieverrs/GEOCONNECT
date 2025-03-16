@@ -1838,13 +1838,14 @@
                 <h1>Welcome To GeoConnect</h1>
                 <p>Manage your job postings and find the perfect candidates.</p>
                 <div class="welcome-actions">
-                    <button id="recommendationsBtn" class="get-recommendations-button">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    Get Recommendations
-                </button>
-            </div>
+        <a href="{% url 'candidate_recommendations' %}" class="get-recommendations-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 8l4 4-4 4"></path>
+                <path d="M3 12h18"></path>
+            </svg>
+            Get Recommendations
+        </a>
+    </div>
         </div>
         <div class="welcome-visualization">
             <div class="stats-grid">
@@ -2079,7 +2080,6 @@
                     <select id="workSetup" name="workSetup" required>
                         <option value="">Select Work Setup</option>
                         <option value="On-site">On-site</option>
-                        <option value="Hybrid">Hybrid</option>
                         <option value="Remote">Remote</option>
                     </select>
                 </div>
@@ -2202,7 +2202,6 @@
                 <select id="editWorkSetup" name="editWorkSetup" required>
                     <option value="">Select Work Setup</option>
                     <option value="On-site">On-site</option>
-                    <option value="Hybrid">Hybrid</option>
                     <option value="Remote">Remote</option>
                 </select>
             </div>
@@ -2444,19 +2443,6 @@
                 });
             }
         });
-
-        const recommendationsBtn = document.getElementById('recommendationsBtn');
-        if (recommendationsBtn) {
-            recommendationsBtn.addEventListener('click', function() {
-                // This would typically call an API for personalized recommendations
-                toastNotification("Generating your personalized job candidate recommendations...", "info");
-                
-                // Simulate loading recommendations (in a real app, this would be an API call)
-                setTimeout(() => {
-                    toastNotification("Recommendations ready! Check your dashboard for top candidate matches.", "success");
-                }, 2000);
-            });
-        }
     });
 </script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>

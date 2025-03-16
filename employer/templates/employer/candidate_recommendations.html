@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Candidate Recommendations{% endblock %}
+
+{% block extra_css %}
+<!-- Add select2 CSS from CDN -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        background-color: #f8f9fa;
+        color: #495057;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+    
+    .back-button:hover {
+        background-color: #e9ecef;
+        color: #212529;
+        text-decoration: none;
+    }
+    
+    .back-button i {
+        margin-right: 8px;
+    }
+    
+    .recommendation-form {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .form-section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #495057;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0.5rem;
+    }
+    
+    .candidate-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        background-color: white;
+    }
+    
+    .candidate-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    }
+    
+    .candidate-header {
+        background-color: #f8f9fa;
+        padding: 18px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .candidate-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #343a40;
+        margin: 0;
+    }
+    
+    .candidate-body {
+        padding: 20px;
+    }
+    
+    .candidate-info {
+        margin-bottom: 15px;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+    }
+    
+    .info-value {
+        color: #343a40;
+    }
+    
+    .match-percentage {
+        font-size: 24px;
+        font-weight: bold;
+        color: #28a745;
+        background-color: rgba(40, 167, 69, 0.1);
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+    
+    .skills-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+    }
+    
+    .skill-badge {
+        background-color: #e9ecef;
+        color: #495057;
+        padding: 6px 12px;
+        border-radius: 20px;
+        display: inline-block;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+    }
+    
+    .skill-badge:hover {
+        transform: translateY(-2px);
+    }
+    
+    .skill-match {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        margin: 30px 0;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .loading-spinner p {
+        margin-top: 12px;
+        color: #495057;
+        font-weight: 500;
+    }
+    
+    .recommendations-container {
+        display: none;
+    }
+    
+    .experience-slider .form-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+    
+    .experience-value {
+        font-weight: bold;
+        background-color: #e9ecef;
+        padding: 2px 8px;
+        border-radius: 4px;
+        color: #495057;
+    }
+    
+    .form-range::-webkit-slider-thumb {
+        background: #0d6efd;
+    }
+    
+    .form-range::-moz-range-thumb {
+        background: #0d6efd;
+    }
+    
+    .form-range::-ms-thumb {
+        background: #0d6efd;
+    }
+    
+    .select2-container--default .select2-selection--multiple {
+        border-color: #ced4da;
+        border-radius: 0.25rem;
+    }
+    
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #e9ecef;
+        border: 1px solid #ced4da;
+        border-radius: 20px;
+        padding: 2px 8px;
+    }
+    
+    .alert-info {
+        border-left: 4px solid #0dcaf0;
+    }
+    
+    .view-profile-btn {
+        background-color: #f8f9fa;
+        color: #495057;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 6px 12px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 10px;
+    }
+    
+    .view-profile-btn:hover {
+        background-color: #e9ecef;
+        color: #212529;
+    }
+    
+    @media (max-width: 768px) {
+        .candidate-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .match-percentage {
+            margin-top: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header">
+                <h1 class="mb-0">Find Recommended Candidates</h1>
+                <a href="{% url 'employer_home' %}" class="back-button">
+                    <i class="fas fa-arrow-left"></i> Back to Employer Home
+                </a>
+            </div>
+            <p class="lead mb-4">Fill in your job requirements to get matched with the most suitable candidates</p>
+            
+            <div class="recommendation-form">
+                <div class="form-section-title">Job Requirements</div>
+                <form id="recommendationForm">
+                    <div class="mb-3">
+                        <label for="industry" class="form-label">Industry</label>
+                        <select class="form-select" id="industry" name="industry" required>
+                            <option value="" selected disabled>Select an industry</option>
+                            <option value="technology">Technology</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="finance">Finance</option>
+                            <option value="education">Education</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="retail">Retail</option>
+                            <option value="hospitality">Hospitality</option>
+                            <option value="construction">Construction</option>
+                            <option value="transportation">Transportation</option>
+                            <option value="media">Media & Entertainment</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="skills" class="form-label">Required Skills</label>
+                        <select class="form-select" id="skills" name="skills" multiple="multiple" required>
+                            <!-- Technical Skills -->
+                            <option value="python">Python</option>
+                            <option value="java">Java</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="react">React</option>
+                            <option value="angular">Angular</option>
+                            <option value="vue">Vue.js</option>
+                            <option value="node">Node.js</option>
+                            <option value="django">Django</option>
+                            <option value="flask">Flask</option>
+                            <option value="sql">SQL</option>
+                            <option value="nosql">NoSQL</option>
+                            <option value="aws">AWS</option>
+                            <option value="docker">Docker</option>
+                            <option value="kubernetes">Kubernetes</option>
+                            <option value="devops">DevOps</option>
+                            
+                            <!-- Business Skills -->
+                            <option value="project_management">Project Management</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="sales">Sales</option>
+                            <option value="customer_service">Customer Service</option>
+                            <option value="accounting">Accounting</option>
+                            <option value="hr">Human Resources</option>
+                            <option value="communication">Communication</option>
+                            <option value="leadership">Leadership</option>
+                            <option value="problem_solving">Problem Solving</option>
+                            <option value="teamwork">Teamwork</option>
+                            <option value="time_management">Time Management</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3 experience-slider">
+                        <label for="experience" class="form-label">
+                            <span>Minimum Experience (Years)</span>
+                            <span class="experience-value">0</span>
+                        </label>
+                        <input type="range" class="form-range" id="experience" name="experience" min="0" max="15" step="1" value="0">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="education" class="form-label">Minimum Education Level</label>
+                        <select class="form-select" id="education" name="education">
+                            <option value="any">Any Education Level</option>
+                            <option value="high_school">High School</option>
+                            <option value="associate">Associate Degree</option>
+                            <option value="bachelor">Bachelor's Degree</option>
+                            <option value="master">Master's Degree</option>
+                            <option value="phd">PhD or Doctorate</option>
+                        </select>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-search me-2"></i> Find Candidates
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Finding the best candidates for you...</p>
+            </div>
+            
+            <div class="recommendations-container" id="recommendationsContainer">
+                <h2 class="mb-4">Recommended Candidates</h2>
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Showing candidates that best match your requirements. Click on a candidate to view their full profile.
+                </div>
+                
+                <div id="candidatesList" class="row">
+                    <!-- Candidate cards will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Add jQuery and select2 JS from CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{% static 'js/candidate_recommendations.js' %}"></script>
+{% endblock %}
+

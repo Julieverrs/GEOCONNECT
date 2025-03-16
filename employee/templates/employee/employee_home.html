@@ -449,7 +449,7 @@
           <form id="profileForm" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="text-center mb-4">
-              <img id="avatarPreview" src="{{ employee.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Profile Picture" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
+              
               <div class="mt-2">
                 <label for="avatarUpload" class="btn btn-sm btn-outline-primary">Change Photo</label>
                 <input type="file" id="avatarUpload" name="avatar" class="d-none" accept="image/jpeg, image/png, image/jpg">

@@ -86,7 +86,6 @@ class Employer(models.Model):
 class Job(models.Model):
     WORK_SETUP_CHOICES = [
         ('On-site', 'On-site'),
-        ('Hybrid', 'Hybrid'),
         ('Remote', 'Remote'),
     ]
     

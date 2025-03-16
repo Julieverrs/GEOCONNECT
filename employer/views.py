@@ -23,6 +23,30 @@ from .tokens import employer_password_reset_token
 from datetime import datetime # Import datetime for interview_date
 
 
+def candidate_recommendations(request):
+    """
+    View for the candidate recommendations page.
+    """
+    # Check if user is logged in using session
+    employer_username = request.session.get('employer_username')
+    if not employer_username:
+        messages.error(request, "Please login to access this page.")
+        return redirect('employer_login')
+    
+    # Get the employer object
+    employer = Employer.objects.filter(username=employer_username).first()
+    if not employer:
+        messages.error(request, "User not found.")
+        return redirect('employer_login')
+    
+    context = {
+        'employer': employer,
+        'username': employer_username,
+    }
+    return render(request, 'employer/candidate_recommendations.html', context)
+
+
+
 def employer_signup(request):
     if request.method == "POST":
         form = EmployerSignupForm(request.POST, request.FILES)  # Add request.FILES here
@@ -563,27 +587,54 @@ def application_detail(request, application_id):
     
     try:
         employer = Employer.objects.get(username=request.session['employer_username'])
-        application = JobApplication.objects.get(
-            id=application_id,
-            job__employer=employer
-        )
+        application = get_object_or_404(JobApplication, id=application_id, job__employer=employer)
         
+        # Debug information
+        print(f"Found application: {application.id} for job: {application.job.title}")
+        
+        # Get employee data safely
+        employee = application.employee
+        employee_name = employee.username  # Default to username
+        if hasattr(employee, 'first_name') and hasattr(employee, 'last_name'):
+            if employee.first_name and employee.last_name:
+                employee_name = f"{employee.first_name} {employee.last_name}"
+        
+        # Check if full_name exists and use it if available
+        if hasattr(employee, 'full_name') and employee.full_name:
+            employee_name = employee.full_name
+            
+        # Format application data
         application_data = {
             'id': application.id,
             'job_title': application.job.title,
-            'employee_name': application.employee.get_full_name(),
+            'job_location': application.job.location,
+            'employee_name': employee_name,
+            'employee_email': employee.email,
             'status': application.status,
-            'application_date': application.application_date.strftime('%Y-%m-%d %H:%M'),
-            'resume_url': application.resume.url if application.resume else None,
-            'cover_letter': application.cover_letter,
-            'employer_notes': application.employer_notes,
-            'interview_date': application.interview_date.strftime('%Y-%m-%d %H:%M') if application.interview_date else None
+            'application_date': application.application_date.strftime('%B %d, %Y'),
+            'cover_letter': application.cover_letter or "No cover letter provided",
+            'employer_notes': application.employer_notes or "",
         }
         
+        # Add resume URL if available
+        if application.resume:
+            try:
+                application_data['resume_url'] = application.resume.url
+            except:
+                application_data['resume_url'] = None
+        else:
+            application_data['resume_url'] = None
+            
+        # Add interview date if available
+        if application.interview_date:
+            application_data['interview_date'] = application.interview_date.strftime('%B %d, %Y at %I:%M %p')
+        
         return JsonResponse({'application': application_data})
-    except JobApplication.DoesNotExist:
-        return JsonResponse({'error': 'Application not found'}, status=404)
     except Exception as e:
+        # Log the error for debugging
+        import traceback
+        print(f"Error in application_detail: {str(e)}")
+        print(traceback.format_exc())
         return JsonResponse({'error': str(e)}, status=500)
 
 @require_POST
@@ -592,6 +643,10 @@ def update_application_status(request, application_id):
         return JsonResponse({'error': 'Not authenticated'}, status=403)
     
     try:
+        # Debug log
+        print(f"Updating application {application_id}")
+        print(f"Request body: {request.body.decode('utf-8')}")
+        
         employer = Employer.objects.get(username=request.session['employer_username'])
         application = JobApplication.objects.get(
             id=application_id,
@@ -602,18 +657,43 @@ def update_application_status(request, application_id):
         new_status = data.get('status')
         notes = data.get('notes', '')
         interview_date = data.get('interview_date')
+        interview_location = data.get('interview_location', '')
         
-        if new_status not in dict(JobApplication.STATUS_CHOICES):
-            return JsonResponse({'error': 'Invalid status'}, status=400)
+        print(f"Parsed data: status={new_status}, notes={notes}, interview_date={interview_date}")
         
+        # Validate status
+        valid_statuses = [status[0] for status in JobApplication.STATUS_CHOICES]
+        if new_status not in valid_statuses:
+            return JsonResponse({
+                'error': f'Invalid status. Valid statuses are: {", ".join(valid_statuses)}'
+            }, status=400)
+        
+        # Update application
         application.status = new_status
         application.employer_notes = notes
         
-        if interview_date and new_status == 'scheduled_interview':
+        # Handle interview date if provided
+        if interview_date and new_status == 'interview':
             try:
-                application.interview_date = datetime.strptime(interview_date, '%Y-%m-%dT%H:%M')
-            except ValueError:
-                return JsonResponse({'error': 'Invalid interview date format'}, status=400)
+                # Try different date formats
+                try:
+                    application.interview_date = datetime.strptime(interview_date, '%Y-%m-%dT%H:%M')
+                except ValueError:
+                    try:
+                        application.interview_date = datetime.fromisoformat(interview_date)
+                    except ValueError:
+                        # If all else fails, just use the current date/time
+                        application.interview_date = timezone.now()
+                        return JsonResponse({
+                            'error': 'Could not parse interview date. Using current date instead.'
+                        }, status=400)
+                
+                # Set interview location if provided
+                if hasattr(application, 'interview_location') and interview_location:
+                    application.interview_location = interview_location
+            except Exception as e:
+                print(f"Error parsing interview date: {str(e)}")
+                return JsonResponse({'error': f'Invalid interview date format: {str(e)}'}, status=400)
         
         application.save()
         
@@ -624,5 +704,8 @@ def update_application_status(request, application_id):
     except JobApplication.DoesNotExist:
         return JsonResponse({'error': 'Application not found'}, status=404)
     except Exception as e:
+        import traceback
+        print(f"Error in update_application_status: {str(e)}")
+        print(traceback.format_exc())
         return JsonResponse({'error': str(e)}, status=500)
 

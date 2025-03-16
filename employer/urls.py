@@ -18,5 +18,6 @@ urlpatterns = [
     path('view-applications/', views.view_applications, name='view_applications'),
     path('application/<int:application_id>/', views.application_detail, name='application_detail'),
     path('application/<int:application_id>/update-status/', views.update_application_status, name='update_application_status'),
+    path('candidate-recommendations/', views.candidate_recommendations, name='candidate_recommendations'),
 ]
 
