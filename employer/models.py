@@ -86,6 +86,7 @@ class Employer(models.Model):
 class Job(models.Model):
     WORK_SETUP_CHOICES = [
         ('On-site', 'On-site'),
+        ('Hybrid', 'Hybrid'),
         ('Remote', 'Remote'),
     ]
     
@@ -114,6 +115,8 @@ class Job(models.Model):
     employer = models.ForeignKey('Employer', on_delete=models.CASCADE, related_name='jobs')
     title = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     job_type = models.CharField(max_length=20, choices=JOB_TYPES)
     work_setup = models.CharField(max_length=20, choices=WORK_SETUP_CHOICES)
     description = models.TextField()
@@ -160,4 +163,3 @@ class JobApplication(models.Model):
 
     class Meta:
         ordering = ['-application_date']
-

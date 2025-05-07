@@ -97,23 +97,35 @@ def employer_login(request):
             user = Employer.objects.filter(username=username).first()
             
             if not user:
+                # Remove toast prefix
                 messages.error(request, "Username not found. Please check your username or sign up.")
                 return render(request, 'employer/employer_login.html', {'form': form})
             
             if not user.is_active:
+                # Remove toast prefix
                 messages.error(request, "Your account has been deactivated. Please contact support.")
                 return render(request, 'employer/employer_login.html', {'form': form})
             
             if not user.is_approved:
+                # Remove toast prefix
                 messages.error(request, "Your account is pending approval. Please wait for admin approval.")
                 return render(request, 'employer/employer_login.html', {'form': form})
             
             if check_password(password, user.password):
                 request.session['employer_id'] = user.id
                 request.session['employer_username'] = username
-                messages.success(request, f"Welcome back, {username}!")
-                return redirect('employer_home')
+                
+                # Check if the user is coming from logout
+                if request.session.get('from_logout'):
+                    # Clear the flag
+                    request.session.pop('from_logout', None)
+                    # Don't show welcome back message
+                    return redirect('employer_home')
+                else:
+                    # Remove toast message completely
+                    return redirect('employer_home')
             else:
+                # Remove toast prefix
                 messages.error(request, "Incorrect password. Please try again.")
         else:
             messages.error(request, "Invalid form submission. Please check your input.")
@@ -123,12 +135,23 @@ def employer_login(request):
 
 def employer_logout(request):
     try:
+        # Get the username before clearing the session
+        username = request.session.get('employer_username', 'User')
+        
         # Clear specific session data
         request.session.pop('employer_username', None)
         request.session.pop('employer_id', None)
-        messages.success(request, "You have been successfully logged out.")
-        return redirect('employer_login')
+        
+        # Set a flag to indicate coming from logout
+        request.session['from_logout'] = True
+        
+        # Add a message that will be displayed on the employee login page
+        messages.success(request, f"Employer {username} has been successfully logged out.")
+        
+        # Redirect to employee login instead of employer login
+        return redirect('employee_login')
     except Exception as e:
+        # Remove toast prefix
         messages.error(request, "An error occurred during logout.")
         return redirect('employer_login')
 
@@ -172,12 +195,14 @@ def create_job(request):
                 employer=employer,
                 title=data['jobTitle'],
                 location=data['location'],
+                latitude=data.get('latitude'),
+                longitude=data.get('longitude'),
                 job_type=data['jobType'],
                 work_setup=data['workSetup'],
                 description=data['description'],
                 salary_range=data['salary'],
                 experience_level=data['experience'],
-                requirements=data['requirements']  # Add this line
+                requirements=data['requirements']
             )
             
             return JsonResponse({
@@ -186,12 +211,14 @@ def create_job(request):
                     'id': job.id,
                     'title': job.title,
                     'location': job.location,
+                    'latitude': job.latitude,
+                    'longitude': job.longitude,
                     'job_type': job.get_job_type_display(),
                     'work_setup': job.get_work_setup_display(),
                     'description': job.description,
                     'salary_range': job.salary_range,
                     'experience_level': job.get_experience_level_display(),
-                    'requirements': job.requirements,  # Add this line
+                    'requirements': job.requirements,
                     'status': 'Active',
                     'applications_count': 0
                 }
@@ -259,6 +286,7 @@ def search_jobs(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+# Update the get_job view to include latitude and longitude
 def get_job(request, job_id):
     if not request.session.get('employer_username'):
         return JsonResponse({'error': 'Not authenticated'}, status=403)
@@ -271,6 +299,8 @@ def get_job(request, job_id):
             'id': job.id,
             'title': job.title,
             'location': job.location,
+            'latitude': job.latitude,
+            'longitude': job.longitude,
             'job_type': job.job_type,
             'work_setup': job.work_setup,
             'description': job.description,
@@ -284,6 +314,7 @@ def get_job(request, job_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
+# Update the edit_job view to handle latitude and longitude
 @require_POST
 def edit_job(request, job_id):
     if not request.session.get('employer_username'):
@@ -297,12 +328,14 @@ def edit_job(request, job_id):
         # Update job fields
         job.title = data['jobTitle']
         job.location = data['location']
+        job.latitude = data.get('latitude')
+        job.longitude = data.get('longitude')
         job.job_type = data['jobType']
         job.description = data['description']
         job.salary_range = data['salary']
         job.experience_level = data['experience']
         job.status = data['status']
-        job.requirements = data['requirements']  # Add this line
+        job.requirements = data['requirements']
         job.save()
         
         return JsonResponse({
@@ -311,12 +344,14 @@ def edit_job(request, job_id):
                 'id': job.id,
                 'title': job.title,
                 'location': job.location,
+                'latitude': job.latitude,
+                'longitude': job.longitude,
                 'job_type': job.get_job_type_display(),
                 'description': job.description,
                 'salary_range': job.salary_range,
                 'experience_level': job.get_experience_level_display(),
                 'status': job.status,
-                'requirements': job.requirements,  # Add this line
+                'requirements': job.requirements,
                 'applications_count': job.applications_count
             }
         })
@@ -462,7 +497,7 @@ def search_jobs(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
-    # Add these new views
+
 def employer_password_reset(request):
     if request.method == "POST":
         form = EmployerPasswordResetForm(request.POST)
@@ -708,4 +743,3 @@ def update_application_status(request, application_id):
         print(f"Error in update_application_status: {str(e)}")
         print(traceback.format_exc())
         return JsonResponse({'error': str(e)}, status=500)
-

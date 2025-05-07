@@ -24,6 +24,14 @@ import os
 import uuid
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+# Add these imports at the top of the file
+from .resume_analyzer import ResumeAnalyzer
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from employer.models import Job
+import json
+import logging
+import re
 
 def employee_signup(request):
     if request.method == "POST":
@@ -61,26 +69,36 @@ def employee_login(request):
             user = Employee.objects.filter(username=username).first()
             
             if not user:
-                messages.error(request, "toast:Username not found. Please check your username or sign up.")
+                # Remove toast prefix
+                messages.error(request, "Username not found. Please check your username or sign up.")
                 return render(request, 'employee/employee_login.html', {'form': form})
             
             if not user.is_active:
-                messages.error(request, "toast:Your account has been deactivated. Please contact support.")
+                # Remove toast prefix
+                messages.error(request, "Your account has been deactivated. Please contact support.")
                 return render(request, 'employee/employee_login.html', {'form': form})
             
             # Check approval status
             if not user.is_approved:
-                messages.error(request, "toast:Your account is pending approval. Please wait for admin approval.")
+                # Remove toast prefix
+                messages.error(request, "Your account is pending approval. Please wait for admin approval.")
                 return render(request, 'employee/employee_login.html', {'form': form})
             
             if check_password(password, user.password):
                 request.session['employee_id'] = user.id
                 request.session['employee_username'] = username
                 request.session['employee_email'] = user.email
-                messages.success(request, f"toast:Welcome back, {username}!")
-                return redirect('employee_home')
+                # Check if the user is coming from logout
+                if request.session.get('from_logout'):
+                    # Clear the flag
+                    request.session.pop('from_logout', None)
+                    # Don't show welcome back message
+                    return redirect('employee_home')
+                else:
+                    return redirect('employee_home')
             else:
-                messages.error(request, "toast:Incorrect password. Please try again.")
+                # Remove toast prefix
+                messages.error(request, "Incorrect password. Please try again.")
                 return render(request, 'employee/employee_login.html', {'form': form})
     else:
         form = EmployeeLoginForm()
@@ -119,13 +137,22 @@ def employee_home(request):
 
 def employee_logout(request):
     try:
+        # Get the username before clearing the session
+        username = request.session.get('employee_username', 'User')
+        
         # Clear specific session data
         request.session.pop('employee_username', None)
         request.session.pop('employee_id', None)
-        messages.success(request, "toast:You have been successfully logged out.")
+        
+        # Set a flag to indicate coming from logout
+        request.session['from_logout'] = True
+        
+        # Remove toast prefix
+        messages.success(request, f"Employee {username} has been successfully logged out.")
         return redirect('employee_login')
     except Exception as e:
-        messages.error(request, "toast:An error occurred during logout.")
+        # Remove toast prefix
+        messages.error(request, "An error occurred during logout.")
         return redirect('employee_login')
         
 # Add these new views
@@ -492,3 +519,133 @@ def resume_analyzer(request):
     }
     return render(request, 'employee/resume-analyzer.html', context)
 
+# Add this new view function after the existing resume_analyzer view
+@login_required
+def resume_analyzer_view(request):
+    """View for the resume analyzer page"""
+    return render(request, 'employee/resume-analyzer.html')
+
+@login_required
+def analyze_resume(request):
+    """API endpoint to analyze a resume"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
+    
+    if 'resume' not in request.FILES:
+        return JsonResponse({'error': 'No file was uploaded'}, status=400)
+    
+    resume_file = request.FILES['resume']
+    
+    # Check file size (limit to 5MB)
+    if resume_file.size > 5 * 1024 * 1024:
+        return JsonResponse({'error': 'File size exceeds 5MB limit'}, status=400)
+    
+    # Check file extension
+    allowed_extensions = ['.pdf', '.docx', '.txt']
+    file_extension = os.path.splitext(resume_file.name)[1].lower()
+    
+    if file_extension not in allowed_extensions:
+        return JsonResponse({
+            'error': f'Invalid file format. Allowed formats: {", ".join(allowed_extensions)}'
+        }, status=400)
+    
+    try:
+        # Initialize the resume analyzer
+        analyzer = ResumeAnalyzer()
+        
+        # Get job listings for matching (if available)
+        from employer.models import JobListing
+        job_listings = JobListing.objects.filter(is_active=True)
+        
+        # Analyze the resume
+        analysis_results = analyzer.analyze(resume_file, job_listings)
+        
+        # Format job matches for JSON response
+        if 'job_matches' in analysis_results:
+            job_matches = []
+            for job, score in analysis_results['job_matches']:
+                job_matches.append({
+                    'job': {
+                        'id': job.id,
+                        'title': job.title,
+                        'description': job.description[:200] + '...' if len(job.description) > 200 else job.description,
+                        'company': job.company.name if hasattr(job, 'company') and job.company else 'Unknown'
+                    },
+                    'score': float(score)
+                })
+            analysis_results['job_matches'] = job_matches
+        
+        return JsonResponse(analysis_results)
+    
+    except Exception as e:
+        logging.error(f"Error analyzing resume: {str(e)}")
+        return JsonResponse({'error': 'An error occurred while analyzing the resume'}, status=500)
+
+@require_http_methods(["POST"])
+def analyze_resume(request):
+    """
+    Process the uploaded resume and return analysis results.
+    """
+    if 'resume' not in request.FILES:
+        return JsonResponse({
+            'success': False,
+            'error': 'No resume file provided'
+        })
+    
+    resume_file = request.FILES['resume']
+    
+    try:
+        # Initialize the resume analyzer
+        from .resume_analyzer import ResumeAnalyzer
+        analyzer = ResumeAnalyzer()
+        
+        # Load job listings from CSV
+        job_listings = analyzer.load_jobs_from_csv()
+        print(f"Loaded {len(job_listings)} job listings")
+        
+        # Analyze the resume with the CSV job listings
+        result = analyzer.analyze(resume_file, job_listings)
+        
+        # Debug output
+        print(f"Extracted {len(result.get('skills', []))} skills")
+        print(f"Found {len(result.get('job_matches', []))} job matches")
+        
+        # Format the result for JSON response
+        response_data = {
+            'success': True,
+            'skills': result.get('skills', []),
+            'categorized_skills': result.get('categorized_skills', {}),
+            'education': result.get('education', []),
+            'experience': result.get('experience', []),
+            'job_matches': []
+        }
+        
+        # Format job matches with realistic percentages
+        if 'job_matches' in result and result['job_matches']:
+            for job, score in result['job_matches']:
+                # Convert score to percentage and round to nearest integer
+                percentage = round(score * 100)
+                
+                response_data['job_matches'].append({
+                    'job': {
+                        'id': job['id'],
+                        'title': job['title'],
+                        'company': job['company'],
+                        'location': job['location'],
+                        'description': job['description']
+                    },
+                    'score': percentage  # Already as percentage (0-100)
+                })
+        else:
+            print("No job matches found or job_matches key missing")
+        
+        return JsonResponse(response_data)
+    
+    except Exception as e:
+        import traceback
+        print(f"Error analyzing resume: {str(e)}")
+        print(traceback.format_exc())
+        return JsonResponse({
+            'success': False,
+            'error': f'An error occurred while analyzing the resume: {str(e)}'
+        })

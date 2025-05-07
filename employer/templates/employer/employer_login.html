@@ -2,23 +2,43 @@
 {% load static %}
 
 {% block content %}
+{% if messages %}
+<div class="top-notifications">
+   {% for message in messages %}
+   <div class="top-notification top-notification-{{ message.tags }}">
+       {{ message }}
+       <button type="button" class="close-notification" onclick="this.parentElement.style.display='none';">
+           <i class="fas fa-times"></i>
+       </button>
+   </div>
+   {% endfor %}
+</div>
+<script>
+   // Auto-hide notifications after 5 seconds
+   setTimeout(function() {
+       var notifications = document.querySelectorAll('.top-notification');
+       notifications.forEach(function(notification) {
+           notification.style.opacity = '0';
+           setTimeout(function() {
+               notification.style.display = 'none';
+           }, 500);
+       });
+   }, 5000);
+</script>
+{% endif %}
 <div class="auth-container">
     <div class="auth-image">
-        <h1>Welcome back!</h1>
-        <p>Access your GEOCONNECT employer dashboard</p>
+        <div class="auth-image-content">
+            <h1>Welcome back!</h1>
+            <p>Access your GEOCONNECT employer dashboard</p>
+            <div class="auth-image-decoration"></div>
+        </div>
     </div>
     <div class="auth-form">
         <div class="form-header">
             <h2>Employer Login</h2>
             <p>Please enter your credentials to sign in</p>
         </div>
-        {% if messages %}
-        <div class="messages" style="display: none;">
-            {% for message in messages %}
-            <div class="django-message" data-type="{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        </div>
-        {% endif %}
         <form method="POST" id="loginForm">
             {% csrf_token %}
             <div class="form-group">
@@ -34,6 +54,9 @@
                     Password
                 </label>
                 {{ form.password }}
+                <div class="password-options">
+                    <a href="{% url 'employer_password_reset' %}" class="forgot-password">Forgot your password?</a>
+                </div>
             </div>
             <button type="submit" class="submit-btn">
                 <i class="fas fa-sign-in-alt"></i>
@@ -41,30 +64,8 @@
             </button>
         </form>
         <div class="auth-links">
-            <a href="{% url 'employer_password_reset' %}">Forgot your password?</a>
             <p>Don't have an account? <a href="{% url 'employer_signup' %}">Create an account</a></p>
         </div>
     </div>
 </div>
-
-<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
-
 {% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log("Checking for messages");
-        const djangoMessages = document.querySelectorAll('.django-message');
-        console.log("Found Django messages:", djangoMessages.length);
-        djangoMessages.forEach((message) => {
-            const messageText = message.textContent.trim();
-            const messageType = message.dataset.type;
-            console.log("Processing Django message:", messageText, messageType);
-            toastNotification(messageText, messageType);
-            message.remove();
-        });
-    });
-</script>
-{% endblock %}
-

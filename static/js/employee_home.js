@@ -44,12 +44,33 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   // Job search functionality
-  const jobSearch = document.getElementById("jobSearch")
-  const jobCategory = document.getElementById("jobCategory")
-  const jobLocation = document.getElementById("jobLocation")
-  const jobsGrid = document.getElementById("jobsGrid")
   const filterJobsBtn = document.getElementById("filterJobs")
+  if (filterJobsBtn) {
+    filterJobsBtn.addEventListener("click", () => filterJobs(false))
+  }
 
+  const jobSearch = document.getElementById("jobSearch")
+  if (jobSearch) {
+    jobSearch.addEventListener(
+      "input",
+      debounce(() => filterJobs(false), 500),
+    )
+  }
+
+  const jobCategory = document.getElementById("jobCategory")
+  if (jobCategory) {
+    jobCategory.addEventListener("change", () => filterJobs(false))
+  }
+
+  const jobLocation = document.getElementById("jobLocation")
+  if (jobLocation) {
+    jobLocation.addEventListener("change", () => filterJobs(false))
+  }
+
+  // Initial job load
+  filterJobs(false)
+
+  // Find the filterJobs function and modify it to support the showAll parameter
   async function filterJobs(showAll = false) {
     const searchQuery = document.getElementById("jobSearch").value
     const category = document.getElementById("jobCategory").value
@@ -57,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const response = await fetch(
-        `/employee/filter-jobs/?search=${searchQuery}&category=${category}&location=${location}`,
+        `/employee/filter-jobs/?search=${encodeURIComponent(searchQuery)}&category=${encodeURIComponent(category)}&location=${encodeURIComponent(location)}`,
       )
       if (!response.ok) {
         throw new Error("Network response was not ok")
@@ -73,59 +94,92 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (data.jobs.length === 0) {
         jobsContainer.innerHTML = `
-                <div class="col-12 text-center">
-                    <div class="alert alert-info">
-                        No jobs found matching your criteria.
-                    </div>
+            <div class="col-12 text-center">
+                <div class="alert alert-info">
+                    No jobs found matching your criteria.
                 </div>
-            `
+            </div>
+          `
         jobsGrid.appendChild(jobsContainer)
         return
       }
 
       // Display jobs (all or just 6 based on showAll)
-      const jobsToShow = showAll ? data.jobs : data.jobs.slice(0, 6)
+      const jobsToShow = data.jobs //showAll ? data.jobs : data.jobs.slice(0, 6)
       jobsToShow.forEach((job) => {
         const jobCard = `
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="job-card">
-                        <div class="job-card-header">
-                            <h3 class="job-title">${job.title}</h3>
-                            <div class="badges">
-                                <span class="badge bg-primary">${job.job_type}</span>
-                                <span class="badge bg-info">${job.work_setup}</span>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="job-card">
+                    <div class="company-badge">
+                        <div class="company-initial">${job.company ? job.company.charAt(0) : "C"}</div>
+                    </div>
+                    <div class="job-card-header">
+                        <h3 class="job-title">${job.title}</h3>
+                        <div class="company-name">
+                            <i class="fas fa-building me-2"></i>
+                            ${job.company || "Company"}
+                        </div>
+                    </div>
+                    <div class="job-card-body">
+                        <div class="job-badges mb-3">
+                            <span class="badge bg-primary">${job.job_type}</span>
+                            <span class="badge bg-info">${job.work_setup}</span>
+                        </div>
+                        <div class="job-details">
+                            <div class="job-detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>${job.location}</span>
+                            </div>
+                            <div class="job-detail-item">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <span>${job.salary_range}</span>
+                            </div>
+                            <div class="job-detail-item">
+                                <i class="fas fa-briefcase"></i>
+                                <span>${job.experience_level}</span>
                             </div>
                         </div>
-                        <div class="job-card-body">
-                            <p class="company-name">
-                                <i class="fas fa-building me-2"></i>
-                                ${job.company}
-                            </p>
-                            <p class="location">
-                                <i class="fas fa-map-marker-alt me-2"></i>
-                                ${job.location}
-                            </p>
-                            <p class="salary">
-                                <i class="fas fa-money-bill-wave me-2"></i>
-                                ${job.salary_range}
-                            </p>
-                            <p class="experience">
-                                <i class="fas fa-briefcase me-2"></i>
-                                ${job.experience_level}
-                            </p>
-                            <div class="description">
-                                ${job.description.length > 150 ? job.description.substring(0, 150) + "..." : job.description}
-                            </div>
+                        <div class="job-description">
+                            ${job.description && job.description.length > 150 ? job.description.substring(0, 150) + "..." : job.description || "No description available"}
                         </div>
-                        <div class="job-card-footer">
-                            <small class="text-muted">Posted on ${job.created_at}</small>
-                            <button class="btn btn-primary btn-sm apply-btn" data-job-id="${job.id}">
+                    </div>
+                    <div class="job-card-footer">
+                        <div class="job-posted">
+                            <i class="far fa-calendar-alt me-1"></i>
+                            <small>Posted ${job.created_at}</small>
+                        </div>
+                        <div class="job-actions">
+                            <button type="button" class="btn btn-outline-primary btn-sm view-job-btn me-2" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#viewJobModal"
+                                    data-job-id="${job.id}" 
+                                    data-job-title="${job.title}" 
+                                    data-company="${job.company || "Company"}"
+                                    data-location="${job.location}"
+                                    data-job-type="${job.job_type}"
+                                    data-work-setup="${job.work_setup}"
+                                    data-salary="${job.salary_range}"
+                                    data-experience="${job.experience_level}"
+                                    data-description="${job.description || ""}"
+                                    data-requirements="${job.requirements || ""}"
+                                    data-qualifications="${job.qualifications || ""}"
+                                    data-benefits="${job.benefits || ""}"
+                                    data-posted="${job.created_at}">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm apply-now-btn" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#applyJobModal"
+                                    data-job-id="${job.id}" 
+                                    data-job-title="${job.title}" 
+                                    data-company="${job.company || "Company"}">
                                 Apply Now
                             </button>
                         </div>
                     </div>
                 </div>
-            `
+            </div>
+          `
         jobsContainer.innerHTML += jobCard
       })
 
@@ -136,11 +190,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const viewAllContainer = document.createElement("div")
         viewAllContainer.className = "view-all-container text-center mt-4 mb-4"
         viewAllContainer.innerHTML = `
-                <button id="viewAllJobs" class="btn btn-outline-primary btn-lg">
-                    <i class="fas ${showAll ? "fa-compress-alt" : "fa-expand-alt"} me-2"></i>
-                    ${showAll ? "Show Less" : `View All Jobs (${data.jobs.length})`}
-                </button>
-            `
+            <button id="viewAllJobs" class="btn btn-outline-primary btn-lg">
+                <i class="fas ${showAll ? "fa-compress-alt" : "fa-expand-alt"} me-2"></i>
+                ${showAll ? "Show Less" : `View All Jobs (${data.jobs.length})`}
+            </button>
+          `
         jobsGrid.appendChild(viewAllContainer)
 
         // Add event listener to the toggle button
@@ -148,26 +202,40 @@ document.addEventListener("DOMContentLoaded", () => {
           filterJobs(!showAll) // Toggle the showAll state
         })
       }
+
+      // Reinitialize event listeners for the newly created buttons
+      initializeJobButtons()
     } catch (error) {
       console.error("Error fetching jobs:", error)
       const jobsGrid = document.getElementById("jobsGrid")
       jobsGrid.innerHTML = `
-            <div class="row jobs-container">
-                <div class="col-12 text-center">
-                    <div class="alert alert-danger">
-                        Error loading jobs. Please try again later.
-                    </div>
-                </div>
-            </div>
+          <div class="row jobs-container">
+              <div class="col-12 text-center">
+                  <div class="alert alert-danger">
+                      Error loading jobs. Please try again later.
+                  </div>
+              </div>
+          </div>
         `
     }
   }
 
-  // Add event listeners
-  document.getElementById("filterJobs").addEventListener("click", filterJobs)
-  document.getElementById("jobSearch").addEventListener("input", debounce(filterJobs, 500))
-  document.getElementById("jobCategory").addEventListener("change", filterJobs)
-  document.getElementById("jobLocation").addEventListener("change", filterJobs)
+  function initializeJobButtons() {
+    // Reinitialize view job buttons
+    document.querySelectorAll(".view-job-btn").forEach((button) => {
+      button.addEventListener("click", function () {
+        prepareJobDetails(this)
+      })
+    })
+
+    // Reinitialize apply now buttons
+    document.querySelectorAll(".apply-now-btn").forEach(function (button) {
+      var jobId = this.getAttribute("data-job-id")
+      var jobTitle = this.getAttribute("data-job-title")
+      var company = this.getAttribute("data-company")
+      prepareJobApplication(jobId, jobTitle, company)
+    })
+  }
 
   // Debounce function to prevent too many requests
   function debounce(func, wait) {
@@ -180,11 +248,6 @@ document.addEventListener("DOMContentLoaded", () => {
       clearTimeout(timeout)
       timeout = setTimeout(later, wait)
     }
-  }
-
-  // Initial job load
-  if (typeof filterJobs === "function") {
-    filterJobs()
   }
 
   // Profile form submission
@@ -354,5 +417,13 @@ document.addEventListener("DOMContentLoaded", () => {
       card.style.transform = "scale(1)"
     })
   })
-})
 
+  // Dummy functions to satisfy the calls.  These would normally be defined elsewhere.
+  function prepareJobDetails(button) {
+    console.log("prepareJobDetails called", button)
+  }
+
+  function prepareJobApplication(jobId, jobTitle, company) {
+    console.log("prepareJobApplication called", jobId, jobTitle, company)
+  }
+})

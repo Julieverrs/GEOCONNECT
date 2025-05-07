@@ -6,6 +6,15 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Notifications.js loaded successfully")
 
+  // Check if we're on a login or logout page and skip toast notifications if we are
+  const currentPath = window.location.pathname
+  const isLoginPage = currentPath.includes("login") || currentPath.includes("logout")
+
+  if (isLoginPage) {
+    console.log("On login/logout page - toast notifications disabled")
+    return // Skip toast notifications on login/logout pages
+  }
+
   // Function to show a toast notification
   window.showNotification = (message, type = "info", duration = 5000) => {
     // Create toast container if it doesn't exist
@@ -75,6 +84,15 @@ if (typeof window.bootstrap === "undefined") {
 }
 
 function toastNotification(message, type) {
+  // Check if we're on a login or logout page and skip toast notifications if we are
+  const currentPath = window.location.pathname
+  const isLoginPage = currentPath.includes("login") || currentPath.includes("logout")
+
+  if (isLoginPage) {
+    console.log("On login/logout page - toast notifications disabled")
+    return // Skip toast notifications on login/logout pages
+  }
+
   console.log("Showing toast notification:", message, type)
   const toastContainer = document.getElementById("toastContainer") || createToastContainer()
   const toast = document.createElement("div")
@@ -94,17 +112,30 @@ function toastNotification(message, type) {
   toastContainer.appendChild(toast)
 
   // Initialize the Bootstrap toast
-  const bsToast = new window.bootstrap.Toast(toast)
-  bsToast.show()
+  if (typeof bootstrap !== "undefined" && bootstrap.Toast) {
+    const bsToast = new window.bootstrap.Toast(toast)
+    bsToast.show()
 
-  // Auto-hide the toast after 3 seconds
-  setTimeout(() => {
-    bsToast.hide()
-    setTimeout(() => toast.remove(), 300)
-  }, 3000)
+    // Auto-hide the toast after 3 seconds
+    setTimeout(() => {
+      bsToast.hide()
+      setTimeout(() => toast.remove(), 300)
+    }, 3000)
+  } else {
+    console.error("Bootstrap is not loaded. Make sure you have included Bootstrap JS properly.")
+  }
 }
 
 function createToastContainer() {
+  // Check if we're on a login or logout page and skip toast container creation if we are
+  const currentPath = window.location.pathname
+  const isLoginPage = currentPath.includes("login") || currentPath.includes("logout")
+
+  if (isLoginPage) {
+    console.log("On login/logout page - toast container creation skipped")
+    return document.createElement("div") // Return dummy container that won't be added to DOM
+  }
+
   console.log("Creating toast container")
   const container = document.createElement("div")
   container.id = "toastContainer"
@@ -113,19 +144,4 @@ function createToastContainer() {
   return container
 }
 
-// document.addEventListener("DOMContentLoaded", () => {
-//   console.log("DOM fully loaded and parsed")
-//   // Check for messages in the DOM
-//   const messages = document.querySelectorAll(".django-message")
-//   console.log("Found messages:", messages.length)
-//   messages.forEach((message) => {
-//     const messageText = message.textContent
-//     const messageType = message.dataset.type || "info"
-//     console.log("Processing message:", messageText, messageType)
-//     toastNotification(messageText, messageType)
-//     message.remove() // Remove the message from the DOM after showing the toast
-//   })
-// })
-
 window.toastNotification = toastNotification
-

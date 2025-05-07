@@ -2,12 +2,15 @@
 {% load static %}
 
 {% block content %}
-<div class="auth-container">
+<div class="auth-container signup-container">
     <div class="auth-image">
-        <h1>Welcome to GEOCONNECT</h1>
-        <p>Create your employer account and start posting jobs</p>
+        <div class="auth-image-content">
+            <h1>Welcome to GEOCONNECT</h1>
+            <p>Create your employer account and start posting jobs</p>
+            <div class="auth-image-decoration"></div>
+        </div>
     </div>
-    <div class="auth-form">
+    <div class="auth-form signup-form">
         <div class="form-header">
             <h2>Employer Sign Up</h2>
             <p>Please fill in the details below</p>
@@ -26,49 +29,58 @@
         <form method="post" enctype="multipart/form-data" id="signupForm">
             {% csrf_token %}
             
-            <div class="form-group">
-                <label for="id_company_name">Company Name</label>
-                {{ form.company_name }}
-                {% if form.company_name.errors %}
-                <div class="error-message">{{ form.company_name.errors }}</div>
-                {% endif %}
+            <div class="form-tabs">
+                <button type="button" class="form-tab active" data-tab="account-info">Account Info</button>
+                <button type="button" class="form-tab" data-tab="business-info">Business Info</button>
             </div>
+            
+            <div class="form-tab-content" id="account-info">
+                <div class="form-group">
+                    <label for="id_company_name">Company Name</label>
+                    {{ form.company_name }}
+                    {% if form.company_name.errors %}
+                    <div class="error-message">{{ form.company_name.errors }}</div>
+                    {% endif %}
+                </div>
 
-            <div class="form-group">
-                <label for="id_username">Username</label>
-                {{ form.username }}
-                {% if form.username.errors %}
-                <div class="error-message">{{ form.username.errors }}</div>
-                {% endif %}
-            </div>
+                <div class="form-group">
+                    <label for="id_username">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <div class="error-message">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
 
-            <div class="form-group">
-                <label for="id_email">Email</label>
-                {{ form.email }}
-                {% if form.email.errors %}
-                <div class="error-message">{{ form.email.errors }}</div>
-                {% endif %}
-            </div>
+                <div class="form-group">
+                    <label for="id_email">Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <div class="error-message">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
 
-            <div class="form-group">
-                <label for="id_password">Password</label>
-                {{ form.password }}
-                {% if form.password.errors %}
-                <div class="error-message">{{ form.password.errors }}</div>
-                {% endif %}
-            </div>
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                    <div class="error-message">{{ form.password.errors }}</div>
+                    {% endif %}
+                </div>
 
-            <div class="form-group">
-                <label for="id_confirm_password">Confirm Password</label>
-                {{ form.confirm_password }}
-                {% if form.confirm_password.errors %}
-                <div class="error-message">{{ form.confirm_password.errors }}</div>
-                {% endif %}
-            </div>
-
-            <div class="form-section">
-                <h3>Business Registration</h3>
+                <div class="form-group">
+                    <label for="id_confirm_password">Confirm Password</label>
+                    {{ form.confirm_password }}
+                    {% if form.confirm_password.errors %}
+                    <div class="error-message">{{ form.confirm_password.errors }}</div>
+                    {% endif %}
+                </div>
                 
+                <div class="form-nav">
+                    <button type="button" class="next-btn" data-next="business-info">Next: Business Information</button>
+                </div>
+            </div>
+
+            <div class="form-tab-content" id="business-info" style="display: none;">
                 <div class="form-group">
                     <label>Registration Type</label>
                     {{ form.registration_type }}
@@ -111,9 +123,12 @@
                     <div class="error-message">{{ form.registration_date.errors }}</div>
                     {% endif %}
                 </div>
+                
+                <div class="form-nav">
+                    <button type="button" class="back-btn" data-back="account-info">Back to Account Info</button>
+                    <button type="submit" class="submit-btn">Complete Sign Up</button>
+                </div>
             </div>
-
-            <button type="submit" class="submit-btn">Sign Up</button>
         </form>
 
         <div class="auth-links">
@@ -124,6 +139,74 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Tab navigation
+    const tabs = document.querySelectorAll('.form-tab');
+    const tabContents = document.querySelectorAll('.form-tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            
+            // Hide all tab contents
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Remove active class from all tabs
+            tabs.forEach(t => {
+                t.classList.remove('active');
+            });
+            
+            // Show selected tab content and mark tab as active
+            document.getElementById(tabId).style.display = 'block';
+            this.classList.add('active');
+        });
+    });
+    
+    // Next and Back buttons
+    const nextButtons = document.querySelectorAll('.next-btn');
+    const backButtons = document.querySelectorAll('.back-btn');
+    
+    nextButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const nextTabId = this.getAttribute('data-next');
+            
+            // Hide all tab contents
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Remove active class from all tabs
+            tabs.forEach(t => {
+                t.classList.remove('active');
+            });
+            
+            // Show next tab content and mark tab as active
+            document.getElementById(nextTabId).style.display = 'block';
+            document.querySelector(`[data-tab="${nextTabId}"]`).classList.add('active');
+        });
+    });
+    
+    backButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const backTabId = this.getAttribute('data-back');
+            
+            // Hide all tab contents
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Remove active class from all tabs
+            tabs.forEach(t => {
+                t.classList.remove('active');
+            });
+            
+            // Show previous tab content and mark tab as active
+            document.getElementById(backTabId).style.display = 'block';
+            document.querySelector(`[data-tab="${backTabId}"]`).classList.add('active');
+        });
+    });
+
     // Toast notification function
     function showToast(message, type = 'info') {
         const toast = document.createElement('div');
@@ -196,183 +279,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-<style>
-/* Toast Styles */
-.toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 15px 25px;
-    border-radius: 4px;
-    color: white;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-    z-index: 1000;
-    max-width: 350px;
-}
-
-.toast.show {
-    opacity: 1;
-}
-
-.toast-success {
-    background-color: #28a745;
-}
-
-.toast-error {
-    background-color: #dc3545;
-}
-
-.toast-info {
-    background-color: #17a2b8;
-}
-
-.toast-warning {
-    background-color: #ffc107;
-    color: #333;
-}
-
-/* Error message styles */
-.error-message {
-    color: #dc3545;
-    font-size: 0.875rem;
-    margin-top: 5px;
-}
-
-/* Alert styles */
-.alert {
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-}
-
-.alert-error {
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-    color: #721c24;
-}
-
-.alert-success {
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-    color: #155724;
-}
-
-/* Form Styles */
-.auth-container {
-    display: flex;
-    max-width: 1200px;
-    margin: 2rem auto;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    overflow: hidden;
-}
-
-.auth-image {
-    flex: 1;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 3rem;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.auth-form {
-    flex: 2;
-    padding: 3rem;
-    background: #fff;
-}
-
-.form-header {
-    margin-bottom: 2rem;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
-
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
-}
-
-.form-section {
-    margin: 2rem 0;
-    padding: 1.5rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-
-.form-section h3 {
-    margin-bottom: 1.5rem;
-    color: #333;
-}
-
-.help-text {
-    display: block;
-    font-size: 0.875rem;
-    color: #6c757d;
-    margin-top: 0.25rem;
-}
-
-.submit-btn {
-    width: 100%;
-    padding: 1rem;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
-
-.submit-btn:hover {
-    background: #764ba2;
-}
-
-.auth-links {
-    text-align: center;
-    margin-top: 1.5rem;
-}
-
-.auth-links a {
-    color: #667eea;
-    text-decoration: none;
-}
-
-.auth-links a:hover {
-    text-decoration: underline;
-}
-
-@media (max-width: 768px) {
-    .auth-container {
-        flex-direction: column;
-        margin: 1rem;
-    }
-    
-    .auth-image {
-        padding: 2rem;
-    }
-    
-    .auth-form {
-        padding: 2rem;
-    }
-}
-</style>
 {% endblock %}
-

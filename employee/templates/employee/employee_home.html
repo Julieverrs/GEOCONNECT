@@ -3,6 +3,9 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/employee_home.css' %}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+      crossorigin=""/>
 {% endblock %}
 
 {% block content %}
@@ -180,8 +183,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button id="filterJobs" class="btn btn-primary w-100">
-                        <i class="fas fa-filter me-2"></i>Filter
+                    <button id="mapJobs" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#jobMapModal">
+                        <i class="fas fa-map-marked-alt me-2"></i>Mapping
                     </button>
                 </div>
             </div>
@@ -190,7 +193,7 @@
         <div id="jobsGrid">
             <div class="row jobs-container">
                 {% with total_jobs=jobs.count %}
-                {% for job in jobs|slice:":6" %}
+                {% for job in jobs %}
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="job-card">
                         <!-- Company Logo/Badge -->
@@ -242,8 +245,6 @@
                             </div>
                             <div class="job-actions">
                                 <button type="button" class="btn btn-outline-primary btn-sm view-job-btn me-2" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#viewJobModal"
                                         data-job-id="{{ job.id }}" 
                                         data-job-title="{{ job.title }}" 
                                         data-company="{{ job.employer.company_name }}"
@@ -280,16 +281,33 @@
                 </div>
                 {% endfor %}
             </div>
-            {% if total_jobs > 6 %}
+            {% if total_jobs > 0 %}
             <div class="view-all-container text-center mt-4 mb-4">
-                <button id="viewAllJobs" class="btn btn-outline-primary btn-lg">
-                    <i class="fas fa-list me-2"></i>View All Jobs ({{ total_jobs }})
-                </button>
+                <div class="text-muted">
+                    Showing all {{ total_jobs }} available jobs
+                </div>
             </div>
             {% endif %}
             {% endwith %}
         </div>
     </div>
+    <!-- Job Map Modal -->
+<div class="modal fade" id="jobMapModal" tabindex="-1" aria-labelledby="jobMapModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="jobMapModalLabel">Job Locations Map</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="jobMap" style="height: 500px; width: 100%; min-height: 500px; position: relative;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 </section>
 
 <!-- Contact Section -->
@@ -449,7 +467,7 @@
           <form id="profileForm" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="text-center mb-4">
-              
+              <img id="avatarPreview" src="{{ employee.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Profile Picture" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
               <div class="mt-2">
                 <label for="avatarUpload" class="btn btn-sm btn-outline-primary">Change Photo</label>
                 <input type="file" id="avatarUpload" name="avatar" class="d-none" accept="image/jpeg, image/png, image/jpg">
@@ -555,7 +573,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
                     
                     <div class="application-form-section">
                         <h6 class="section-title mb-3">Personal Information</h6>
@@ -632,6 +649,8 @@
                                    class="form-control" 
                                    id="portfolioLink" 
                                    name="portfolio_link"
+                                   placeholder="https://yourportfolio.com
+                                   name="portfolio_link"
                                    placeholder="https://yourportfolio.com">
                         </div>
                         
@@ -665,10 +684,6 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="submitApplication">Submit Application</button>
-            </div>
-        </div>
-    </div>
-  id="submitApplication">Submit Application</button>
             </div>
         </div>
     </div>
@@ -774,11 +789,10 @@
                 <h6>Communication</h6>
                 <p>By applying, you agree to receive communications related to:</p>
                 <ul>
-                <p>By applying, you agree to receive communications related to:</p>
-                <ul>
                     <li>Updates on your application status</li>
                     <li>Interview requests and scheduling</li>
-                    <li>Similar job opportunities that match your profile</li>                </ul>
+                    <li>Similar job opportunities that match your profile</li>
+                </ul>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
@@ -860,9 +874,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             prepareJobApplication(jobId, jobTitle, company);
             
-            // Explicitly show the modal
-            var applyModal = new bootstrap.Modal(document.getElementById('applyJobModal'));
-            applyModal.show();
+            // Explicitly show the modal using jQuery
+            $('#applyJobModal').modal('show');
         };
     });
     
@@ -894,6 +907,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var viewJobModal = document.getElementById('viewJobModal');
     
     function prepareJobDetails(button) {
+        console.log('Preparing job details');
         // Get job details from data attributes
         var jobId = button.getAttribute('data-job-id');
         var jobTitle = button.getAttribute('data-job-title');
@@ -908,6 +922,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var qualifications = button.getAttribute('data-qualifications');
         var benefits = button.getAttribute('data-benefits');
         var posted = button.getAttribute('data-posted');
+        
+        console.log('Job details:', { jobId, jobTitle, company });
         
         // Set company initial
         document.getElementById('viewJobCompanyInitial').textContent = company.charAt(0);
@@ -927,22 +943,32 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('viewJobRequirements').innerHTML = requirements || 'No specific requirements provided.';
         
         // Set job ID on the modal
-        document.getElementById('viewJobModal').setAttribute('data-job-id', jobId);
+        viewJobModal.setAttribute('data-job-id', jobId);
     }
     
+    // Add click event listeners to all View buttons
+    console.log('Found ' + viewButtons.length + ' view buttons');
     viewButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(e) {
+            console.log('View button clicked');
+            e.preventDefault();
+            e.stopPropagation();
+            
             // Store the button that was clicked
             lastFocusedElement = this;
             
             // Prepare job details
             prepareJobDetails(this);
+            
+            // Explicitly show the modal using jQuery
+            $('#viewJobModal').modal('show');
         });
     });
     
     // Handle view modal hidden event
     if (viewJobModal) {
         viewJobModal.addEventListener('hidden.bs.modal', function () {
+            console.log('View modal hidden, restoring focus');
             // Return focus to the element that opened the modal
             if (lastFocusedElement) {
                 lastFocusedElement.focus();
@@ -958,6 +984,23 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.style.paddingRight = '';
         });
     }
+    
+    // Add event listener for "Apply Now" button in the view modal
+    document.querySelector('.apply-from-view-btn').addEventListener('click', function() {
+        // Close the view modal using jQuery
+        $('#viewJobModal').modal('hide');
+        
+        // Get the job ID from the view modal
+        var jobId = viewJobModal.getAttribute('data-job-id');
+        var jobTitle = document.getElementById('viewJobTitle').textContent;
+        var company = document.getElementById('viewJobCompany').textContent;
+        
+        // Prepare and show the apply modal
+        prepareJobApplication(jobId, jobTitle, company);
+        
+        // Show the apply modal using jQuery
+        $('#applyJobModal').modal('show');
+    });
 });
 </script>
 
@@ -1894,208 +1937,512 @@ body {
     color: #0d6efd;
 }
 </style>
+
+<script>
+// Ensure job filtering functionality works
+document.addEventListener('DOMContentLoaded', function() {
+    // Make sure the filter button works
+    const filterJobsBtn = document.getElementById("filterJobs");
+    if (filterJobsBtn) {
+        filterJobsBtn.addEventListener("click", function() {
+            filterJobs();
+        });
+    }
+    
+    // Make sure the search input works
+    const jobSearch = document.getElementById("jobSearch");
+    if (jobSearch) {
+        jobSearch.addEventListener("input", debounceSearch);
+    }
+    
+    // Make sure the category select works
+    const jobCategory = document.getElementById("jobCategory");
+    if (jobCategory) {
+        jobCategory.addEventListener("change", function() {
+            filterJobs();
+        });
+    }
+    
+    // Make sure the location select works
+    const jobLocation = document.getElementById("jobLocation");
+    if (jobLocation) {
+        jobLocation.addEventListener("change", function() {
+            filterJobs();
+        });
+    }
+    
+    // View All Jobs button functionality
+    const viewAllJobsBtn = document.getElementById("viewAllJobs");
+    if (viewAllJobsBtn) {
+        viewAllJobsBtn.addEventListener("click", function() {
+            toggleAllJobs();
+        });
+    }
+    
+    // Debounce function for search
+    function debounceSearch() {
+        clearTimeout(window.searchTimeout);
+        window.searchTimeout = setTimeout(function() {
+            filterJobs();
+        }, 300);
+    }
+    
+    // Filter jobs function
+    function filterJobs() {
+        const searchTerm = jobSearch ? jobSearch.value.toLowerCase() : '';
+        const categoryFilter = jobCategory ? jobCategory.value : '';
+        const locationFilter = jobLocation ? jobLocation.value : '';
+        
+        const jobCards = document.querySelectorAll('.job-card');
+        let visibleCount = 0;
+        
+        jobCards.forEach(function(card) {
+            const jobTitle = card.querySelector('.job-title').textContent.toLowerCase();
+            const jobType = card.querySelector('.badge.bg-primary').textContent;
+            const jobWorkSetup = card.querySelector('.badge.bg-info').textContent;
+            
+            const matchesSearch = !searchTerm || jobTitle.includes(searchTerm);
+            const matchesCategory = !categoryFilter || jobType === categoryFilter;
+            const matchesLocation = !locationFilter || jobWorkSetup === locationFilter;
+            
+            if (matchesSearch && matchesCategory && matchesLocation) {
+                card.parentElement.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.parentElement.style.display = 'none';
+            }
+        });
+        
+        // Show/hide no results message
+        const noResultsMsg = document.querySelector('.no-results-message');
+        if (visibleCount === 0) {
+            if (!noResultsMsg) {
+                const message = document.createElement('div');
+                message.className = 'col-12 text-center no-results-message';
+                message.innerHTML = '<div class="alert alert-info">No jobs match your search criteria.</div>';
+                document.querySelector('.jobs-container').appendChild(message);
+            }
+        } else if (noResultsMsg) {
+            noResultsMsg.remove();
+        }
+    }
+    
+    // Toggle all jobs function
+    function toggleAllJobs() {
+        const jobsContainer = document.querySelector('.jobs-container');
+        const viewAllBtn = document.getElementById('viewAllJobs');
+        const isShowingAll = jobsContainer.classList.contains('showing-all');
+        
+        if (!isShowingAll) {
+            // Show all jobs
+            const hiddenJobs = document.querySelectorAll('.job-card-hidden');
+            hiddenJobs.forEach(function(job) {
+                job.classList.remove('job-card-hidden');
+                job.style.display = 'block';
+            });
+            jobsContainer.classList.add('showing-all');
+            viewAllBtn.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Show Less';
+        } else {
+            // Show only first 6 jobs
+            const allJobs = document.querySelectorAll('.job-card');
+            allJobs.forEach(function(job, index) {
+                if (index >= 6) {
+                    job.classList.add('job-card-hidden');
+                    job.style.display = 'none';
+                }
+            });
+            jobsContainer.classList.remove('showing-all');
+            viewAllBtn.innerHTML = '<i class="fas fa-list me-2"></i>View All Jobs';
+        }
+    }
+});
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Highlight active navigation link based on scroll position
+        function updateActiveNavLink() {
+            const sections = document.querySelectorAll('section.section');
+            const navLinks = document.querySelectorAll('.nav-links a');
+            
+            let currentSectionId = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 120;
+                const sectionHeight = section.offsetHeight;
+                const sectionId = section.getAttribute('id');
+                
+                if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+                    currentSectionId = sectionId;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href').substring(1);
+                if (href === currentSectionId) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateActiveNavLink);
+        updateActiveNavLink();
+        
+        // Add smooth scrolling to navigation links
+        document.querySelectorAll('.nav-links a, .scroll-btn, .scroll-down').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 110,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Update active link manually
+                    document.querySelectorAll('.nav-links a').forEach(link => {
+                        link.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                }
+            });
+        });
+    });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the View All Jobs button
+    const viewAllJobsBtn = document.getElementById("viewAllJobs");
+    if (viewAllJobsBtn) {
+        viewAllJobsBtn.addEventListener("click", function() {
+            // Toggle showing all jobs
+            const isShowingAll = this.getAttribute('data-showing-all') === 'true';
+            
+            // Get all job cards
+            const jobCards = document.querySelectorAll('.job-card');
+            const jobsContainer = document.querySelector('.jobs-container');
+            
+            if (!isShowingAll) {
+                // Show all jobs
+                jobCards.forEach(function(card) {
+                    card.parentElement.style.display = 'block';
+                });
+                
+                // Update button text and icon
+                this.innerHTML = '<i class="fas fa-compress-alt me-2"></i>Show Less';
+                this.setAttribute('data-showing-all', 'true');
+                
+                if (jobsContainer) {
+                    jobsContainer.classList.add('showing-all');
+                }
+            } else {
+                // Show only first 6 jobs
+                jobCards.forEach(function(card, index) {
+                    const parentElement = card.parentElement;
+                    if (index >= 6) {
+                        parentElement.style.display = 'none';
+                    } else {
+                        parentElement.style.display = 'block';
+                    }
+                });
+                
+                // Update button text and icon
+                this.innerHTML = '<i class="fas fa-expand-alt me-2"></i>View All Jobs ({{ total_jobs }})';
+                this.setAttribute('data-showing-all', 'false');
+                
+                if (jobsContainer) {
+                    jobsContainer.classList.remove('showing-all');
+                }
+                
+                // Scroll back to jobs section
+                const jobsSection = document.getElementById('jobs');
+                if (jobsSection) {
+                    window.scrollTo({
+                        top: jobsSection.offsetTop - 110,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    }
+});
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+        crossorigin=""></script>
+
+<script>
+// Job Map Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Global variable to store map instance
+    let jobMapInstance = null;
+    
+    // Initialize map when modal is shown
+    const jobMapModal = document.getElementById('jobMapModal');
+    if (jobMapModal) {
+        // Create a Bootstrap modal instance
+        const modalInstance = new bootstrap.Modal(jobMapModal);
+        
+        // Add event listener for when the modal is shown
+        jobMapModal.addEventListener('shown.bs.modal', function () {
+            // Use a longer delay to ensure the modal is fully rendered
+            setTimeout(initializeJobMap, 500);
+        });
+        
+        // Add event listener for when the modal is hidden
+        jobMapModal.addEventListener('hidden.bs.modal', function () {
+            // Clean up the map instance when the modal is closed
+            if (jobMapInstance) {
+                jobMapInstance.remove();
+                jobMapInstance = null;
+            }
+        });
+    }
+    
+    // Initialize the map
+    function initializeJobMap() {
+        console.log('Initializing job map...');
+        
+        // Get the map container
+        const mapContainer = document.getElementById('jobMap');
+        
+        // Check if the map container exists
+        if (!mapContainer) {
+            console.error('Map container not found!');
+            return;
+        }
+        
+        // Ensure the container has dimensions
+        mapContainer.style.height = '500px';
+        mapContainer.style.width = '100%';
+        
+        // Create a placeholder element and replace the original container
+        // This helps avoid issues with Leaflet initialization
+        const mapId = 'jobMap-' + Date.now();
+        const newMapContainer = document.createElement('div');
+        newMapContainer.id = mapId;
+        newMapContainer.style.height = '500px';
+        newMapContainer.style.width = '100%';
+        
+        // Replace the original container with the new one
+        mapContainer.innerHTML = '';
+        mapContainer.appendChild(newMapContainer);
+        
+        // Create the map with the new container
+        try {
+            // Create map
+            jobMapInstance = L.map(mapId).setView([13.4125, 121.1817], 7);
+            
+            // Add OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(jobMapInstance);
+            
+            // Force a resize event to ensure the map renders correctly
+            setTimeout(function() {
+                jobMapInstance.invalidateSize(true);
+            }, 200);
+            
+            // Get all job cards to extract location data
+            const jobCards = document.querySelectorAll('.job-card');
+            const markers = [];
+            const bounds = L.latLngBounds();
+            
+            // Function to get coordinates from location name
+            function getCoordinates(locationName) {
+                // This is a simplified geocoding function
+                // In a real application, you would use a proper geocoding service
+                
+                // For demo purposes, we'll use a simple mapping of common locations
+                const locationMap = {
+                    'Calapan City': [13.4125, 121.1817],
+                    'Puerto Galera': [13.5000, 120.9542],
+                    'Naujan': [13.3167, 121.3000],
+                    'Bansud': [12.8333, 121.3667],
+                    'Bongabong': [12.7167, 121.3667],
+                    'Bulalacao': [12.3333, 121.3500],
+                    'Gloria': [12.9833, 121.4667],
+                    'Mansalay': [12.5167, 121.4333],
+                    'Pinamalayan': [13.0000, 121.5167],
+                    'Pola': [13.1433, 121.2414],
+                    'Roxas': [12.5833, 121.5000],
+                    'San Teodoro': [13.4333, 121.0167],
+                    'Socorro': [13.0583, 121.4083],
+                    'Victoria': [13.1500, 121.3333],
+                    'Oriental Mindoro': [13.0565, 121.4069],
+                    'Manila': [14.5995, 120.9842],
+                    'Quezon City': [14.6760, 121.0437],
+                    'Makati': [14.5547, 121.0244],
+                    'Taguig': [14.5176, 121.0509],
+                    'Pasig': [14.5764, 121.0851],
+                    'Remote': [13.0565, 121.4069], // Default to Oriental Mindoro for Remote jobs
+                    'Hybrid': [13.0565, 121.4069]  // Default to Oriental Mindoro for Hybrid jobs
+                };
+                
+                // Check if we have coordinates for this location
+                for (const [key, coords] of Object.entries(locationMap)) {
+                    if (locationName.includes(key)) {
+                        return coords;
+                    }
+                }
+                
+                // Default coordinates (Oriental Mindoro) if location not found
+                return [13.0565, 121.4069];
+            }
+            
+            // Process each job card and add markers
+            jobCards.forEach(function(card) {
+                try {
+                    const title = card.querySelector('.job-title').textContent;
+                    const company = card.querySelector('.company-name').textContent.trim();
+                    const locationElement = card.querySelector('.job-detail-item:first-child span');
+                    
+                    if (locationElement) {
+                        const location = locationElement.textContent.trim();
+                        const jobType = card.querySelector('.badge.bg-primary').textContent;
+                        const workSetup = card.querySelector('.badge.bg-info').textContent;
+                        
+                        // Get coordinates for the location
+                        const coords = getCoordinates(location);
+                        
+                        if (coords) {
+                            // Create marker
+                            const marker = L.marker(coords).addTo(jobMapInstance);
+                            
+                            // Create popup content
+                            const popupContent = `
+                                <div class="map-popup">
+                                    <h5>${title}</h5>
+                                    <p><strong>${company}</strong></p>
+                                    <p><i class="fas fa-map-marker-alt"></i> ${location}</p>
+                                    <div class="popup-badges">
+                                        <span class="badge bg-primary">${jobType}</span>
+                                        <span class="badge bg-info">${workSetup}</span>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            // Add popup to marker
+                            marker.bindPopup(popupContent);
+                            
+                            // Add to bounds for auto-zoom
+                            bounds.extend(coords);
+                            markers.push(marker);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error processing job for map:', error);
+                }
+            });
+            
+            // Fit map to bounds if we have markers
+            if (markers.length > 0) {
+                jobMapInstance.fitBounds(bounds, { padding: [50, 50] });
+            }
+            
+        } catch (error) {
+            console.error('Error initializing map:', error);
+        }
+    }
+    
+    // Add click event listener to the map button
+    const mapButton = document.getElementById('mapJobs');
+    if (mapButton) {
+        mapButton.addEventListener('click', function() {
+            // Clean up any existing map instance
+            if (jobMapInstance) {
+                jobMapInstance.remove();
+                jobMapInstance = null;
+            }
+        });
+    }
+});
+</script>
+
+<style>
+/* Map popup styles */
+.map-popup {
+    padding: 5px;
+}
+
+.map-popup h5 {
+    margin-bottom: 5px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.map-popup p {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.popup-badges {
+    margin-top: 8px;
+}
+
+.popup-badges .badge {
+    margin-right: 5px;
+    font-size: 11px;
+}
+
+/* Make sure the map container is visible */
+#jobMap {
+    z-index: 1;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure Leaflet controls are above Bootstrap components */
+.leaflet-control {
+    z-index: 1000 !important;
+}
+</style>
+
+<style>
+/* Fix modal display issues */
+.modal {
+    display: none;
+}
+
+.modal.show {
+    display: block !important;
+}
+
+.modal-backdrop {
+    opacity: 0.5 !important;
+}
+
+/* Ensure modal is above other elements */
+#viewJobModal {
+    z-index: 1060 !important;
+}
+
+#viewJobModal .modal-dialog {
+    z-index: 1070 !important;
+    margin: 1.75rem auto;
+    pointer-events: all;
+}
+
+/* Fix for modal content */
+.modal-content {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* Ensure the modal is visible */
+.modal.fade.show {
+    opacity: 1 !important;
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/job-application.js' %}"></script>
 {% endblock %}
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Highlight active navigation link based on scroll position
-        function updateActiveNavLink() {
-            const sections = document.querySelectorAll('section.section');
-            const navLinks = document.querySelectorAll('.nav-links a');
-            
-            let currentSectionId = '';
-            
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop - 120;
-                const sectionHeight = section.offsetHeight;
-                const sectionId = section.getAttribute('id');
-                
-                if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
-                    currentSectionId = sectionId;
-                }
-            });
-            
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                const href = link.getAttribute('href').substring(1);
-                if (href === currentSectionId) {
-                    link.classList.add('active');
-                }
-            });
-        }
-        
-        window.addEventListener('scroll', updateActiveNavLink);
-        updateActiveNavLink();
-        
-        // Add smooth scrolling to navigation links
-        document.querySelectorAll('.nav-links a').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href').substring(1);
-                const targetElement = document.getElementById(targetId);
-                
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 110,
-                        behavior: 'smooth'
-                    });
-                    
-                    // Update active link manually
-                    document.querySelectorAll('.nav-links a').forEach(link => {
-                        link.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                }
-            });
-        });
-        
-        // Initialize dropdown functionality if not using Bootstrap's dropdown
-        const profileDropdown = document.querySelector('.profile-dropdown');
-        const profileTrigger = document.querySelector('.profile-trigger');
-        
-        if (profileTrigger && !profileTrigger.getAttribute('data-bs-toggle')) {
-            profileTrigger.addEventListener('click', function() {
-                profileDropdown.classList.toggle('active');
-            });
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(event) {
-                if (!profileDropdown.contains(event.target)) {
-                    profileDropdown.classList.remove('active');
-                }
-            });
-        }
-    });
-</script>
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Highlight active navigation link based on scroll position
-        function updateActiveNavLink() {
-            const sections = document.querySelectorAll('section.section');
-            const navLinks = document.querySelectorAll('.nav-links a');
-            
-            let currentSectionId = '';
-            
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop - 120;
-                const sectionHeight = section.offsetHeight;
-                const sectionId = section.getAttribute('id');
-                
-                if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
-                    currentSectionId = sectionId;
-                }
-            });
-            
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                const href = link.getAttribute('href').substring(1);
-                if (href === currentSectionId) {
-                    link.classList.add('active');
-                }
-            });
-        }
-        
-        window.addEventListener('scroll', updateActiveNavLink);
-        updateActiveNavLink();
-        
-        // Add smooth scrolling to navigation links
-        document.querySelectorAll('.nav-links a').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href').substring(1);
-                const targetElement = document.getElementById(targetId);
-                
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 110,
-                        behavior: 'smooth'
-                    });
-                    
-                    // Update active link manually
-                    document.querySelectorAll('.nav-links a').forEach(link => {
-                        link.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                }
-            });
-        });
-        
-        // Initialize dropdown functionality if not using Bootstrap's dropdown
-        const profileDropdown = document.querySelector('.profile-dropdown');
-        const profileTrigger = document.querySelector('.profile-trigger');
-        
-        if (profileTrigger && !profileTrigger.getAttribute('data-bs-toggle')) {
-            profileTrigger.addEventListener('click', function() {
-                profileDropdown.classList.toggle('active');
-            });
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(event) {
-                if (!profileDropdown.contains(event.target)) {
-                    profileDropdown.classList.remove('active');
-                }
-            });
-        }
-    });
-</script>
-
-<script>
-// Add this to the existing DOMContentLoaded event listener
-// Enhance the smooth scrolling for the new home section
-document.querySelectorAll('.scroll-btn, .scroll-down').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        
-        const targetId = this.getAttribute('href');
-        const targetElement = document.querySelector(targetId);
-        
-        if (targetElement) {
-            window.scrollTo({
-                top: targetElement.offsetTop - 110,
-                behavior: 'smooth'
-            });
-            
-            // Update active link manually
-            document.querySelectorAll('.nav-links a').forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === targetId) {
-                    link.classList.add('active');
-                }
-            });
-        }
-    });
-});
-</script>
-
-<script>
-// Add this script to handle the terms modal focus management
-document.addEventListener('DOMContentLoaded', function() {
-    var termsModal = document.getElementById('termsModal');
-    var termsLink = document.querySelector('a[data-bs-target="#termsModal"]');
-    
-    termsModal.addEventListener('hidden.bs.modal', function () {
-        // Return focus to the terms link when the terms modal is closed
-        if (termsLink) {
-            termsLink.focus();
-        }
-        
-        // Fix for lingering backdrop
-        document.body.classList.remove('modal-open');
-        var modalBackdrops = document.querySelectorAll('.modal-backdrop');
-        modalBackdrops.forEach(function(backdrop) {
-            backdrop.parentNode.removeChild(backdrop);
-        });
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
-    });
-});
-</script>
-

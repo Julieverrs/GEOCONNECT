@@ -1,6 +1,5 @@
 // Add these variables at the top of your file to track map instances
-//let currentMap = null
-//let currentMarker = null
+const mapInstances = {}
 
 // Add this at the top of your file to define the standard options
 const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Temporary", "Internship"]
@@ -10,12 +9,164 @@ const EXPERIENCE_LEVELS = ["Entry Level", "Junior", "Mid Level", "Senior", "Lead
 // Add this at the top of your file with the other constants
 const WORK_SETUPS = ["On-site", "Remote"]
 
-// Remove this function entirely
-// async function getCompanyLocation() {
-//   // ... removing this function
-// }
-
 document.addEventListener("DOMContentLoaded", () => {
+  // Add this function after the document.addEventListener("DOMContentLoaded", () => { line
+  // Initialize maps when modals are opened
+  function initMap(mapElementId, inputElementId, latInputId, lngInputId, initialLocation = "", initialCoords = null) {
+    // Get the map container
+    const mapContainer = document.getElementById(mapElementId)
+    if (!mapContainer) return null
+
+    // Make the map container visible
+    mapContainer.style.display = "block"
+
+    // Check if a map instance already exists for this element
+    if (mapInstances[mapElementId] && mapInstances[mapElementId].map) {
+      // If it exists, just invalidate the size and return the existing instance
+      mapInstances[mapElementId].map.invalidateSize()
+      return mapInstances[mapElementId]
+    }
+
+    // Initialize the map
+    const map = L.map(mapContainer).setView([14.5995, 120.9842], 13) // Default to Manila
+
+    // Add the tile layer (OpenStreetMap)
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map)
+
+    // Create a marker if initial coordinates are provided
+    let marker = null
+    if (initialCoords && initialCoords.lat && initialCoords.lng) {
+      map.setView([initialCoords.lat, initialCoords.lng], 15)
+      marker = L.marker([initialCoords.lat, initialCoords.lng], { draggable: true }).addTo(map)
+
+      // Update hidden inputs with initial coordinates
+      document.getElementById(latInputId).value = initialCoords.lat
+      document.getElementById(lngInputId).value = initialCoords.lng
+
+      // Update coordinates when marker is dragged
+      marker.on("dragend", (e) => {
+        const position = marker.getLatLng()
+        document.getElementById(latInputId).value = position.lat
+        document.getElementById(lngInputId).value = position.lng
+        reverseGeocode(position.lat, position.lng, inputElementId)
+      })
+    }
+
+    // Handle map clicks to place/move marker
+    map.on("click", (e) => {
+      const latlng = e.latlng
+
+      // Update hidden inputs
+      document.getElementById(latInputId).value = latlng.lat
+      document.getElementById(lngInputId).value = latlng.lng
+
+      // Update or create marker
+      if (marker) {
+        marker.setLatLng(latlng)
+      } else {
+        marker = L.marker(latlng, { draggable: true }).addTo(map)
+
+        // Update coordinates when marker is dragged
+        marker.on("dragend", (e) => {
+          const position = marker.getLatLng()
+          document.getElementById(latInputId).value = position.lat
+          document.getElementById(lngInputId).value = position.lng
+          reverseGeocode(position.lat, position.lng, inputElementId)
+        })
+      }
+
+      // Reverse geocode to get address
+      reverseGeocode(latlng.lat, latlng.lng, inputElementId)
+    })
+
+    // If initial location is provided but no coordinates, geocode it
+    if (initialLocation && (!initialCoords || !initialCoords.lat || !initialCoords.lng)) {
+      geocodeLocation(initialLocation, map, marker, latInputId, lngInputId)
+    }
+
+    // Invalidate size to ensure map renders correctly
+    setTimeout(() => {
+      map.invalidateSize()
+    }, 100)
+
+    // Store the map instance
+    mapInstances[mapElementId] = { map, marker }
+
+    return { map, marker }
+  }
+
+  // Function to geocode a location string to coordinates
+  async function geocodeLocation(locationString, map, marker, latInputId, lngInputId) {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationString)}`,
+      )
+      const data = await response.json()
+
+      if (data && data.length > 0) {
+        const lat = Number.parseFloat(data[0].lat)
+        const lng = Number.parseFloat(data[0].lon)
+
+        // Update map view
+        map.setView([lat, lng], 15)
+
+        // Update or create marker
+        if (marker) {
+          marker.setLatLng([lat, lng])
+        } else {
+          marker = L.marker([lat, lng], { draggable: true }).addTo(map)
+        }
+
+        // Update hidden inputs
+        document.getElementById(latInputId).value = lat
+        document.getElementById(lngInputId).value = lng
+
+        return { lat, lng }
+      }
+    } catch (error) {
+      console.error("Error geocoding location:", error)
+    }
+
+    return null
+  }
+
+  // Function to reverse geocode coordinates to an address
+  async function reverseGeocode(lat, lng, inputElementId) {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+      const data = await response.json()
+
+      if (data && data.display_name) {
+        document.getElementById(inputElementId).value = data.display_name
+      }
+    } catch (error) {
+      console.error("Error reverse geocoding:", error)
+    }
+  }
+
+  // Function to clean up map instances
+  function cleanupMap(mapElementId) {
+    if (mapInstances[mapElementId]) {
+      const { map, marker } = mapInstances[mapElementId]
+
+      // Remove marker if it exists
+      if (marker) {
+        map.removeLayer(marker)
+      }
+
+      // Remove all event listeners
+      map.off()
+
+      // Remove the map
+      map.remove()
+
+      // Delete the instance
+      delete mapInstances[mapElementId]
+    }
+  }
+
   // Profile Dropdown
   const profileTrigger = document.querySelector(".profile-trigger")
   const dropdownMenu = document.querySelector(".dropdown-menu")
@@ -42,12 +193,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const createJobModal = document.getElementById("createJobModal")
     createJobModal.classList.add("active")
     document.body.style.overflow = "hidden"
+
+    // Initialize map when modal is opened
+    setTimeout(() => {
+      initMap("jobLocationMap", "location", "jobLatitude", "jobLongitude")
+    }, 300)
   }
 
   function closeModalHandler() {
     createJobModal.classList.remove("active")
     document.body.style.overflow = ""
     jobForm.reset()
+
+    // Reset map container display
+    const mapContainer = document.getElementById("jobLocationMap")
+    if (mapContainer) {
+      mapContainer.style.display = "none"
+      cleanupMap("jobLocationMap")
+    }
   }
 
   // Modify the createJobBtn click handler
@@ -84,9 +247,13 @@ document.addEventListener("DOMContentLoaded", () => {
   jobForm.addEventListener("submit", async (e) => {
     e.preventDefault()
 
+    // Modify the create_job function to include latitude and longitude
+    // Find the job form submission event listener and modify the formData object to include coordinates:
     const formData = {
       jobTitle: document.getElementById("jobTitle").value,
       location: document.getElementById("location").value,
+      latitude: document.getElementById("jobLatitude").value || null,
+      longitude: document.getElementById("jobLongitude").value || null,
       jobType: document.getElementById("jobType").value,
       workSetup: document.getElementById("workSetup").value,
       description: document.getElementById("description").value,
@@ -243,6 +410,13 @@ document.addEventListener("DOMContentLoaded", () => {
     editJobModal.classList.remove("active")
     document.body.style.overflow = ""
     editJobForm.reset()
+
+    // Reset map container display
+    const editMapContainer = document.getElementById("editLocationMap")
+    if (editMapContainer) {
+      editMapContainer.style.display = "none"
+      cleanupMap("editLocationMap")
+    }
   }
 
   closeViewModal.addEventListener("click", closeViewModalHandler)
@@ -380,12 +554,29 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        // Show the modal
+        // Show the modal first
         const editJobModal = document.getElementById("editJobModal")
         if (editJobModal) {
           editJobModal.classList.add("active")
           document.body.style.overflow = "hidden"
         }
+
+        // Initialize or update the edit job map
+        setTimeout(() => {
+          const jobLat = data.job.latitude || null
+          const jobLng = data.job.longitude || null
+          const initialCoords = jobLat && jobLng ? { lat: jobLat, lng: jobLng } : null
+
+          // Always initialize a new map instance for each edit
+          initMap(
+            "editLocationMap",
+            "editLocation",
+            "editJobLatitude",
+            "editJobLongitude",
+            data.job.location,
+            initialCoords,
+          )
+        }, 300)
       }
     } catch (error) {
       console.error("Error:", error)
@@ -398,9 +589,12 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault()
 
     const jobId = document.getElementById("editJobId").value
+    // Modify the edit job form submission event listener to include coordinates:
     const formData = {
       jobTitle: document.getElementById("editJobTitle").value,
       location: document.getElementById("editLocation").value,
+      latitude: document.getElementById("editJobLatitude").value || null,
+      longitude: document.getElementById("editJobLongitude").value || null,
       jobType: document.getElementById("editJobType").value,
       workSetup: document.getElementById("editWorkSetup").value,
       description: document.getElementById("editDescription").value,
@@ -516,183 +710,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `
     }
   }
-
-  // Assuming showNotification is defined elsewhere and accessible.  If not, define it here:
-  //function showNotification(message, type) {
-  //Implementation for showing notifications.  Could use an alert, a custom element, etc.
-  //  alert(message) //Replace with proper notification implementation.
-  //}
-
-  // Profile Settings Handling
-  const profileModal = document.getElementById("profileModal")
-  const profileSettingsLink = document.querySelector('.dropdown-item[href="#"]') // Update the selector based on your menu item
-  const tabButtons = document.querySelectorAll(".tab-button")
-  const tabContents = document.querySelectorAll(".tab-content")
-  const companyProfileForm = document.getElementById("companyProfileForm")
-  const accountSettingsForm = document.getElementById("accountSettingsForm")
-  const changePasswordForm = document.getElementById("changePasswordForm")
-
-  // Load profile data when opening settings
-  async function loadProfileData() {
-    try {
-      const response = await fetch("/employer/profile/get/")
-      const data = await response.json()
-
-      if (data.profile) {
-        // Fill company profile form
-        document.getElementById("companyName").value = data.profile.company_name || ""
-        document.getElementById("companyDescription").value = data.profile.company_description || ""
-        document.getElementById("companyWebsite").value = data.profile.company_website || ""
-        document.getElementById("companyLocation").value = data.profile.company_location || ""
-        document.getElementById("industry").value = data.profile.industry || ""
-
-        // Fill account settings
-        document.getElementById("username").value = data.profile.username
-        document.getElementById("email").value = data.profile.email
-      }
-    } catch (error) {
-      console.error("Error loading profile:", error)
-      showNotification("Error loading profile data", "error")
-    }
-  }
-
-  // Profile Settings Modal
-  profileSettingsLink.addEventListener("click", (e) => {
-    e.preventDefault()
-    profileModal.classList.add("active")
-    document.body.style.overflow = "hidden"
-    loadProfileData()
-  })
-
-  // Tab Switching
-  tabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      tabButtons.forEach((btn) => btn.classList.remove("active"))
-      tabContents.forEach((content) => content.classList.remove("active"))
-
-      button.classList.add("active")
-      document.getElementById(`${button.dataset.tab}Tab`).classList.add("active")
-    })
-  })
-
-  // Company Profile Form
-  companyProfileForm.addEventListener("submit", async (e) => {
-    e.preventDefault()
-
-    const formData = {
-      company_name: document.getElementById("companyName").value,
-      company_description: document.getElementById("companyDescription").value,
-      company_website: document.getElementById("companyWebsite").value,
-      company_location: document.getElementById("companyLocation").value,
-      industry: document.getElementById("industry").value,
-    }
-
-    try {
-      const response = await fetch("/employer/profile/update/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify(formData),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        // Close the modal
-        profileModal.classList.remove("active")
-        document.body.style.overflow = ""
-        // Show success notification
-        showToast("Company profile updated successfully", "success")
-      } else {
-        showToast(data.error || "Error updating profile", "error")
-      }
-    } catch (error) {
-      console.error("Error:", error)
-      showToast("An error occurred while updating profile", "error")
-    }
-  })
-
-  // Account Settings Form
-  accountSettingsForm.addEventListener("submit", async (e) => {
-    e.preventDefault()
-
-    const formData = {
-      email: document.getElementById("email").value,
-    }
-
-    try {
-      const response = await fetch("/employer/profile/update/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify(formData),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        // Close the modal
-        profileModal.classList.remove("active")
-        document.body.style.overflow = ""
-        // Show success notification
-        showToast("Account settings updated successfully", "success")
-      } else {
-        showToast(data.error || "Error updating account", "error")
-      }
-    } catch (error) {
-      console.error("Error:", error)
-      showToast("An error occurred while updating account", "error")
-    }
-  })
-
-  // Change Password Form
-  changePasswordForm.addEventListener("submit", async (e) => {
-    e.preventDefault()
-
-    const newPassword = document.getElementById("newPassword").value
-    const confirmPassword = document.getElementById("confirmPassword").value
-
-    if (newPassword !== confirmPassword) {
-      showToast("New passwords do not match", "error")
-      return
-    }
-
-    const formData = {
-      current_password: document.getElementById("currentPassword").value,
-      new_password: newPassword,
-    }
-
-    try {
-      const response = await fetch("/employer/profile/change-password/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify(formData),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        // Close the modal
-        profileModal.classList.remove("active")
-        document.body.style.overflow = ""
-        // Show success notification
-        showToast("Password changed successfully", "success")
-        changePasswordForm.reset()
-      } else {
-        showToast(data.error || "Error changing password", "error")
-      }
-    } catch (error) {
-      console.error("Error:", error)
-      showToast("An error occurred while changing password", "error")
-    }
-  })
 
   // Improved Search and Filter Functionality
   const searchInput = document.getElementById("searchInput")
@@ -887,21 +904,6 @@ document.addEventListener("DOMContentLoaded", () => {
     jobsGrid.innerHTML = jobs.map((job) => createJobCardFunc(job)).join("")
   }
 
-  // ... (existing code)
-
-  // Remove or comment out these variables at the top
-  // let currentMap = null
-  // let currentMarker = null
-
-  // Remove or comment out the initMap function and all map-related code
-  // function initMap(mapElementId, initialLocation = "", initialCoords = null) { ... }
-
-  // Remove or comment out the updateLocationInput function
-  // async function updateLocationInput(mapElementId, latlng) { ... }
-
-  // Remove or comment out the handleLocationSearch function
-  // async function handleLocationSearch(mapElementId) { ... }
-
   // Declare escapeHtml function
   function escapeHtml(unsafe) {
     return unsafe
@@ -913,7 +915,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Declare L variable
-  //const L = window.L
+  const L = window.L
 
   // Add this toast notification function
   function showToast(message, type) {
@@ -993,6 +995,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Add close button handler for the profile modal
+  const profileModal = document.getElementById("profileModal") // Declare profileModal
   const closeProfileModal = document.getElementById("closeProfileModal")
   if (closeProfileModal) {
     closeProfileModal.addEventListener("click", () => {
@@ -1074,6 +1077,175 @@ document.addEventListener("DOMContentLoaded", () => {
         `
     }
   }
+  // Profile Settings Handling
+  const profileSettingsLink = document.querySelector('.dropdown-item[href="#"]') // Update the selector based on your menu item
+  const tabButtons = document.querySelectorAll(".tab-button")
+  const tabContents = document.querySelectorAll(".tab-content")
+  const companyProfileForm = document.getElementById("companyProfileForm")
+  const accountSettingsForm = document.getElementById("accountSettingsForm")
+  const changePasswordForm = document.getElementById("changePasswordForm")
+
+  // Load profile data when opening settings
+  async function loadProfileData() {
+    try {
+      const response = await fetch("/employer/profile/get/")
+      const data = await response.json()
+
+      if (data.profile) {
+        // Fill company profile form
+        document.getElementById("companyName").value = data.profile.company_name || ""
+        document.getElementById("companyDescription").value = data.profile.company_description || ""
+        document.getElementById("companyWebsite").value = data.profile.company_website || ""
+        document.getElementById("companyLocation").value = data.profile.company_location || ""
+        document.getElementById("industry").value = data.profile.industry || ""
+
+        // Fill account settings
+        document.getElementById("username").value = data.profile.username
+        document.getElementById("email").value = data.profile.email
+      }
+    } catch (error) {
+      console.error("Error loading profile:", error)
+      showNotification("Error loading profile data", "error")
+    }
+  }
+
+  // Profile Settings Modal
+  profileSettingsLink.addEventListener("click", (e) => {
+    e.preventDefault()
+    profileModal.classList.add("active")
+    document.body.style.overflow = "hidden"
+    loadProfileData()
+  })
+
+  // Tab Switching
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      tabButtons.forEach((btn) => btn.classList.remove("active"))
+      tabContents.forEach((content) => content.classList.remove("active"))
+
+      button.classList.add("active")
+      document.getElementById(`${button.dataset.tab}Tab`).classList.add("active")
+    })
+  })
+
+  // Company Profile Form
+  companyProfileForm.addEventListener("submit", async (e) => {
+    e.preventDefault()
+
+    const formData = {
+      company_name: document.getElementById("companyName").value,
+      company_description: document.getElementById("companyDescription").value,
+      company_website: document.getElementById("companyWebsite").value,
+      company_location: document.getElementById("companyLocation").value,
+      industry: document.getElementById("industry").value,
+    }
+
+    try {
+      const response = await fetch("/employer/profile/update/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Close the modal
+        profileModal.classList.remove("active")
+        document.body.style.overflow = ""
+        // Show success notification
+        showToast("Company profile updated successfully", "success")
+      } else {
+        showToast(data.error || "Error updating profile", "error")
+      }
+    } catch (error) {
+      console.error("Error:", error)
+      showToast("An error occurred while updating profile", "error")
+    }
+  })
+
+  // Account Settings Form
+  accountSettingsForm.addEventListener("submit", async (e) => {
+    e.preventDefault()
+
+    const formData = {
+      email: document.getElementById("email").value,
+    }
+
+    try {
+      const response = await fetch("/employer/profile/update/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Close the modal
+        profileModal.classList.remove("active")
+        document.body.style.overflow = ""
+        // Show success notification
+        showToast("Account settings updated successfully", "success")
+      } else {
+        showToast(data.error || "Error updating account", "error")
+      }
+    } catch (error) {
+      console.error("Error:", error)
+      showToast("An error occurred while updating account", "error")
+    }
+  })
+
+  // Change Password Form
+  changePasswordForm.addEventListener("submit", async (e) => {
+    e.preventDefault()
+
+    const newPassword = document.getElementById("newPassword").value
+    const confirmPassword = document.getElementById("confirmPassword").value
+
+    if (newPassword !== confirmPassword) {
+      showToast("New passwords do not match", "error")
+      return
+    }
+
+    const formData = {
+      current_password: document.getElementById("currentPassword").value,
+      new_password: newPassword,
+    }
+
+    try {
+      const response = await fetch("/employer/profile/change-password/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Close the modal
+        profileModal.classList.remove("active")
+        document.body.style.overflow = ""
+        // Show success notification
+        showToast("Password changed successfully", "success")
+        changePasswordForm.reset()
+      } else {
+        showToast(data.error || "Error changing password", "error")
+      }
+    } catch (error) {
+      console.error("Error:", error)
+      showToast("An error occurred while changing password", "error")
+    }
+  })
 
   // Update the createJobCard function
   function createJobCard(job) {
@@ -1096,5 +1268,28 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
     `
   }
-})
 
+  // Add search location functionality
+  document.getElementById("searchLocationBtn").addEventListener("click", () => {
+    const locationInput = document.getElementById("location").value
+    if (locationInput) {
+      const mapId = "jobLocationMap"
+      const mapInstance = initMap(mapId, "location", "jobLatitude", "jobLongitude")
+      if (mapInstance) {
+        geocodeLocation(locationInput, mapInstance.map, mapInstance.marker, "jobLatitude", "jobLongitude")
+      }
+    }
+  })
+
+  // Add search location functionality for edit modal
+  document.getElementById("editSearchLocationBtn").addEventListener("click", () => {
+    const locationInput = document.getElementById("editLocation").value
+    if (locationInput) {
+      const mapId = "editLocationMap"
+      const mapInstance = initMap(mapId, "editLocation", "editJobLatitude", "editJobLongitude")
+      if (mapInstance) {
+        geocodeLocation(locationInput, mapInstance.map, mapInstance.marker, "editJobLatitude", "editJobLongitude")
+      }
+    }
+  })
+})

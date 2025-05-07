@@ -2,6 +2,30 @@
 {% load static %}
 
 {% block content %}
+{% if messages %}
+<div class="top-notifications">
+   {% for message in messages %}
+   <div class="top-notification top-notification-{{ message.tags }}">
+       {{ message }}
+       <button type="button" class="close-notification" onclick="this.parentElement.style.display='none';">
+           <i class="fas fa-times"></i>
+       </button>
+   </div>
+   {% endfor %}
+</div>
+<script>
+   // Auto-hide notifications after 5 seconds
+   setTimeout(function() {
+       var notifications = document.querySelectorAll('.top-notification');
+       notifications.forEach(function(notification) {
+           notification.style.opacity = '0';
+           setTimeout(function() {
+               notification.style.display = 'none';
+           }, 500);
+       });
+   }, 5000);
+</script>
+{% endif %}
 <div class="auth-container">
     <div class="auth-image">
         <h1>Welcome back!</h1>
@@ -39,31 +63,4 @@
         </div>
     </div>
 </div>
-
-{% if messages %}
-    {% for message in messages %}
-        <div class="django-message" data-type="{{ message.tags }}" style="display: none;">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endif %}
-
 {% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log("Checking for messages");
-        const djangoMessages = document.querySelectorAll('.django-message');
-        console.log("Found Django messages:", djangoMessages.length);
-        djangoMessages.forEach((message) => {
-            const messageText = message.textContent.trim();
-            const messageType = message.dataset.type;
-            console.log("Processing Django message:", messageText, messageType);
-            toastNotification(messageText, messageType);
-            message.remove();
-        });
-    });
-</script>
-{% endblock %}
-
