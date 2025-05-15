@@ -924,15 +924,8 @@
                 </select>
                 <select id="statusFilter" class="filter-select">
                     <option value="all">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="under_review">Under Review</option>
-                    <option value="shortlisted">Shortlisted</option>
-                    <option value="scheduled_interview">Interview Scheduled</option>
-                    <option value="interviewed">Interviewed</option>
-                    <option value="offered">Offered</option>
-                    <option value="hired">Hired</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="declined">Declined</option>
+                    <option value="hired">Accept</option>
+                    <option value="rejected">Decline</option>
                 </select>
             </div>
         </div>
@@ -1083,32 +1076,11 @@
           <label for="statusSelect" class="form-label">New Status</label>
           <select id="statusSelect" name="status" class="form-control" required>
             <option value="">Select a status</option>
-            <option value="pending">Pending</option>
-            <option value="under_review">Under Review</option>
-            <option value="shortlisted">Shortlisted</option>
-            <option value="scheduled_interview">Schedule Interview</option>
-            <option value="interviewed">Interviewed</option>
-            <option value="offered">Offered</option>
-            <option value="hired">Hired</option>
-            <option value="rejected">Rejected</option>
-            <option value="declined">Declined</option>
+            <option value="hired">Accept</option>
+            <option value="rejected">Decline</option>
           </select>
         </div>
         
-        <div id="interviewFields" style="display: none;">
-          <div class="form-group">
-            <label for="interviewDate" class="form-label">Interview Date</label>
-            <input type="date" id="interviewDate" name="interview_date" class="form-control">
-          </div>
-          <div class="form-group">
-            <label for="interviewTime" class="form-label">Interview Time</label>
-            <input type="time" id="interviewTime" name="interview_time" class="form-control">
-          </div>
-          <div class="form-group">
-            <label for="interviewLocation" class="form-label">Interview Location</label>
-            <input type="text" id="interviewLocation" name="interview_location" class="form-control" placeholder="Office location or video call link">
-          </div>
-        </div>
         
         <div class="form-group">
           <label for="notes" class="form-label">Notes</label>
@@ -1130,4 +1102,3 @@
 {% block extra_js %}
 <script src="{% static 'js/applications.js' %}"></script>
 {% endblock %}
-

@@ -222,12 +222,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const interviewFields = document.getElementById("interviewFields")
 
   function toggleInterviewFields() {
-    if (statusSelect && interviewFields) {
-      if (statusSelect.value === "scheduled_interview") {
-        interviewFields.style.display = "block"
-      } else {
-        interviewFields.style.display = "none"
-      }
+    // Since we're only using Accept/Decline, we don't need interview fields
+    if (interviewFields) {
+      interviewFields.style.display = "none"
     }
   }
 
@@ -358,14 +355,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // Helper function to get status display name
   function getStatusDisplayName(status) {
     const statusMap = {
+      hired: "Accept",
+      rejected: "Decline",
+      // Keep these for backward compatibility with existing data
       pending: "Pending",
       under_review: "Under Review",
       shortlisted: "Shortlisted",
-      rejected: "Rejected",
       scheduled_interview: "Interview Scheduled",
       interviewed: "Interviewed",
       offered: "Offered",
-      hired: "Hired",
       declined: "Declined",
     }
     return statusMap[status] || status
@@ -389,5 +387,16 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.style.overflow = "auto" // Enable scrolling
     }
   })
-})
 
+  // Update status badge colors for the simplified statuses
+  document.querySelectorAll(".status-badge").forEach((badge) => {
+    const status = badge.closest(".application-card").getAttribute("data-status")
+    if (status === "hired") {
+      badge.textContent = "Accept"
+      badge.className = "status-badge status-hired"
+    } else if (status === "rejected") {
+      badge.textContent = "Decline"
+      badge.className = "status-badge status-rejected"
+    }
+  })
+})

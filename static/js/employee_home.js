@@ -70,8 +70,30 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initial job load
   filterJobs(false)
 
+  // Add this near the top of the file, after the DOMContentLoaded event
+  let appliedJobs = new Set()
+
+  // Add a function to fetch applied jobs
+  async function fetchAppliedJobs() {
+    try {
+      const response = await fetch("/employee/get-applied-jobs/")
+      if (!response.ok) {
+        throw new Error("Network response was not ok")
+      }
+      const data = await response.json()
+      if (data.success) {
+        appliedJobs = new Set(data.applied_jobs)
+      }
+    } catch (error) {
+      console.error("Error fetching applied jobs:", error)
+    }
+  }
+
   // Find the filterJobs function and modify it to support the showAll parameter
   async function filterJobs(showAll = false) {
+    // Fetch applied jobs first
+    await fetchAppliedJobs()
+
     const searchQuery = document.getElementById("jobSearch").value
     const category = document.getElementById("jobCategory").value
     const location = document.getElementById("jobLocation").value
@@ -107,12 +129,26 @@ document.addEventListener("DOMContentLoaded", () => {
       // Display jobs (all or just 6 based on showAll)
       const jobsToShow = data.jobs //showAll ? data.jobs : data.jobs.slice(0, 6)
       jobsToShow.forEach((job) => {
+        // Modify the job actions part in the job card HTML
+        const isApplied = appliedJobs.has(Number.parseInt(job.id))
+        const buttonClass = isApplied ? "btn-success" : "btn-primary"
+        const buttonText = isApplied
+          ? '<i class="fas fa-check"></i> Applied'
+          : '<i class="fas fa-paper-plane"></i> Apply'
+        const buttonDisabled = isApplied ? "disabled" : ""
+
         const jobCard = `
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="job-card">
-                    <div class="company-badge">
-                        <div class="company-initial">${job.company ? job.company.charAt(0) : "C"}</div>
-                    </div>
+                    <div class="company-badge" 
+                         data-bs-toggle="popover" 
+                         data-bs-trigger="hover" 
+                         data-bs-html="true" 
+                         data-bs-placement="top" 
+                         data-bs-title="${job.company || "Company"}" 
+                         data-bs-content="<p><strong>Description:</strong> ${job.company_description || "No description available"}</p><p><strong>Location:</strong> ${job.company_location || "Not specified"}</p>">
+                <div class="company-initial">${job.company ? job.company.charAt(0) : "C"}</div>
+            </div>
                     <div class="job-card-header">
                         <h3 class="job-title">${job.title}</h3>
                         <div class="company-name">
@@ -149,9 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <small>Posted ${job.created_at}</small>
                         </div>
                         <div class="job-actions">
-                            <button type="button" class="btn btn-outline-primary btn-sm view-job-btn me-2" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#viewJobModal"
+                            <button type="button" class="btn ${buttonClass} btn-sm view-job-btn apply-now-btn" 
                                     data-job-id="${job.id}" 
                                     data-job-title="${job.title}" 
                                     data-company="${job.company || "Company"}"
@@ -164,16 +198,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                     data-requirements="${job.requirements || ""}"
                                     data-qualifications="${job.qualifications || ""}"
                                     data-benefits="${job.benefits || ""}"
-                                    data-posted="${job.created_at}">
-                                <i class="fas fa-eye"></i> View
-                            </button>
-                            <button type="button" class="btn btn-primary btn-sm apply-now-btn" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#applyJobModal"
-                                    data-job-id="${job.id}" 
-                                    data-job-title="${job.title}" 
-                                    data-company="${job.company || "Company"}">
-                                Apply Now
+                                    data-posted="${job.created_at}"
+                                    data-applied="${isApplied}"
+                                    ${buttonDisabled}>
+                                ${buttonText}
                             </button>
                         </div>
                     </div>
@@ -220,21 +248,81 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Find the initializeJobButtons function and replace it with:
   function initializeJobButtons() {
-    // Reinitialize view job buttons
+    // Initialize view/apply job buttons
     document.querySelectorAll(".view-job-btn").forEach((button) => {
-      button.addEventListener("click", function () {
+      button.addEventListener("click", function (e) {
+        e.preventDefault()
+        // Now prepareJobDetails will open the apply modal directly
         prepareJobDetails(this)
       })
     })
+  }
 
-    // Reinitialize apply now buttons
-    document.querySelectorAll(".apply-now-btn").forEach(function (button) {
-      var jobId = this.getAttribute("data-job-id")
-      var jobTitle = this.getAttribute("data-job-title")
-      var company = this.getAttribute("data-company")
-      prepareJobApplication(jobId, jobTitle, company)
-    })
+  // Function to prepare job details and open the apply modal
+  function prepareJobDetails(button) {
+    // Get job details from data attributes
+    const jobId = button.getAttribute("data-job-id")
+    const jobTitle = button.getAttribute("data-job-title")
+    const company = button.getAttribute("data-company")
+    const location = button.getAttribute("data-location")
+    const jobType = button.getAttribute("data-job-type")
+    const workSetup = button.getAttribute("data-work-setup")
+    const salary = button.getAttribute("data-salary")
+    const experience = button.getAttribute("data-experience")
+    const description = button.getAttribute("data-description")
+    const requirements = button.getAttribute("data-requirements")
+    const posted = button.getAttribute("data-posted")
+
+    // Set company initial
+    if (document.getElementById("viewJobCompanyInitial")) {
+      document.getElementById("viewJobCompanyInitial").textContent = company.charAt(0)
+    }
+
+    // Set values in the apply modal
+    if (document.getElementById("viewJobTitle")) {
+      document.getElementById("viewJobTitle").textContent = jobTitle
+    }
+    if (document.getElementById("viewJobCompany")) {
+      document.getElementById("viewJobCompany").textContent = company
+    }
+    if (document.getElementById("viewJobLocation")) {
+      document.getElementById("viewJobLocation").textContent = location
+    }
+    if (document.getElementById("viewJobType")) {
+      document.getElementById("viewJobType").textContent = jobType
+    }
+    if (document.getElementById("viewJobWorkSetup")) {
+      document.getElementById("viewJobWorkSetup").textContent = workSetup
+    }
+    if (document.getElementById("viewJobSalary")) {
+      document.getElementById("viewJobSalary").textContent = salary
+    }
+    if (document.getElementById("viewJobExperience")) {
+      document.getElementById("viewJobExperience").textContent = experience
+    }
+    if (document.getElementById("viewJobPosted")) {
+      document.getElementById("viewJobPosted").textContent = "Posted " + posted
+    }
+
+    // Set content sections
+    if (document.getElementById("viewJobDescription")) {
+      document.getElementById("viewJobDescription").innerHTML = description
+    }
+    if (document.getElementById("viewJobRequirements")) {
+      document.getElementById("viewJobRequirements").innerHTML = requirements || "No specific requirements provided."
+    }
+
+    // Also set the application form fields
+    document.getElementById("jobId").value = jobId
+    document.getElementById("jobTitleSpan").textContent = jobTitle
+    document.getElementById("jobCompanySpan").textContent = company
+    document.getElementById("jobTitleDetail").textContent = jobTitle
+
+    // Open the apply modal
+    const applyModal = new bootstrap.Modal(document.getElementById("applyJobModal"))
+    applyModal.show()
   }
 
   // Debounce function to prevent too many requests
@@ -419,11 +507,43 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   // Dummy functions to satisfy the calls.  These would normally be defined elsewhere.
-  function prepareJobDetails(button) {
-    console.log("prepareJobDetails called", button)
-  }
-
   function prepareJobApplication(jobId, jobTitle, company) {
     console.log("prepareJobApplication called", jobId, jobTitle, company)
+  }
+
+  // Remove or comment out the Bootstrap popover initialization code if it exists
+  // Look for code like this and remove or comment it out:
+
+  // Initialize popovers for company badges
+  // const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+  // const popoverList = popoverTriggerList.map(
+  //   (popoverTriggerEl) =>
+  //     new bootstrap.Popover(popoverTriggerEl, {
+  //       container: "body",
+  //       sanitize: false,
+  //     }),
+  // )
+
+  // Also remove or comment out any other popover initialization code
+
+  // Function to initialize popovers for dynamically added elements
+  function initializePopovers() {
+    const newPopoverTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="popover"]:not([data-bs-popover-initialized])'),
+    )
+    newPopoverTriggerList.forEach((popoverTriggerEl) => {
+      new bootstrap.Popover(popoverTriggerEl, {
+        container: "body",
+        sanitize: false,
+      })
+      popoverTriggerEl.setAttribute("data-bs-popover-initialized", "true")
+    })
+  }
+
+  // Call after filtering jobs
+  const originalFilterJobs = filterJobs
+  filterJobs = (showAll = false) => {
+    originalFilterJobs(showAll)
+    setTimeout(initializePopovers, 100)
   }
 })

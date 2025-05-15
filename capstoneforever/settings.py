@@ -163,7 +163,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'juluiscastillo17@gmail.com'  # Replace with your Gmail address
-EMAIL_HOST_PASSWORD = 'odsw knbu aarp qxym'  # Replace with the App Password you generated
+EMAIL_HOST_PASSWORD = 'elog ytdp fbjf nibo'  # Replace with the App Password you generated
 DEFAULT_FROM_EMAIL = 'JOBCONNECT <your-Jobconnect@gmail.com>'
 
 # Password Reset Settings

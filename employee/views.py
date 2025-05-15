@@ -271,6 +271,8 @@ def filter_jobs(request):
         'id': job.id,
         'title': job.title,
         'company': job.employer.company_name,
+        'company_description': job.employer.company_description,
+        'company_location': job.employer.company_location,
         'location': job.location,
         'job_type': job.job_type,
         'work_setup': job.work_setup,
@@ -284,6 +286,17 @@ def filter_jobs(request):
         'jobs': jobs_data,
         'total_count': total_count
     })
+
+@employee_login_required
+def get_applied_jobs(request):
+    """Return a list of job IDs that the current user has applied for"""
+    try:
+        employee = Employee.objects.get(username=request.session.get('employee_username'))
+        applied_job_ids = JobApplication.objects.filter(employee=employee).values_list('job_id', flat=True)
+        return JsonResponse({'success': True, 'applied_jobs': list(applied_job_ids)})
+    except Exception as e:
+        print(f"Error fetching applied jobs: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)})
 
 @employee_login_required
 @require_http_methods(["GET"])

@@ -36,32 +36,66 @@
         </div>
         
         <div class="header-actions">
-            <div class="profile-dropdown">
-                <button class="profile-trigger" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="profile-info">
-                        <div class="profile-avatar">
-                            {% if employee.avatar %}
-                                <img src="{{ employee.avatar.url }}" alt="Profile" class="rounded-circle">
-                            {% else %}
-                                {{ username|first|upper }}
-                            {% endif %}
-                        </div>
-                        <span class="profile-name">{{ username }}</span>
-                    </div>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal" id="profileSettingsLink">
-                        <i class="fas fa-user-cog"></i> Profile Settings
-                    </a></li>
-                    <li><a class="dropdown-item" href="/employee/resume-analyzer/" id="resumeAnalyzerLink">
-                        <i class="fas fa-brain"></i> Resume Analyzer
-                    </a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="{% url 'employee_logout' %}">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </a></li>
-                </ul>
+            <!-- Find the profile dropdown section in the header and replace it with this enhanced version -->
+
+<div class="profile-dropdown">
+    <button class="profile-trigger enhanced-profile-btn" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="profile-info">
+            <div class="profile-avatar enhanced-avatar">
+                {% if employee.avatar %}
+                    <img src="{{ employee.avatar.url }}" alt="Profile" class="rounded-circle">
+                {% else %}
+                    <span class="avatar-text">{{ username|first|upper }}</span>
+                {% endif %}
             </div>
+            <span class="profile-name">{{ username }}</span>
+            <i class="fas fa-chevron-down dropdown-arrow"></i>
+        </div>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end enhanced-dropdown" aria-labelledby="profileDropdown">
+        <li class="dropdown-header">
+            <div class="dropdown-header-content">
+                <div class="header-avatar">
+                    {% if employee.avatar %}
+                        <img src="{{ employee.avatar.url }}" alt="Profile" class="rounded-circle">
+                    {% else %}
+                        <span class="avatar-text-small">{{ username|first|upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="header-user-info">
+                    <span class="header-username">{{ username }}</span>
+                    <span class="header-email">{{ employee.email }}</span>
+                </div>
+            </div>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+            <a class="dropdown-item enhanced-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal" id="profileSettingsLink">
+                <div class="item-icon settings-icon">
+                    <i class="fas fa-user-cog"></i>
+                </div>
+                <span>Profile Settings</span>
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item enhanced-item" href="/employee/resume-analyzer/" id="resumeAnalyzerLink">
+                <div class="item-icon resume-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <span>Resume Analyzer</span>
+            </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+            <a class="dropdown-item enhanced-item logout-item" href="{% url 'employee_logout' %}">
+                <div class="item-icon logout-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</div>
         </div>
     </div>
 </header>
@@ -79,7 +113,7 @@
                     <h1 class="welcome-title">Welcome back, <span class="highlight">{{ username }}</span>!</h1>
                     <p class="welcome-subtitle">Find your dream job and take the next step in your career.</p>
                     <div class="welcome-actions">
-                        <button class="btn btn-primary btn-lg action-button" id="startJobSearch">
+                        <button class="btn btn-primary btn-lg action-button" id="startJobSearch" onclick="window.location.href='/employee/resume-analyzer/'">
                             <i class="fas fa-search me-2"></i>Get Recommendations
                         </button>
                         <a href="#jobs" class="btn btn-outline-light btn-lg action-button scroll-btn">
@@ -197,7 +231,10 @@
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="job-card">
                         <!-- Company Logo/Badge -->
-                        <div class="company-badge">
+                        <div class="company-badge" 
+                             data-company-name="{{ job.employer.company_name }}" 
+                             data-company-desc="{{ job.employer.company_description|truncatechars:100|default:'No description available' }}" 
+                             data-company-location="{{ job.employer.company_location|default:'Location not specified' }}">
                             <div class="company-initial">{{ job.employer.company_name|slice:":1" }}</div>
                         </div>
                         
@@ -244,7 +281,7 @@
                                 <small>Posted {{ job.created_at|date:"F d, Y" }}</small>
                             </div>
                             <div class="job-actions">
-                                <button type="button" class="btn btn-outline-primary btn-sm view-job-btn me-2" 
+                                <button type="button" class="btn btn-primary btn-sm view-job-btn apply-now-btn" 
                                         data-job-id="{{ job.id }}" 
                                         data-job-title="{{ job.title }}" 
                                         data-company="{{ job.employer.company_name }}"
@@ -257,17 +294,9 @@
                                         data-requirements="{{ job.requirements }}"
                                         data-qualifications="{{ job.qualifications }}"
                                         data-benefits="{{ job.benefits }}"
-                                        data-posted="{{ job.created_at|date:'F d, Y' }}">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                                <button type="button" class="btn btn-primary btn-sm apply-now-btn" 
-                                        onclick="console.log('Button clicked for job: {{ job.title }}');"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#applyJobModal"
-                                        data-job-id="{{ job.id }}" 
-                                        data-job-title="{{ job.title }}" 
-                                        data-company="{{ job.employer.company_name }}">
-                                    Apply Now
+                                        data-posted="{{ job.created_at|date:'F d, Y' }}"
+                                        data-applied="false">
+                                    <i class="fas fa-paper-plane"></i> Apply
                                 </button>
                             </div>
                         </div>
@@ -455,92 +484,123 @@
     </div>
 </section>
 
-<!-- Profile Modal -->
+<!-- Enhanced Profile Modal -->
 <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered enhanced-profile-modal">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="profileModalLabel">Edit Profile</h5>
+        <div class="modal-header enhanced-modal-header">
+          <h5 class="modal-title" id="profileModalLabel">
+            <i class="fas fa-user-edit modal-title-icon"></i> Edit Profile
+          </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body enhanced-modal-body">
           <form id="profileForm" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="text-center mb-4">
-              <img id="avatarPreview" src="{{ employee.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Profile Picture" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
-              <div class="mt-2">
-                <label for="avatarUpload" class="btn btn-sm btn-outline-primary">Change Photo</label>
-                <input type="file" id="avatarUpload" name="avatar" class="d-none" accept="image/jpeg, image/png, image/jpg">
+            
+            <!-- Profile Photo Section -->
+            <div class="profile-photo-section">
+              <div class="avatar-container">
+                <div class="avatar-preview-wrapper">
+                  <img id="avatarPreview" src="{{ employee.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Profile Picture" class="avatar-preview">
+                  <div class="avatar-overlay">
+                    <i class="fas fa-camera"></i>
+                  </div>
+                </div>
+                <div class="avatar-actions">
+                  <label for="avatarUpload" class="btn btn-sm btn-primary avatar-upload-btn">
+                    <i class="fas fa-camera me-2"></i>Change Photo
+                  </label>
+                  <input type="file" id="avatarUpload" name="avatar" class="d-none" accept="image/jpeg, image/png, image/jpg">
+                </div>
               </div>
             </div>
             
-            <div class="mb-3">
-              <label for="fullName" class="form-label">Full Name</label>
-              <input type="text" class="form-control" id="fullName" name="full_name" value="{{ employee.full_name }}">
+            <!-- Profile Information Section -->
+            <div class="profile-info-section">
+              <h6 class="section-title">
+                <i class="fas fa-info-circle section-icon"></i> Personal Information
+              </h6>
+              
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control enhanced-input" id="fullName" name="full_name" value="{{ employee.full_name }}" placeholder="Full Name">
+                <label for="fullName">Full Name</label>
+              </div>
+              
+              <div class="form-floating mb-3">
+                <input type="tel" class="form-control enhanced-input" id="phone" name="phone" value="{{ employee.phone }}" placeholder="Phone">
+                <label for="phone">Phone</label>
+              </div>
+              
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control enhanced-input" id="location" name="location" value="{{ employee.location }}" placeholder="Location">
+                <label for="location">Location</label>
+              </div>
+              
+              <div class="form-floating mb-4">
+                <textarea class="form-control enhanced-input" id="bio" name="bio" rows="3" placeholder="Bio" style="height: 100px">{{ employee.bio }}</textarea>
+                <label for="bio">Bio</label>
+              </div>
             </div>
             
-            <div class="mb-3">
-              <label for="phone" class="form-label">Phone</label>
-              <input type="tel" class="form-control" id="phone" name="phone" value="{{ employee.phone }}">
-            </div>
-            
-            <div class="mb-3">
-              <label for="location" class="form-label">Location</label>
-              <input type="text" class="form-control" id="location" name="location" value="{{ employee.location }}">
-            </div>
-            
-            <div class="mb-3">
-              <label for="bio" class="form-label">Bio</label>
-              <textarea class="form-control" id="bio" name="bio" rows="3">{{ employee.bio }}</textarea>
-            </div>
-            
-            <!-- Enhanced Resume Upload Field -->
-            <div class="mb-4">
-              <label for="resumeUpload" class="form-label">Resume (PDF, DOC, DOCX)</label>
+            <!-- Resume Section -->
+            <div class="resume-section">
+              <h6 class="section-title">
+                <i class="fas fa-file-alt section-icon"></i> Resume
+              </h6>
               
               {% if employee.resume %}
               <div class="current-resume-container mb-3">
-                <div class="card">
-                  <div class="card-body p-3">
-                    <div class="d-flex align-items-center">
-                      <div class="resume-icon me-3">
-                        <i class="fas fa-file-pdf fa-2x text-danger"></i>
-                      </div>
-                      <div class="resume-details flex-grow-1">
-                        <h6 class="mb-0">Current Resume</h6>
-                        <p class="mb-0 small text-truncate">{{ employee.resume.name|default:"resume" }}</p>
-                      </div>
-                      <div class="resume-actions">
-                        <a href="{{ employee.resume.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                          <i class="fas fa-eye me-1"></i> View
-                        </a>
-                      </div>
+                <div class="resume-card">
+                  <div class="resume-card-content">
+                    <div class="resume-icon-container">
+                      <i class="fas fa-file-pdf resume-file-icon"></i>
+                    </div>
+                    <div class="resume-details">
+                      <h6 class="resume-title">Current Resume</h6>
+                      <p class="resume-filename">{{ employee.resume.name|default:"resume" }}</p>
+                    </div>
+                    <div class="resume-actions">
+                      <a href="{{ employee.resume.url }}" target="_blank" class="btn btn-sm btn-outline-primary view-resume-btn">
+                        <i class="fas fa-eye me-1"></i> View
+                      </a>
                     </div>
                   </div>
                 </div>
               </div>
               {% endif %}
               
-              <div class="input-group">
-                <input type="file" class="form-control" id="resumeUpload" name="resume" accept=".pdf,.doc,.docx">
-                <label class="input-group-text" for="resumeUpload">Upload New</label>
+              <div class="resume-upload-container">
+                <div class="resume-upload-label">Upload New Resume</div>
+                <div class="resume-upload-wrapper">
+                  <div class="resume-upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                  </div>
+                  <div class="resume-upload-text">
+                    <span>Drag & drop or click to browse</span>
+                    <small>Accepted formats: PDF, DOC, DOCX. Max size: 5MB</small>
+                  </div>
+                  <input type="file" class="resume-upload-input" id="resumeUpload" name="resume" accept=".pdf,.doc,.docx">
+                </div>
               </div>
-              <div class="form-text">
-                Accepted formats: PDF, DOC, DOCX. Max size: 5MB
+              
+              {% if employee.resume %}
+              <div class="resume-actions-container mt-2">
+                <button type="button" id="remove-resume-btn" class="btn btn-sm btn-danger remove-resume-btn">
+                  <i class="fas fa-trash-alt me-1"></i> Remove Resume
+                </button>
               </div>
+              {% endif %}
             </div>
-            {% if employee.resume %}
-            <div class="resume-container mt-2">
-              <button type="button" id="remove-resume-btn" class="btn btn-danger btn-sm mt-1">
-                <i class="fas fa-trash-alt"></i> Remove Resume
-              </button>
-            </div>
-            {% endif %}
           </form>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" id="saveProfile">Save Changes</button>
+        <div class="modal-footer enhanced-modal-footer">
+          <button type="button" class="btn btn-secondary cancel-btn" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i> Cancel
+          </button>
+          <button type="button" class="btn btn-primary save-btn" id="saveProfile">
+            <i class="fas fa-save me-1"></i> Save Changes
+          </button>
         </div>
       </div>
     </div>
@@ -557,6 +617,62 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <!-- Job Details Section (Moved from View Job Modal) -->
+                <div class="job-view-header mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="job-view-company-badge me-3">
+                            <div class="company-initial" id="viewJobCompanyInitial"></div>
+                        </div>
+                        <div>
+                            <h3 class="job-view-title" id="viewJobTitle"></h3>
+                            <div class="job-view-company" id="viewJobCompany"></div>
+                        </div>
+                    </div>
+                    <div class="job-view-badges mb-3">
+                        <span class="badge bg-primary me-2" id="viewJobType"></span>
+                        <span class="badge bg-info" id="viewJobWorkSetup"></span>
+                    </div>
+                    <div class="job-view-meta">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="job-view-meta-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span id="viewJobLocation"></span>
+                                </div>
+                                <div class="job-view-meta-item">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span id="viewJobSalary"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="job-view-meta-item">
+                                    <i class="fas fa-briefcase"></i>
+                                    <span id="viewJobExperience"></span>
+                                </div>
+                                <div class="job-view-meta-item">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span id="viewJobPosted"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="job-view-content mb-4">
+                    <div class="job-view-section">
+                        <h5 class="job-view-section-title">Job Description</h5>
+                        <div class="job-view-section-content" id="viewJobDescription"></div>
+                    </div>
+                    
+                    <div class="job-view-section">
+                        <h5 class="job-view-section-title">Requirements</h5>
+                        <div class="job-view-section-content" id="viewJobRequirements"></div>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                <h5 class="mb-3">Application Form</h5>
+
                 <form id="jobApplicationForm" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" id="jobId" name="job_id">
@@ -649,8 +765,6 @@
                                    class="form-control" 
                                    id="portfolioLink" 
                                    name="portfolio_link"
-                                   placeholder="https://yourportfolio.com
-                                   name="portfolio_link"
                                    placeholder="https://yourportfolio.com">
                         </div>
                         
@@ -689,74 +803,9 @@
     </div>
 </div>
 
-<!-- View Job Details Modal -->
-<div class="modal fade" id="viewJobModal" tabindex="-1" aria-labelledby="viewJobModalLabel" aria-hidden="true" data-job-id="">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="viewJobModalLabel">Job Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="job-view-header mb-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="job-view-company-badge me-3">
-                            <div class="company-initial" id="viewJobCompanyInitial"></div>
-                        </div>
-                        <div>
-                            <h3 class="job-view-title" id="viewJobTitle"></h3>
-                            <div class="job-view-company" id="viewJobCompany"></div>
-                        </div>
-                    </div>
-                    <div class="job-view-badges mb-3">
-                        <span class="badge bg-primary me-2" id="viewJobType"></span>
-                        <span class="badge bg-info" id="viewJobWorkSetup"></span>
-                    </div>
-                    <div class="job-view-meta">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="job-view-meta-item">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <span id="viewJobLocation"></span>
-                                </div>
-                                <div class="job-view-meta-item">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                    <span id="viewJobSalary"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="job-view-meta-item">
-                                    <i class="fas fa-briefcase"></i>
-                                    <span id="viewJobExperience"></span>
-                                </div>
-                                <div class="job-view-meta-item">
-                                    <i class="far fa-calendar-alt"></i>
-                                    <span id="viewJobPosted"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="job-view-content">
-                    <div class="job-view-section">
-                        <h5 class="job-view-section-title">Job Description</h5>
-                        <div class="job-view-section-content" id="viewJobDescription"></div>
-                    </div>
-                    
-                    <div class="job-view-section">
-                        <h5 class="job-view-section-title">Requirements</h5>
-                        <div class="job-view-section-content" id="viewJobRequirements"></div>
-                    </div>
-                    
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary apply-from-view-btn">Apply Now</button>
-            </div>
-        </div>
-    </div>
+<!-- View Job Details Modal (kept for compatibility but no longer used) -->
+<div class="modal fade" id="viewJobModal" tabindex="-1" aria-labelledby="viewJobModalLabel" aria-hidden="true" data-job-id="" style="display: none;">
+    <!-- Content hidden but kept for compatibility -->
 </div>
 
 <!-- Terms and Conditions Modal -->
@@ -801,6 +850,539 @@
     </div>
 </div>
 
+<style>
+/* Enhanced Profile Modal Styles */
+.enhanced-profile-modal {
+  max-width: 600px;
+}
+
+.enhanced-modal-header {
+  background: linear-gradient(135deg, #3949ab 0%, #1e88e5 100%);
+  color: white;
+  border-bottom: none;
+  padding: 1.25rem 1.5rem;
+  border-radius: 10px 10px 0 0;
+}
+
+.modal-title-icon {
+  margin-right: 10px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.enhanced-modal-body {
+  padding: 0;
+  overflow: hidden;
+}
+
+.profile-photo-section {
+  background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.avatar-container {
+  position: relative;
+  display: inline-block;
+}
+
+.avatar-preview-wrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.avatar-preview-wrapper:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.avatar-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 4px solid white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 50%;
+}
+
+.avatar-overlay i {
+  color: white;
+  font-size: 2rem;
+}
+
+.avatar-actions {
+  margin-top: 1rem;
+}
+
+.avatar-upload-btn {
+  background-color: #3949ab;
+  border-color: #3949ab;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.avatar-upload-btn:hover {
+  background-color: #303f9f;
+  border-color: #303f9f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.profile-info-section {
+  padding: 2rem;
+  background-color: white;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #3949ab;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.section-icon {
+  margin-right: 8px;
+  color: #3949ab;
+}
+
+.form-floating {
+  position: relative;
+}
+
+.enhanced-input {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem 0.75rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.enhanced-input:focus {
+  border-color: #3949ab;
+  box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.1);
+}
+
+.form-floating label {
+  padding: 1rem 0.75rem;
+}
+
+.resume-section {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.resume-card {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.resume-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.resume-card-content {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+}
+
+.resume-icon-container {
+  width: 50px;
+  height: 50px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+}
+
+.resume-file-icon {
+  font-size: 1.5rem;
+  color: #f44336;
+}
+
+.resume-details {
+  flex: 1;
+}
+
+.resume-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #333;
+}
+
+.resume-filename {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.view-resume-btn {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+.view-resume-btn:hover {
+  background-color: #3949ab;
+  color: white;
+  border-color: #3949ab;
+}
+
+.resume-upload-container {
+  margin-top: 1.5rem;
+}
+
+.resume-upload-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.resume-upload-wrapper {
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+  background-color: white;
+  cursor: pointer;
+}
+
+.resume-upload-wrapper:hover {
+  border-color: #3949ab;
+  background-color: rgba(57, 73, 171, 0.05);
+}
+
+.resume-upload-icon {
+  font-size: 2rem;
+  color: #3949ab;
+  margin-bottom: 1rem;
+}
+
+.resume-upload-text {
+  color: #666;
+}
+
+.resume-upload-text span {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.resume-upload-text small {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.resume-upload-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.resume-actions-container {
+  text-align: center;
+}
+
+.remove-resume-btn {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+.remove-resume-btn:hover {
+  background-color: #d32f2f;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.enhanced-modal-footer {
+  border-top: none;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 0 0 10px 10px;
+}
+
+.cancel-btn {
+  background-color: #e0e0e0;
+  border-color: #e0e0e0;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background-color: #d5d5d5;
+  border-color: #d5d5d5;
+}
+
+.save-btn {
+  background-color: #3949ab;
+  border-color: #3949ab;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+  background-color: #303f9f;
+  border-color: #303f9f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .avatar-preview-wrapper {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .profile-photo-section {
+    padding: 1.5rem;
+  }
+  
+  .profile-info-section,
+  .resume-section {
+    padding: 1.5rem;
+  }
+  
+  .resume-upload-wrapper {
+    padding: 1.5rem;
+  }
+  
+  .resume-filename {
+    max-width: 150px;
+  }
+}
+</style>
+
+<script>
+// Enhanced Profile Modal Functionality
+document.addEventListener('DOMContentLoaded', function() {
+  // Avatar preview functionality
+  const avatarUpload = document.getElementById('avatarUpload');
+  const avatarPreview = document.getElementById('avatarPreview');
+  const avatarPreviewWrapper = document.querySelector('.avatar-preview-wrapper');
+  
+  if (avatarUpload && avatarPreview) {
+    // Click on avatar preview to trigger file upload
+    avatarPreviewWrapper.addEventListener('click', function() {
+      avatarUpload.click();
+    });
+    
+    // Update avatar preview when file is selected
+    avatarUpload.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          avatarPreview.src = e.target.result;
+          
+          // Add animation effect
+          avatarPreview.style.transform = 'scale(0.8)';
+          setTimeout(() => {
+            avatarPreview.style.transform = 'scale(1)';
+          }, 200);
+        }
+        
+        reader.readAsDataURL(this.files[0]);
+      }
+    });
+  }
+  
+  // Resume upload functionality
+  const resumeUploadWrapper = document.querySelector('.resume-upload-wrapper');
+  const resumeUploadInput = document.getElementById('resumeUpload');
+  
+  if (resumeUploadWrapper && resumeUploadInput) {
+    // Click on upload area to trigger file selection
+    resumeUploadWrapper.addEventListener('click', function() {
+      resumeUploadInput.click();
+    });
+    
+    // Update UI when file is selected
+    resumeUploadInput.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        const fileName = this.files[0].name;
+        const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2); // Convert to MB
+        
+        // Update upload text
+        const uploadText = resumeUploadWrapper.querySelector('.resume-upload-text span');
+        if (uploadText) {
+          uploadText.textContent = `Selected: ${fileName} (${fileSize} MB)`;
+        }
+        
+        // Change border color to indicate success
+        resumeUploadWrapper.style.borderColor = '#4caf50';
+        
+        // Add animation effect
+        resumeUploadWrapper.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+          resumeUploadWrapper.style.transform = 'scale(1)';
+        }, 200);
+      }
+    });
+    
+    // Handle drag and drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      resumeUploadWrapper.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+      resumeUploadWrapper.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+      resumeUploadWrapper.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+      resumeUploadWrapper.style.borderColor = '#3949ab';
+      resumeUploadWrapper.style.backgroundColor = 'rgba(57, 73, 171, 0.05)';
+    }
+    
+    function unhighlight() {
+      resumeUploadWrapper.style.borderColor = '#ccc';
+      resumeUploadWrapper.style.backgroundColor = 'white';
+    }
+    
+    resumeUploadWrapper.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      
+      if (files && files.length) {
+        resumeUploadInput.files = files;
+        
+        // Trigger change event
+        const event = new Event('change', { bubbles: true });
+        resumeUploadInput.dispatchEvent(event);
+      }
+    }
+  }
+  
+  // Form floating labels enhancement
+  const formInputs = document.querySelectorAll('.enhanced-input');
+  
+  formInputs.forEach(input => {
+    // Check if input has value on load
+    if (input.value) {
+      input.classList.add('has-value');
+    }
+    
+    // Add/remove has-value class on input
+    input.addEventListener('input', function() {
+      if (this.value) {
+        this.classList.add('has-value');
+      } else {
+        this.classList.remove('has-value');
+      }
+    });
+  });
+  
+  // Save button animation
+  const saveButton = document.getElementById('saveProfile');
+  
+  if (saveButton) {
+    saveButton.addEventListener('click', function() {
+      // Add loading state
+      this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Saving...';
+      this.disabled = true;
+      
+      // Submit the form
+      document.getElementById('profileForm').dispatchEvent(new Event('submit'));
+      
+      // Reset button after delay (in a real app, this would be in the success callback)
+      setTimeout(() => {
+        this.innerHTML = '<i class="fas fa-check me-1"></i> Saved!';
+        
+        setTimeout(() => {
+          this.innerHTML = '<i class="fas fa-save me-1"></i> Save Changes';
+          this.disabled = false;
+        }, 1000);
+      }, 1500);
+    });
+  }
+  
+  // Remove resume button functionality
+  const removeResumeBtn = document.getElementById('remove-resume-btn');
+  
+  if (removeResumeBtn) {
+    removeResumeBtn.addEventListener('click', function() {
+      // Add confirmation
+      if (confirm('Are you sure you want to remove your current resume?')) {
+        // In a real app, this would make an AJAX request to remove the resume
+        console.log('Resume removed');
+        
+        // Add visual feedback
+        this.innerHTML = '<i class="fas fa-check me-1"></i> Removed';
+        this.disabled = true;
+        
+        // Hide the current resume container with animation
+        const resumeContainer = document.querySelector('.current-resume-container');
+        if (resumeContainer) {
+          resumeContainer.style.opacity = '0';
+          resumeContainer.style.transform = 'translateY(-10px)';
+          
+          setTimeout(() => {
+            resumeContainer.style.display = 'none';
+          }, 300);
+        }
+      }
+    });
+  }
+});
+</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded and parsed');
@@ -808,7 +1390,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Store the element that triggered the modal
     var lastFocusedElement = null;
     
-    // Function to prepare and open the job application modal
+    // Function to prepare and open the job application modal with full details
     function prepareJobApplication(jobId, jobTitle, company) {
         console.log('Preparing job application for:', jobTitle);
         // Set the values in the modal
@@ -874,8 +1456,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             prepareJobApplication(jobId, jobTitle, company);
             
-            // Explicitly show the modal using jQuery
-            $('#applyJobModal').modal('show');
+            // Explicitly show the modal
+            var applyModal = new bootstrap.Modal(document.getElementById('applyJobModal'));
+            applyModal.show();
         };
     });
     
@@ -902,12 +1485,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // View Job Details functionality
+    // View Job Details functionality - Now opens the Apply modal with details
     var viewButtons = document.querySelectorAll('.view-job-btn');
-    var viewJobModal = document.getElementById('viewJobModal');
     
     function prepareJobDetails(button) {
-        console.log('Preparing job details');
         // Get job details from data attributes
         var jobId = button.getAttribute('data-job-id');
         var jobTitle = button.getAttribute('data-job-title');
@@ -923,12 +1504,10 @@ document.addEventListener('DOMContentLoaded', function() {
         var benefits = button.getAttribute('data-benefits');
         var posted = button.getAttribute('data-posted');
         
-        console.log('Job details:', { jobId, jobTitle, company });
-        
         // Set company initial
         document.getElementById('viewJobCompanyInitial').textContent = company.charAt(0);
         
-        // Set values in the modal
+        // Set values in the apply modal
         document.getElementById('viewJobTitle').textContent = jobTitle;
         document.getElementById('viewJobCompany').textContent = company;
         document.getElementById('viewJobLocation').textContent = location;
@@ -942,64 +1521,28 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('viewJobDescription').innerHTML = description;
         document.getElementById('viewJobRequirements').innerHTML = requirements || 'No specific requirements provided.';
         
-        // Set job ID on the modal
-        viewJobModal.setAttribute('data-job-id', jobId);
+        // Also set the application form fields
+        document.getElementById('jobId').value = jobId;
+        document.getElementById('jobTitleSpan').textContent = jobTitle;
+        document.getElementById('jobCompanySpan').textContent = company;
+        document.getElementById('jobTitleDetail').textContent = jobTitle;
+        
+        // Open the apply modal instead of view modal
+        var applyModal = new bootstrap.Modal(document.getElementById('applyJobModal'));
+        applyModal.show();
     }
     
-    // Add click event listeners to all View buttons
-    console.log('Found ' + viewButtons.length + ' view buttons');
     viewButtons.forEach(function(button) {
         button.addEventListener('click', function(e) {
-            console.log('View button clicked');
+            // Prevent the default action (which would open the view modal)
             e.preventDefault();
-            e.stopPropagation();
             
             // Store the button that was clicked
             lastFocusedElement = this;
             
-            // Prepare job details
+            // Prepare job details and open apply modal
             prepareJobDetails(this);
-            
-            // Explicitly show the modal using jQuery
-            $('#viewJobModal').modal('show');
         });
-    });
-    
-    // Handle view modal hidden event
-    if (viewJobModal) {
-        viewJobModal.addEventListener('hidden.bs.modal', function () {
-            console.log('View modal hidden, restoring focus');
-            // Return focus to the element that opened the modal
-            if (lastFocusedElement) {
-                lastFocusedElement.focus();
-            }
-            
-            // Fix for lingering backdrop
-            document.body.classList.remove('modal-open');
-            var modalBackdrops = document.querySelectorAll('.modal-backdrop');
-            modalBackdrops.forEach(function(backdrop) {
-                backdrop.parentNode.removeChild(backdrop);
-            });
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
-        });
-    }
-    
-    // Add event listener for "Apply Now" button in the view modal
-    document.querySelector('.apply-from-view-btn').addEventListener('click', function() {
-        // Close the view modal using jQuery
-        $('#viewJobModal').modal('hide');
-        
-        // Get the job ID from the view modal
-        var jobId = viewJobModal.getAttribute('data-job-id');
-        var jobTitle = document.getElementById('viewJobTitle').textContent;
-        var company = document.getElementById('viewJobCompany').textContent;
-        
-        // Prepare and show the apply modal
-        prepareJobApplication(jobId, jobTitle, company);
-        
-        // Show the apply modal using jQuery
-        $('#applyJobModal').modal('show');
     });
 });
 </script>
@@ -1938,6 +2481,81 @@ body {
 }
 </style>
 
+<style>
+/* Custom company tooltip styles */
+.company-tooltip {
+    position: fixed;
+    z-index: 9999;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    padding: 0;
+    max-width: 300px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    pointer-events: none;
+    transform: translateY(10px);
+}
+
+.company-tooltip.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.company-tooltip-header {
+    background-color: #1a237e;
+    color: white;
+    padding: 10px 15px;
+    font-weight: 600;
+    border-radius: 8px 8px 0 0;
+    font-size: 16px;
+}
+
+.company-tooltip-body {
+    padding: 10px 15px;
+    font-size: 14px;
+}
+
+.company-tooltip-body p {
+    margin-bottom: 8px;
+}
+
+.company-tooltip-body p:last-child {
+    margin-bottom: 0;
+}
+
+.company-badge {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.company-badge:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Add a subtle indicator that the badge is interactive */
+.company-badge::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 8px;
+    height: 8px;
+    background-color: #4caf50;
+    border-radius: 50%;
+    border: 2px solid white;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.company-badge::hover::after {
+    opacity: 1;
+}
+</style>
+
 <script>
 // Ensure job filtering functionality works
 document.addEventListener('DOMContentLoaded', function() {
@@ -2405,44 +3023,493 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 
+<script>
+// Function to fetch and mark applied jobs
+function fetchAndMarkAppliedJobs() {
+    fetch('/employee/get-applied-jobs/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const appliedJobs = new Set(data.applied_jobs);
+                
+                // Update all job buttons
+                document.querySelectorAll('.apply-now-btn').forEach(button => {
+                    const jobId = button.getAttribute('data-job-id');
+                    
+                    if (appliedJobs.has(parseInt(jobId))) {
+                        // Mark as applied
+                        button.setAttribute('data-applied', 'true');
+                        button.classList.remove('btn-primary');
+                        button.classList.add('btn-success');
+                        button.innerHTML = '<i class="fas fa-check"></i> Applied';
+                        button.disabled = true;
+                    }
+                });
+            }
+        })
+        .catch(error => console.error('Error fetching applied jobs:', error));
+}
+
+// Call the function when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    fetchAndMarkAppliedJobs();
+});
+</script>
+
 <style>
-/* Fix modal display issues */
-.modal {
-    display: none;
+/* Applied job button styles */
+.btn-success.apply-now-btn {
+    position: relative;
+    overflow: hidden;
 }
 
-.modal.show {
-    display: block !important;
+.btn-success.apply-now-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(-100%);
+    animation: shine 2s infinite;
 }
 
-.modal-backdrop {
-    opacity: 0.5 !important;
+@keyframes shine {
+    100% {
+        transform: translateX(100%);
+    }
 }
 
-/* Ensure modal is above other elements */
-#viewJobModal {
-    z-index: 1060 !important;
-}
-
-#viewJobModal .modal-dialog {
-    z-index: 1070 !important;
-    margin: 1.75rem auto;
-    pointer-events: all;
-}
-
-/* Fix for modal content */
-.modal-content {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-/* Ensure the modal is visible */
-.modal.fade.show {
-    opacity: 1 !important;
+/* Make the applied button more noticeable */
+.btn-success.apply-now-btn {
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
 }
 </style>
-{% endblock %}
 
-{% block extra_js %}
 <script src="{% static 'js/job-application.js' %}"></script>
+
+// Initialize popovers for company badges
+document.addEventListener('DOMContentLoaded', function() {
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl, {
+            container: 'body',
+            sanitize: false
+        })
+    })
+    
+    // Also initialize popovers for dynamically added job cards
+    function initializePopovers() {
+        var newPopoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+        newPopoverTriggerList.forEach(function(popoverTriggerEl) {
+            if (!popoverTriggerEl.hasAttribute('data-bs-popover-initialized')) {
+                new bootstrap.Popover(popoverTriggerEl, {
+                    container: 'body',
+                    sanitize: false
+                })
+                popoverTriggerEl.setAttribute('data-bs-popover-initialized', 'true')
+            }
+        })
+    }
+    
+    // Add observer to detect when new job cards are added
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length) {
+                initializePopovers()
+            }
+        })
+    })
+    
+    // Start observing the jobs grid for changes
+    const jobsGrid = document.getElementById('jobsGrid')
+    if (jobsGrid) {
+        observer.observe(jobsGrid, { childList: true, subtree: true })
+    }
+})
+</script>
+
+<style>
+/* Company badge popover styles */
+.popover {
+    max-width: 300px;
+}
+
+.popover-header {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+}
+
+.popover-body {
+    padding: 10px;
+    font-size: 0.9rem;
+}
+
+.company-badge {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.company-badge:hover {
+    transform: scale(1.1);
+}
+</style>
+
+<script>
+// Initialize company badge tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize popovers with specific configuration
+    const companyBadges = document.querySelectorAll('.company-badge');
+    
+    companyBadges.forEach(badge => {
+        // Create custom tooltip element
+        const tooltip = document.createElement('div');
+        tooltip.className = 'company-tooltip';
+        
+        // Get company info from data attributes
+        const companyName = badge.getAttribute('data-company-name') || badge.closest('.job-card').querySelector('.company-name').textContent.trim();
+        const companyDesc = badge.getAttribute('data-company-desc') || 'No description available';
+        const companyLocation = badge.getAttribute('data-company-location') || 'Location not specified';
+        
+        // Set tooltip content
+        tooltip.innerHTML = `
+            <div class="company-tooltip-header">${companyName}</div>
+            <div class="company-tooltip-body">
+                <p><strong>Description:</strong> ${companyDesc}</p>
+                <p><strong>Location:</strong> ${companyLocation}</p>
+            </div>
+        `;
+        
+        // Add tooltip to document body
+        document.body.appendChild(tooltip);
+        
+        // Show tooltip on mouseover
+        badge.addEventListener('mouseenter', function(e) {
+            const rect = badge.getBoundingClientRect();
+            tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+            tooltip.style.top = rect.bottom + 10 + 'px';
+            tooltip.classList.add('show');
+        });
+        
+        // Hide tooltip on mouseout
+        badge.addEventListener('mouseleave', function() {
+            tooltip.classList.remove('show');
+        });
+        
+        // Store tooltip reference
+        badge.tooltip = tooltip;
+    });
+    
+    // Handle dynamically added company badges
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length) {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === 1) { // Element node
+                        const newBadges = node.querySelectorAll ? node.querySelectorAll('.company-badge') : [];
+                        newBadges.forEach(badge => {
+                            if (!badge.hasAttribute('data-tooltip-initialized')) {
+                                // Create custom tooltip for new badge
+                                const tooltip = document.createElement('div');
+                                tooltip.className = 'company-tooltip';
+                                
+                                // Get company info
+                                const companyName = badge.getAttribute('data-company-name') || badge.closest('.job-card').querySelector('.company-name').textContent.trim();
+                                const companyDesc = badge.getAttribute('data-company-desc') || 'No description available';
+                                const companyLocation = badge.getAttribute('data-company-location') || 'Location not specified';
+                                
+                                // Set tooltip content
+                                tooltip.innerHTML = `
+                                    <div class="company-tooltip-header">${companyName}</div>
+                                    <div class="company-tooltip-body">
+                                        <p><strong>Description:</strong> ${companyDesc}</p>
+                                        <p><strong>Location:</strong> ${companyLocation}</p>
+                                    </div>
+                                `;
+                                
+                                // Add tooltip to document body
+                                document.body.appendChild(tooltip);
+                                
+                                // Show tooltip on mouseover
+                                badge.addEventListener('mouseenter', function(e) {
+                                    const rect = badge.getBoundingClientRect();
+                                    tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+                                    tooltip.style.top = rect.bottom + 10 + 'px';
+                                    tooltip.classList.add('show');
+                                });
+                                
+                                // Hide tooltip on mouseout
+                                badge.addEventListener('mouseleave', function() {
+                                    tooltip.classList.remove('show');
+                                });
+                                
+                                // Store tooltip reference and mark as initialized
+                                badge.tooltip = tooltip;
+                                badge.setAttribute('data-tooltip-initialized', 'true');
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+    
+    // Start observing the jobs grid for changes
+    const jobsGrid = document.getElementById('jobsGrid');
+    if (jobsGrid) {
+        observer.observe(jobsGrid, { childList: true, subtree: true });
+    }
+});
+</script>
+
+<style>
+/* Custom company tooltip styles */
+.company-tooltip {
+    position: fixed;
+    z-index: 9999;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    padding: 0;
+    max-width: 300px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    pointer-events: none;
+    transform: translateY(10px);
+}
+
+.company-tooltip.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.company-tooltip-header {
+    background-color: #1a237e;
+    color: white;
+    padding: 10px 15px;
+    font-weight: 600;
+    border-radius: 8px 8px 0 0;
+    font-size: 16px;
+}
+
+.company-tooltip-body {
+    padding: 10px 15px;
+    font-size: 14px;
+}
+
+.company-tooltip-body p {
+    margin-bottom: 8px;
+}
+
+.company-tooltip-body p:last-child {
+    margin-bottom: 0;
+}
+
+.company-badge {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.company-badge:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Add a subtle indicator that the badge is interactive */
+.company-badge::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 8px;
+    height: 8px;
+    background-color: #4caf50;
+    border-radius: 50%;
+    border: 2px solid white;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.company-badge::hover::after {
+    opacity: 1;
+}
+</style>
+
+<style>
+/* Enhanced Profile Dropdown Styles */
+.enhanced-profile-btn {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #3949ab 0%, #1e88e5 100%);
+}
+
+.enhanced-profile-btn:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+.enhanced-avatar {
+    width: 38px;
+    height: 38px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-arrow {
+    margin-left: 8px;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.enhanced-profile-btn[aria-expanded="true"] .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.enhanced-dropdown {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+    padding: 8px;
+    min-width: 280px;
+    margin-top: 10px;
+}
+
+.dropdown-header {
+    padding: 12px 16px;
+    color: #333;
+    font-weight: 600;
+}
+
+.dropdown-header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #3949ab;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    overflow: hidden;
+}
+
+.header-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-text-small {
+    font-size: 16px;
+}
+
+.header-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-username {
+    font-weight: 600;
+    color: #333;
+}
+
+.header-email {
+    font-size: 12px;
+    color: #666;
+}
+
+.enhanced-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    color: #333;
+}
+
+.enhanced-item:hover {
+    background-color: #f5f5f5;
+}
+
+.enhanced-item:active {
+    transform: scale(0.98);
+}
+
+.item-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    color: white;
+}
+
+.settings-icon {
+    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+}
+
+.resume-icon {
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+}
+
+.logout-icon {
+    background: linear-gradient(135deg, #f44336 0%, #c62828 100%);
+}
+
+.logout-item {
+    color: #f44336;
+}
+
+.logout-item:hover {
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* Make sure dropdown doesn't get cut off on mobile */
+@media (max-width: 576px) {
+    .enhanced-dropdown {
+        position: fixed !important;
+        top: 110px !important;
+        right: 10px !important;
+        left: auto !important;
+        width: calc(100% - 20px);
+        max-width: 320px;
+    }
+}
+</style>
+
+<script>
+// Ensure the Get Recommendations button redirects to resume analyzer
+document.addEventListener('DOMContentLoaded', function() {
+    const startJobSearchBtn = document.getElementById('startJobSearch');
+    if (startJobSearchBtn) {
+        // Remove any existing click event listeners
+        const newBtn = startJobSearchBtn.cloneNode(true);
+        startJobSearchBtn.parentNode.replaceChild(newBtn, startJobSearchBtn);
+        
+        // Add the new click event listener
+        newBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '/employee/resume-analyzer/';
+        });
+    }
+});
+</script>
 {% endblock %}

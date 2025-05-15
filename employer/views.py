@@ -732,6 +732,64 @@ def update_application_status(request, application_id):
         
         application.save()
         
+        # Send email notification to the applicant
+        try:
+            # Get the employee and job information
+            employee = application.employee
+            job = application.job
+            
+            # Get status display name
+            status_display = dict(JobApplication.STATUS_CHOICES).get(new_status, new_status)
+            
+            # For simplified UI, map hired to Accept and rejected to Decline
+            if new_status == 'hired':
+                status_display = 'Accept'
+            elif new_status == 'rejected':
+                status_display = 'Decline'
+            
+            # Prepare email context
+            context = {
+                'employee_name': employee.username,
+                'job_title': job.title,
+                'company_name': employer.company_name,
+                'status': status_display,
+                'notes': notes,
+                'application_date': application.application_date.strftime('%B %d, %Y'),
+            }
+            
+            # Prepare email subject based on status
+            if new_status == 'hired':
+                subject = f"Congratulations! Your application for {job.title} has been accepted"
+                template_name = 'application_accepted'
+            elif new_status == 'rejected':
+                subject = f"Update on your application for {job.title}"
+                template_name = 'application_declined'
+            else:
+                subject = f"Update on your application for {job.title}"
+                template_name = 'application_status_update'
+            
+            # Render email templates
+            email_html = render_to_string(f'employer/email/{template_name}.html', context)
+            email_text = render_to_string(f'employer/email/{template_name}.txt', context)
+            
+            # Send the email
+            send_mail(
+                subject,
+                email_text,
+                settings.DEFAULT_FROM_EMAIL,
+                [employee.email],
+                html_message=email_html,
+                fail_silently=False,
+            )
+            
+            print(f"Email notification sent to {employee.email}")
+            
+        except Exception as e:
+            # Log the error but don't fail the status update
+            import traceback
+            print(f"Error sending email notification: {str(e)}")
+            print(traceback.format_exc())
+        
         return JsonResponse({
             'success': True,
             'message': f'Application status updated to {new_status}'

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Application Accepted</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Congratulations! Your Application Has Been Accepted</h2>
+    </div>
+    <div class="content">
+        <p>Dear {{ employee_name }},</p>
+        
+        <p>We are pleased to inform you that your application for the position of <strong>{{ job_title }}</strong> at <strong>{{ company_name }}</strong> has been accepted!</p>
+        
+        <p>Our team was impressed with your qualifications and experience, and we believe you would be a valuable addition to our company.</p>
+        
+        {% if notes %}
+        <p><strong>Additional notes from the employer:</strong></p>
+        <p>{{ notes }}</p>
+        {% endif %}
+        
+        <p>We will be in touch shortly with more details about the next steps in the hiring process.</p>
+        
+        <p>Thank you for your interest in joining our team!</p>
+        
+        <p>Best regards,<br>
+        {{ company_name }} Hiring Team</p>
+    </div>
+    <div class="footer">
+        <p>This is an automated email. Please do not reply to this message.</p>
+    </div>
+</body>
+</html>

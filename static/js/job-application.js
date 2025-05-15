@@ -16,21 +16,62 @@ document.addEventListener("DOMContentLoaded", () => {
       const jobId = button.getAttribute("data-job-id")
       const jobTitle = button.getAttribute("data-job-title")
       const company = button.getAttribute("data-company")
+      const location = button.getAttribute("data-location") || ""
+      const jobType = button.getAttribute("data-job-type") || ""
+      const workSetup = button.getAttribute("data-work-setup") || ""
+      const salary = button.getAttribute("data-salary") || ""
+      const experience = button.getAttribute("data-experience") || ""
+      const description = button.getAttribute("data-description") || ""
+      const requirements = button.getAttribute("data-requirements") || ""
+      const posted = button.getAttribute("data-posted") || ""
 
       console.log("Job details:", jobId, jobTitle, company)
 
-      // Set values in the modal
+      // Set values in the modal for application form
       document.getElementById("jobId").value = jobId
       document.getElementById("jobTitleSpan").textContent = jobTitle
       document.getElementById("jobCompanySpan").textContent = company
       document.getElementById("jobTitleDetail").textContent = jobTitle
 
-      // Open the modal using Bootstrap's jQuery method
-      // Import jQuery
-      //This line needs to be added to your HTML file within the <head> section, before the script tag:
-      // <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+      // Set values for job details section
+      if (document.getElementById("viewJobCompanyInitial")) {
+        document.getElementById("viewJobCompanyInitial").textContent = company.charAt(0)
+      }
+      if (document.getElementById("viewJobTitle")) {
+        document.getElementById("viewJobTitle").textContent = jobTitle
+      }
+      if (document.getElementById("viewJobCompany")) {
+        document.getElementById("viewJobCompany").textContent = company
+      }
+      if (document.getElementById("viewJobLocation")) {
+        document.getElementById("viewJobLocation").textContent = location
+      }
+      if (document.getElementById("viewJobType")) {
+        document.getElementById("viewJobType").textContent = jobType
+      }
+      if (document.getElementById("viewJobWorkSetup")) {
+        document.getElementById("viewJobWorkSetup").textContent = workSetup
+      }
+      if (document.getElementById("viewJobSalary")) {
+        document.getElementById("viewJobSalary").textContent = salary
+      }
+      if (document.getElementById("viewJobExperience")) {
+        document.getElementById("viewJobExperience").textContent = experience
+      }
+      if (document.getElementById("viewJobPosted")) {
+        document.getElementById("viewJobPosted").textContent = posted ? "Posted " + posted : ""
+      }
+      if (document.getElementById("viewJobDescription")) {
+        document.getElementById("viewJobDescription").innerHTML = description
+      }
+      if (document.getElementById("viewJobRequirements")) {
+        document.getElementById("viewJobRequirements").innerHTML = requirements || "No specific requirements provided."
+      }
 
-      $("#applyJobModal").modal("show")
+      // Open the modal using Bootstrap's jQuery method
+      // Ensure jQuery is loaded before this script
+      const applyJobModal = new bootstrap.Modal(document.getElementById("applyJobModal"))
+      applyJobModal.show()
     })
   })
 
@@ -73,58 +114,61 @@ document.addEventListener("DOMContentLoaded", () => {
           "X-CSRFToken": csrfToken,
         },
       })
-      .then(response => {
-        // Log the response status and headers for debugging
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers.get('content-type'));
-        
-        // Check if the response is a redirect to login page
-        if (response.redirected) {
-            console.error('Redirected to:', response.url);
-            showToast('You need to be logged in to apply for jobs', 'error');
-            return Promise.reject('Authentication required');
-        }
-        
-        // Check if response is JSON before parsing
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            return response.json();
-        } else {
+        .then((response) => {
+          // Log the response status and headers for debugging
+          console.log("Response status:", response.status)
+          console.log("Response headers:", response.headers.get("content-type"))
+
+          // Check if the response is a redirect to login page
+          if (response.redirected) {
+            console.error("Redirected to:", response.url)
+            showToast("You need to be logged in to apply for jobs", "error")
+            return Promise.reject("Authentication required")
+          }
+
+          // Check if response is JSON before parsing
+          const contentType = response.headers.get("content-type")
+          if (contentType && contentType.includes("application/json")) {
+            return response.json()
+          } else {
             // If not JSON, get the text and log it for debugging
-            return response.text().then(text => {
-                console.error('Received non-JSON response:', text.substring(0, 150) + '...');
-                return Promise.reject('Invalid response format');
-            });
-        }
-      })
-      .then((data) => {
-        if (data.success) {
-          // Show success message
-          showToast(data.message || "Application submitted successfully!", "success")
+            return response.text().then((text) => {
+              console.error("Received non-JSON response:", text.substring(0, 150) + "...")
+              return Promise.reject("Invalid response format")
+            })
+          }
+        })
+        .then((data) => {
+          if (data.success) {
+            // Show success message
+            showToast(data.message || "Application submitted successfully!", "success")
 
-          // Close the modal
-          // Import Bootstrap
-          //This line needs to be added to your HTML file within the <head> section, before the script tag:
-          // <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-          const modal = bootstrap.Modal.getInstance(document.getElementById("applyJobModal"))
-          modal.hide()
+            // Close the modal
+            // Import Bootstrap
+            //This line needs to be added to your HTML file within the <head> section, before the script tag:
+            // <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            const modalElement = document.getElementById("applyJobModal")
+            const modal = bootstrap.Modal.getInstance(modalElement)
+            if (modal) {
+              modal.hide()
+            }
 
-          // Update UI to show application was submitted
-          updateAppliedJobUI(formData.get("job_id"))
-        } else {
-          // Show error message
-          showToast(data.error || "Application submission failed", "error")
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error)
-        showToast("An error occurred while submitting your application. Please check if you are logged in.", "error")
-      })
-      .finally(() => {
-        // Reset button state
-        submitButton.disabled = false
-        submitButton.innerHTML = "Submit Application"
-      })
+            // Update UI to show application was submitted
+            updateAppliedJobUI(formData.get("job_id"))
+          } else {
+            // Show error message
+            showToast(data.error || "Application submission failed", "error")
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error)
+          showToast("An error occurred while submitting your application. Please check if you are logged in.", "error")
+        })
+        .finally(() => {
+          // Reset button state
+          submitButton.disabled = false
+          submitButton.innerHTML = "Submit Application"
+        })
     })
   }
 
@@ -211,6 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
       button.classList.remove("btn-primary")
       button.classList.add("btn-success")
       button.innerHTML = '<i class="fas fa-check me-1"></i> Applied'
+      button.setAttribute("data-applied", "true")
     })
 
     // Also update the apply button in the view modal if it exists
@@ -227,20 +272,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const applyFromViewBtn = document.querySelector(".apply-from-view-btn")
   if (applyFromViewBtn) {
     applyFromViewBtn.addEventListener("click", () => {
-      // Get the job ID from the current view modal
-      const viewJobModal = document.getElementById("viewJobModal")
-      const jobId = viewJobModal.getAttribute("data-job-id")
-      const jobTitle = document.getElementById("viewJobTitle").textContent
-      const company = document.getElementById("viewJobCompany").textContent
-
-      // Hide the view modal
-      const viewModal = bootstrap.Modal.getInstance(viewJobModal)
-      viewModal.hide()
-
-      // Show the apply modal with the job details
-      prepareJobApplication(jobId, jobTitle, company)
-      const applyModal = new bootstrap.Modal(document.getElementById("applyJobModal"))
-      applyModal.show()
+      // This functionality is no longer needed as we're using a single modal
+      // but keeping it for compatibility
+      console.log("Apply from view button clicked - functionality merged")
     })
   }
 

@@ -9,6 +9,40 @@ const EXPERIENCE_LEVELS = ["Entry Level", "Junior", "Mid Level", "Senior", "Lead
 // Add this at the top of your file with the other constants
 const WORK_SETUPS = ["On-site", "Remote"]
 
+// Add this Oriental Mindoro location data at the top of the file with other constants
+const MINDORO_LOCATIONS = {
+  // Municipalities with coordinates
+  Baco: [13.3536, 121.0686],
+  Bansud: [12.8333, 121.3667],
+  Bongabong: [12.7167, 121.3667],
+  Bulalacao: [12.3333, 121.3333],
+  Calapan: [13.4106, 121.1788],
+  "Calapan City": [13.4106, 121.1788],
+  Gloria: [12.9833, 121.4667],
+  Mansalay: [12.5167, 121.4333],
+  Naujan: [13.3167, 121.3],
+  Pinamalayan: [13.0024, 121.5132],
+  Pola: [13.1445, 121.2388],
+  "Puerto Galera": [13.5, 120.9542],
+  Roxas: [12.5833, 121.5],
+  "San Teodoro": [13.4333, 120.9833],
+  Socorro: [13.0522, 121.4023],
+  Victoria: [13.2, 121.3333],
+
+  // Common barangays in Calapan City
+  "Lalud, Calapan City": [13.415, 121.183],
+  "Camilmil, Calapan City": [13.408, 121.175],
+  "Tawiran, Calapan City": [13.42, 121.19],
+  "Masipit, Santa Isabel, Calapan": [13.412, 121.181],
+
+  // Common barangays in other municipalities
+  "Maluanluan, Pola": [13.1432, 121.2444],
+  Malibago: [13.01, 121.42],
+
+  // Default center of Oriental Mindoro
+  "Oriental Mindoro": [13.0565, 121.4068],
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // Add this function after the document.addEventListener("DOMContentLoaded", () => { line
   // Initialize maps when modals are opened
@@ -1293,3 +1327,164 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 })
+
+// Replace the existing geocoding function with this improved version
+function geocodeJobLocations(jobs) {
+  const markers = []
+  const bounds = L.latLngBounds()
+
+  console.log(`Processing ${jobs.length} job cards to map`)
+
+  jobs.forEach((job, index) => {
+    const title = job.querySelector("h3").textContent.trim()
+    const locationElement = job.querySelector(".job-location")
+    const workSetupElement = job.querySelector(".job-type:nth-child(2)")
+
+    if (!locationElement) return
+
+    const location = locationElement.textContent.trim()
+    const workSetup = workSetupElement ? workSetupElement.textContent.trim() : "On-site"
+
+    console.log(`Processing job ${index + 1}: "${title}" at ${location} (${workSetup})`)
+
+    // Skip mapping for fully remote jobs if desired
+    // if (workSetup === 'Remote') return;
+
+    // Try to find the location in our predefined Oriental Mindoro locations
+    const coordinates = findLocationCoordinates(location)
+
+    if (coordinates) {
+      console.log(`Added marker for: ${title} at coordinates: [${coordinates[0]}, ${coordinates[1]}]`)
+
+      const marker = L.marker(coordinates).addTo(jobsMap)
+      marker.bindPopup(`
+        <strong>${title}</strong><br>
+        ${location}<br>
+        <span class="map-popup-type">${workSetup}</span>
+      `)
+
+      markers.push(marker)
+      bounds.extend(coordinates)
+    }
+  })
+
+  // If we have markers, fit the map to show all of them
+  if (markers.length > 0) {
+    console.log(`Fitting map to bounds with ${markers.length} markers`)
+    jobsMap.fitBounds(bounds, { padding: [50, 50] })
+  } else {
+    // Default to center of Oriental Mindoro if no markers
+    jobsMap.setView(MINDORO_LOCATIONS["Oriental Mindoro"], 10)
+  }
+
+  return markers
+}
+
+// Add this new helper function for finding location coordinates
+function findLocationCoordinates(location) {
+  // Clean up the location string
+  const cleanLocation = location.trim()
+
+  // Direct match in our predefined locations
+  for (const [key, coords] of Object.entries(MINDORO_LOCATIONS)) {
+    if (cleanLocation.toLowerCase() === key.toLowerCase()) {
+      console.log(`Direct match found for "${cleanLocation}": ${key}`)
+      return coords
+    }
+  }
+
+  // Check for Oriental Mindoro in the location name
+  if (cleanLocation.toLowerCase().includes("oriental mindoro")) {
+    // Extract the main location part before "Oriental Mindoro"
+    const mainPart = cleanLocation.split(",")[0].trim()
+
+    // Try to find this main part in our locations
+    for (const [key, coords] of Object.entries(MINDORO_LOCATIONS)) {
+      if (key.toLowerCase().includes(mainPart.toLowerCase())) {
+        console.log(`Oriental Mindoro match found for "${cleanLocation}"`)
+        return coords
+      }
+    }
+  }
+
+  // Check for partial matches (e.g., "Camilmil, Calapan City" should match "Calapan City")
+  for (const [key, coords] of Object.entries(MINDORO_LOCATIONS)) {
+    // Split location into parts (by comma)
+    const locationParts = cleanLocation.split(",").map((part) => part.trim().toLowerCase())
+
+    // Check if any part matches our key
+    for (const part of locationParts) {
+      if (key.toLowerCase().includes(part) || part.includes(key.toLowerCase())) {
+        console.log(`Partial match found for "${cleanLocation}": ${key}`)
+        return coords
+      }
+    }
+  }
+
+  // Check for municipality/city names in the location
+  const municipalities = [
+    "Baco",
+    "Bansud",
+    "Bongabong",
+    "Bulalacao",
+    "Calapan",
+    "Gloria",
+    "Mansalay",
+    "Naujan",
+    "Pinamalayan",
+    "Pola",
+    "Puerto Galera",
+    "Roxas",
+    "San Teodoro",
+    "Socorro",
+    "Victoria",
+  ]
+
+  for (const municipality of municipalities) {
+    if (cleanLocation.toLowerCase().includes(municipality.toLowerCase())) {
+      console.log(`Municipality match found for "${cleanLocation}": ${municipality}`)
+      return MINDORO_LOCATIONS[municipality]
+    }
+  }
+
+  // For unknown locations, use a point in Oriental Mindoro instead of a generic default
+  console.log(`Location not found in map: "${cleanLocation}". Using Oriental Mindoro coordinates.`)
+  return MINDORO_LOCATIONS["Oriental Mindoro"]
+}
+
+// Replace or modify the map initialization function to use our new geocoding
+function initJobMap() {
+  const mapContainer = document.getElementById("jobMapContainer")
+  if (!mapContainer) return
+
+  console.log("Initializing job map...")
+
+  // Create the map centered on Oriental Mindoro
+  jobsMap = L.map("jobMapContainer").setView(MINDORO_LOCATIONS["Oriental Mindoro"], 10)
+
+  // Add the tile layer (OpenStreetMap)
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(jobsMap)
+
+  // Get all job cards
+  const jobCards = document.querySelectorAll(".job-card")
+  console.log(`Found ${jobCards.length} job cards to map`)
+
+  // Add markers for each job
+  jobMarkers = geocodeJobLocations(jobCards)
+
+  // Handle window resize to ensure map displays correctly
+  window.addEventListener("resize", () => {
+    if (jobsMap) {
+      console.log("Map resized")
+      jobsMap.invalidateSize()
+    }
+  })
+}
+
+// Declare jobsMap variable
+let jobsMap
+
+// Declare jobMarkers variable
+let jobMarkers

@@ -1,0 +1,22 @@
+Update on Your Job Application
+
+Dear {{ employee_name }},
+
+Thank you for your interest in the {{ job_title }} position at {{ company_name }}.
+
+After careful consideration of your application, we regret to inform you that we have decided to move forward with other candidates whose qualifications more closely match our current needs.
+
+{% if notes %}
+Feedback from the employer:
+{{ notes }}
+{% endif %}
+
+We appreciate the time you took to apply and your interest in our company. We encourage you to apply for future positions that match your skills and experience.
+
+We wish you the best in your job search and future career endeavors.
+
+Best regards,
+{{ company_name }} Hiring Team
+
+---
+This is an automated email. Please do not reply to this message.

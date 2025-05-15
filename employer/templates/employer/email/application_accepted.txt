@@ -1,0 +1,22 @@
+Congratulations! Your Application Has Been Accepted
+
+Dear {{ employee_name }},
+
+We are pleased to inform you that your application for the position of {{ job_title }} at {{ company_name }} has been accepted!
+
+Our team was impressed with your qualifications and experience, and we believe you would be a valuable addition to our company.
+
+{% if notes %}
+Additional notes from the employer:
+{{ notes }}
+{% endif %}
+
+We will be in touch shortly with more details about the next steps in the hiring process.
+
+Thank you for your interest in joining our team!
+
+Best regards,
+{{ company_name }} Hiring Team
+
+---
+This is an automated email. Please do not reply to this message.
