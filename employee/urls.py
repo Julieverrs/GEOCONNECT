@@ -15,4 +15,6 @@ urlpatterns = [
     path('resume-analyzer/', views.resume_analyzer, name='resume_analyzer'),
     path('analyze-resume/', views.analyze_resume, name='analyze_resume'),
     path('get-applied-jobs/', views.get_applied_jobs, name='get_applied_jobs'),
+    path('send-contact-message/', views.send_contact_message, name='send_contact_message'),
+    path('application-status/', views.application_status, name='application_status'),
 ]

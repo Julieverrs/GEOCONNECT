@@ -26,22 +26,64 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // Smooth scrolling for anchor links
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  // Find the smooth scrolling code section and replace it with this improved version:
+
+  // Add smooth scrolling to navigation links
+  document.querySelectorAll(".nav-links a, .scroll-btn, .scroll-down").forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
-      const href = this.getAttribute("href")
-      // Only proceed if href is a valid selector (not just "#")
-      if (href && href !== "#") {
-        e.preventDefault()
-        const targetElement = document.querySelector(href)
-        if (targetElement) {
-          targetElement.scrollIntoView({
-            behavior: "smooth",
-          })
-        }
+      e.preventDefault()
+
+      const targetId = this.getAttribute("href").substring(1)
+      const targetElement = document.getElementById(targetId)
+
+      if (targetElement) {
+        // Calculate header height
+        const headerHeight = document.querySelector(".dashboard-header").offsetHeight
+
+        // Calculate the position to scroll to
+        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight
+
+        window.scrollTo({
+          top: targetPosition,
+          behavior: "smooth",
+        })
+
+        // Update active link manually
+        document.querySelectorAll(".nav-links a").forEach((link) => {
+          link.classList.remove("active")
+        })
+        this.classList.add("active")
       }
     })
   })
+
+  // Improve the active navigation link detection based on scroll position
+  function updateActiveNavLink() {
+    const sections = document.querySelectorAll("section.section")
+    const navLinks = document.querySelectorAll(".nav-links a")
+    const headerHeight = document.querySelector(".dashboard-header").offsetHeight
+
+    let currentSectionId = ""
+
+    sections.forEach((section) => {
+      const sectionTop = section.offsetTop - headerHeight - 10 // Added extra offset for better detection
+      const sectionHeight = section.offsetHeight
+      const sectionId = section.getAttribute("id")
+
+      // Check if we've scrolled past the top of the section and not past the bottom
+      if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+        currentSectionId = sectionId
+      }
+    })
+
+    navLinks.forEach((link) => {
+      link.classList.remove("active")
+      const href = link.getAttribute("href").substring(1)
+      if (href === currentSectionId) {
+        link.classList.add("active")
+      }
+    })
+  }
 
   // Job search functionality
   const filterJobsBtn = document.getElementById("filterJobs")
@@ -90,6 +132,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Find the filterJobs function and modify it to support the showAll parameter
+  // Update the filterJobs function to work with the scrollable container
+
+  // Find the filterJobs function and replace it with:
+
   async function filterJobs(showAll = false) {
     // Fetch applied jobs first
     await fetchAppliedJobs()
@@ -98,153 +144,56 @@ document.addEventListener("DOMContentLoaded", () => {
     const category = document.getElementById("jobCategory").value
     const location = document.getElementById("jobLocation").value
 
-    try {
-      const response = await fetch(
-        `/employee/filter-jobs/?search=${encodeURIComponent(searchQuery)}&category=${encodeURIComponent(category)}&location=${encodeURIComponent(location)}`,
-      )
-      if (!response.ok) {
-        throw new Error("Network response was not ok")
+    // Filter jobs function
+    const searchTerm = jobSearch ? jobSearch.value.toLowerCase() : ""
+    const categoryFilter = jobCategory ? jobCategory.value : ""
+    const locationFilter = jobLocation ? jobLocation.value : ""
+
+    const jobCards = document.querySelectorAll(".job-card")
+    let visibleCount = 0
+
+    jobCards.forEach((card) => {
+      const cardContainer = card.closest(".col-md-6")
+      const jobTitle = card.querySelector(".job-title").textContent.toLowerCase()
+      const jobType = card.querySelector(".badge.bg-primary").textContent
+      const jobWorkSetup = card.querySelector(".badge.bg-info").textContent
+
+      const matchesSearch = !searchTerm || jobTitle.includes(searchTerm)
+      const matchesCategory = !categoryFilter || jobType === categoryFilter
+      const matchesLocation = !locationFilter || jobWorkSetup === locationFilter
+
+      if (matchesSearch && matchesCategory && matchesLocation) {
+        cardContainer.style.display = "block"
+        visibleCount++
+      } else {
+        cardContainer.style.display = "none"
       }
-      const data = await response.json()
+    })
 
-      const jobsGrid = document.getElementById("jobsGrid")
-      jobsGrid.innerHTML = "" // Clear existing content
-
-      // Create container for jobs
-      const jobsContainer = document.createElement("div")
-      jobsContainer.className = "row jobs-container"
-
-      if (data.jobs.length === 0) {
-        jobsContainer.innerHTML = `
-            <div class="col-12 text-center">
-                <div class="alert alert-info">
-                    No jobs found matching your criteria.
-                </div>
-            </div>
-          `
-        jobsGrid.appendChild(jobsContainer)
-        return
+    // Show/hide no results message
+    const noResultsMsg = document.querySelector(".no-results-message")
+    if (visibleCount === 0) {
+      if (!noResultsMsg) {
+        const message = document.createElement("div")
+        message.className = "col-12 text-center no-results-message"
+        message.innerHTML = '<div class="alert alert-info">No jobs match your search criteria.</div>'
+        document.querySelector(".jobs-container").appendChild(message)
       }
+    } else if (noResultsMsg) {
+      noResultsMsg.remove()
+    }
 
-      // Display jobs (all or just 6 based on showAll)
-      const jobsToShow = data.jobs //showAll ? data.jobs : data.jobs.slice(0, 6)
-      jobsToShow.forEach((job) => {
-        // Modify the job actions part in the job card HTML
-        const isApplied = appliedJobs.has(Number.parseInt(job.id))
-        const buttonClass = isApplied ? "btn-success" : "btn-primary"
-        const buttonText = isApplied
-          ? '<i class="fas fa-check"></i> Applied'
-          : '<i class="fas fa-paper-plane"></i> Apply'
-        const buttonDisabled = isApplied ? "disabled" : ""
+    // Update the jobs count indicator
+    const jobsCount = document.querySelector(".jobs-count .text-muted")
+    if (jobsCount) {
+      const totalJobs = document.querySelectorAll(".job-card").length
+      jobsCount.textContent = `Showing ${visibleCount} of ${totalJobs} available jobs`
+    }
 
-        const jobCard = `
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="job-card">
-                    <div class="company-badge" 
-                         data-bs-toggle="popover" 
-                         data-bs-trigger="hover" 
-                         data-bs-html="true" 
-                         data-bs-placement="top" 
-                         data-bs-title="${job.company || "Company"}" 
-                         data-bs-content="<p><strong>Description:</strong> ${job.company_description || "No description available"}</p><p><strong>Location:</strong> ${job.company_location || "Not specified"}</p>">
-                <div class="company-initial">${job.company ? job.company.charAt(0) : "C"}</div>
-            </div>
-                    <div class="job-card-header">
-                        <h3 class="job-title">${job.title}</h3>
-                        <div class="company-name">
-                            <i class="fas fa-building me-2"></i>
-                            ${job.company || "Company"}
-                        </div>
-                    </div>
-                    <div class="job-card-body">
-                        <div class="job-badges mb-3">
-                            <span class="badge bg-primary">${job.job_type}</span>
-                            <span class="badge bg-info">${job.work_setup}</span>
-                        </div>
-                        <div class="job-details">
-                            <div class="job-detail-item">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>${job.location}</span>
-                            </div>
-                            <div class="job-detail-item">
-                                <i class="fas fa-money-bill-wave"></i>
-                                <span>${job.salary_range}</span>
-                            </div>
-                            <div class="job-detail-item">
-                                <i class="fas fa-briefcase"></i>
-                                <span>${job.experience_level}</span>
-                            </div>
-                        </div>
-                        <div class="job-description">
-                            ${job.description && job.description.length > 150 ? job.description.substring(0, 150) + "..." : job.description || "No description available"}
-                        </div>
-                    </div>
-                    <div class="job-card-footer">
-                        <div class="job-posted">
-                            <i class="far fa-calendar-alt me-1"></i>
-                            <small>Posted ${job.created_at}</small>
-                        </div>
-                        <div class="job-actions">
-                            <button type="button" class="btn ${buttonClass} btn-sm view-job-btn apply-now-btn" 
-                                    data-job-id="${job.id}" 
-                                    data-job-title="${job.title}" 
-                                    data-company="${job.company || "Company"}"
-                                    data-location="${job.location}"
-                                    data-job-type="${job.job_type}"
-                                    data-work-setup="${job.work_setup}"
-                                    data-salary="${job.salary_range}"
-                                    data-experience="${job.experience_level}"
-                                    data-description="${job.description || ""}"
-                                    data-requirements="${job.requirements || ""}"
-                                    data-qualifications="${job.qualifications || ""}"
-                                    data-benefits="${job.benefits || ""}"
-                                    data-posted="${job.created_at}"
-                                    data-applied="${isApplied}"
-                                    ${buttonDisabled}>
-                                ${buttonText}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-          `
-        jobsContainer.innerHTML += jobCard
-      })
-
-      jobsGrid.appendChild(jobsContainer)
-
-      // Add toggle button if there are more than 6 jobs
-      if (data.jobs.length > 6) {
-        const viewAllContainer = document.createElement("div")
-        viewAllContainer.className = "view-all-container text-center mt-4 mb-4"
-        viewAllContainer.innerHTML = `
-            <button id="viewAllJobs" class="btn btn-outline-primary btn-lg">
-                <i class="fas ${showAll ? "fa-compress-alt" : "fa-expand-alt"} me-2"></i>
-                ${showAll ? "Show Less" : `View All Jobs (${data.jobs.length})`}
-            </button>
-          `
-        jobsGrid.appendChild(viewAllContainer)
-
-        // Add event listener to the toggle button
-        document.getElementById("viewAllJobs").addEventListener("click", () => {
-          filterJobs(!showAll) // Toggle the showAll state
-        })
-      }
-
-      // Reinitialize event listeners for the newly created buttons
-      initializeJobButtons()
-    } catch (error) {
-      console.error("Error fetching jobs:", error)
-      const jobsGrid = document.getElementById("jobsGrid")
-      jobsGrid.innerHTML = `
-          <div class="row jobs-container">
-              <div class="col-12 text-center">
-                  <div class="alert alert-danger">
-                      Error loading jobs. Please try again later.
-                  </div>
-              </div>
-          </div>
-        `
+    // Scroll the container back to top after filtering
+    const scrollableContainer = document.querySelector(".scrollable-jobs-container")
+    if (scrollableContainer) {
+      scrollableContainer.scrollTop = 0
     }
   }
 

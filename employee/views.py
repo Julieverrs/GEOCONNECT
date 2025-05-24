@@ -643,9 +643,7 @@ def analyze_resume(request):
                     'job': {
                         'id': job['id'],
                         'title': job['title'],
-                        'company': job['company'],
-                        'location': job['location'],
-                        'description': job['description']
+                        'information': job['information']
                     },
                     'score': percentage  # Already as percentage (0-100)
                 })
@@ -662,3 +660,103 @@ def analyze_resume(request):
             'success': False,
             'error': f'An error occurred while analyzing the resume: {str(e)}'
         })
+
+# Add this new view function at the end of the file, after all existing functions
+
+@require_http_methods(["POST"])
+def send_contact_message(request):
+    """Send contact message from employee to admin"""
+    if request.method == "POST":
+        try:
+            # Get form data
+            name = request.POST.get('name', '')
+            email = request.POST.get('email', '')
+            subject = request.POST.get('subject', '')
+            message = request.POST.get('message', '')
+            
+            # Validate required fields
+            if not all([name, email, subject, message]):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'All fields are required'
+                })
+            
+            # Prepare email content
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient = settings.EMAIL_HOST_USER  # Send to the host email from settings.py
+            email_subject = f"Contact Form: {subject}"
+            
+            email_message = f"""
+            Contact Form Submission from GeoConnect
+            
+            Name: {name}
+            Email: {email}
+            Subject: {subject}
+            
+            Message:
+            {message}
+            
+            This message was sent from the GeoConnect contact form.
+            """
+            
+            # Send email
+            send_mail(
+                email_subject,
+                email_message,
+                from_email,
+                [recipient],
+                fail_silently=False,
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Your message has been sent successfully!'
+            })
+            
+        except Exception as e:
+            print(f"Error sending contact email: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    
+    return JsonResponse({
+        'success': False,
+        'error': 'Invalid request method'
+    })
+
+# Add new view for application status page
+@employee_login_required
+def application_status(request):
+    """
+    View for the application status page where employees can track their job applications.
+    Only shows hired and rejected applications.
+    """
+    employee_username = request.session.get('employee_username')
+    
+    # Get the employee object
+    employee = Employee.objects.filter(username=employee_username).first()
+    if not employee:
+        messages.error(request, "User not found.")
+        return redirect('employee_login')
+    
+    # Get only hired and rejected applications for this employee
+    applications = JobApplication.objects.filter(
+        employee=employee,
+        status__in=['hired', 'rejected']
+    ).select_related('job', 'job__employer').order_by('-application_date')
+
+    # Count applications by status (only hired and rejected)
+    total_applications = applications.count()
+    hired_applications = applications.filter(status='hired').count()
+    rejected_applications = applications.filter(status='rejected').count()
+
+    context = {
+        'employee': employee,
+        'username': employee_username,
+        'applications': applications,
+        'total_applications': total_applications,
+        'hired_applications': hired_applications,
+        'rejected_applications': rejected_applications,
+    }
+    return render(request, 'employee/application_status.html', context)
