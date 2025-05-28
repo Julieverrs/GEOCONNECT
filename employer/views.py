@@ -21,6 +21,7 @@ from django.utils import timezone
 from .forms import EmployerPasswordResetForm, EmployerSetPasswordForm
 from .tokens import employer_password_reset_token
 from datetime import datetime # Import datetime for interview_date
+from django.views.decorators.http import require_http_methods
 
 
 def candidate_recommendations(request):
@@ -171,10 +172,16 @@ def employer_home(request):
     # Get jobs for this employer
     jobs = Job.objects.filter(employer=employer)
     
+    # Calculate statistics
+    total_jobs = jobs.count()
+    total_applications = JobApplication.objects.filter(job__employer=employer).count()
+    
     context = {
         'employer': employer,
         'username': employer_username,
         'jobs': jobs,
+        'total_jobs': total_jobs,
+        'total_applications': total_applications,
     }
     return render(request, 'employer/employer_home.html', context)
 
@@ -801,3 +808,70 @@ def update_application_status(request, application_id):
         print(f"Error in update_application_status: {str(e)}")
         print(traceback.format_exc())
         return JsonResponse({'error': str(e)}, status=500)
+
+# Add new view function to handle the contact form submission for employers
+@require_http_methods(["POST"])
+def send_contact_message(request):
+    """Send contact message from employer to admin"""
+    if request.method == "POST":
+        try:
+            # Get form data
+            name = request.POST.get('name', '')
+            email = request.POST.get('email', '')
+            subject = request.POST.get('subject', '')
+            message = request.POST.get('message', '')
+            
+            # Validate required fields
+            if not all([name, email, subject, message]):
+                return JsonResponse({
+                    'success': False,
+                    'message': 'All fields are required'
+                })
+            
+            # Get employer info if logged in
+            employer_username = request.session.get('employer_username', 'Anonymous')
+            
+            # Prepare email content
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient = settings.EMAIL_HOST_USER  # Send to the host email from settings.py
+            email_subject = f"Employer Contact Form: {subject}"
+            
+            email_message = f"""
+            Contact Form Submission from GeoConnect (Employer Portal)
+            
+            Name: {name}
+            Email: {email}
+            Employer Username: {employer_username}
+            Subject: {subject}
+            
+            Message:
+            {message}
+            
+            This message was sent from the GeoConnect employer contact form.
+            """
+            
+            # Send email
+            send_mail(
+                email_subject,
+                email_message,
+                from_email,
+                [recipient],
+                fail_silently=False,
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Your message has been sent successfully! We will get back to you soon.'
+            })
+            
+        except Exception as e:
+            print(f"Error sending employer contact email: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'message': 'An error occurred while sending your message. Please try again later.'
+            })
+    
+    return JsonResponse({
+        'success': False,
+        'message': 'Invalid request method'
+    })

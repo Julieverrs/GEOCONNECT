@@ -19,5 +19,6 @@ urlpatterns = [
     path('application/<int:application_id>/', views.application_detail, name='application_detail'),
     path('application/<int:application_id>/update-status/', views.update_application_status, name='update_application_status'),
     path('candidate-recommendations/', views.candidate_recommendations, name='candidate_recommendations'),
+    path('send-contact-message/', views.send_contact_message, name='employer_send_contact_message'),
 ]
 

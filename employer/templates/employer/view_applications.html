@@ -36,7 +36,7 @@
         --border-radius: 10px;
         --border-radius-lg: 16px;
         --transition: all 0.3s ease;
-        --header-height: 70px;
+        --header-height: 80px;
     }
 
     body {
@@ -55,10 +55,19 @@
         padding: 0 20px;
     }
 
-    /* Main Header */
+    .content-container {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0 30px;
+    }
+
+    /* Enhanced Main Header */
     .main-header {
-        background-color: var(--white);
-        box-shadow: 0 2px 20px rgba(1, 41, 112, 0.1);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #8b5cf6 100%);
+        box-shadow: 
+            0 8px 32px rgba(65, 84, 241, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.1);
         padding: 0;
         width: 100%;
         position: fixed;
@@ -66,6 +75,57 @@
         left: 0;
         z-index: 100;
         height: var(--header-height);
+        backdrop-filter: blur(20px);
+        overflow: hidden;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Enhanced animated background with multiple layers */
+    .main-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 15% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 85% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+        animation: headerGlow 8s ease-in-out infinite;
+    }
+
+    .main-header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M40 40c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20zm20 0c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+        opacity: 0.3;
+        animation: backgroundMove 25s linear infinite;
+    }
+
+    @keyframes headerGlow {
+        0%, 100% { 
+            background: 
+                radial-gradient(circle at 15% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 85% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        }
+        50% { 
+            background: 
+                radial-gradient(circle at 25% 50%, rgba(255, 255, 255, 0.2) 0%, transparent 60%),
+                radial-gradient(circle at 75% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+        }
+    }
+
+    @keyframes backgroundMove {
+        0% { transform: translateX(0) translateY(0); }
+        25% { transform: translateX(-20px) translateY(-20px); }
+        50% { transform: translateX(-40px) translateY(0); }
+        75% { transform: translateX(-20px) translateY(20px); }
+        100% { transform: translateX(0) translateY(0); }
     }
 
     .header-container {
@@ -73,69 +133,459 @@
         justify-content: space-between;
         align-items: center;
         height: 100%;
-        padding: 0 30px;
-        max-width: 1320px;
-        margin: 0 auto;
+        padding: 0;
+        width: 100%;
+        position: relative;
+        z-index: 2;
     }
 
+    /* Enhanced Logo Section - Far Left */
     .header-logo {
-        font-size: 26px;
-        font-weight: 700;
-        color: var(--text-primary);
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--white);
         text-decoration: none;
         display: flex;
         align-items: center;
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        padding: 20px 0 20px 30px;
+        position: relative;
+        overflow: hidden;
+        min-width: 200px;
+    }
+
+    .header-logo::before {
+        display: none;
+    }
+
+    .header-logo:hover {
+        transform: scale(1.05) translateX(10px);
+        text-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
     }
 
     .header-logo span {
-        color: var(--primary);
+        background: linear-gradient(45deg, #ffffff, #e3f2fd);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin-left: 4px;
+        font-weight: 700;
     }
 
     .header-logo i {
-        margin-right: 10px;
-        color: var(--primary);
-        font-size: 28px;
+        margin-right: 15px;
+        color: var(--white);
+        font-size: 36px;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+        animation: logoFloat 3s ease-in-out infinite;
+        background: linear-gradient(45deg, #ffffff, #f0f9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
-    .header-nav {
-        display: flex;
-        align-items: center;
+    @keyframes logoFloat {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-3px) rotate(2deg); }
     }
 
+    /* Enhanced Back Button - Far Right */
     .back-button {
         display: inline-flex;
         align-items: center;
-        padding: 10px 20px;
-        background: var(--primary-gradient);
+        padding: 15px 30px 15px 25px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
         color: var(--white);
-        border-radius: var(--border-radius);
+        border-radius: 50px 0 0 50px;
         text-decoration: none;
-        font-weight: 500;
-        transition: var(--transition);
-        border: none;
+        font-weight: 600;
+        font-size: 15px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-right: none;
         cursor: pointer;
-        box-shadow: 0 4px 10px rgba(65, 84, 241, 0.3);
+        backdrop-filter: blur(15px);
+        position: relative;
+        overflow: hidden;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        min-width: 200px;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .back-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: right 0.6s ease;
+    }
+
+    .back-button:hover::before {
+        right: 100%;
     }
 
     .back-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(65, 84, 241, 0.4);
-    }
-
-    .back-button:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 5px rgba(65, 84, 241, 0.3);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.15) 100%);
+        transform: scale(1.05) translateX(-10px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     }
 
     .back-button i {
-        margin-right: 8px;
+        font-size: 18px;
+        transition: transform 0.3s ease;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
     }
 
-    /* Main Content */
+    .back-button:hover i {
+        transform: translateX(-3px);
+    }
+
+    .back-button span {
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    /* Main Content - No top margin, seamless integration */
     .main-content {
-        margin-top: calc(var(--header-height) + 15px);
-        padding: 20px 0 60px;
+        margin-top: 0;
+        padding: 0;
+    }
+
+    /* Dashboard Stats Section - Enhanced Visual Appeal */
+    .dashboard-stats {
+    background: 
+        linear-gradient(135deg, #667eea 0%, #764ba2 50%, #8b5cf6 100%),
+        #667eea; /* Solid fallback color */
+    padding: var(--header-height) 0 40px 0;
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-top: 0;
+    min-height: 100%;
+    background-attachment: fixed;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+    /* Enhanced animated background with multiple layers */
+    .dashboard-stats::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+    animation: backgroundFloat 25s ease-in-out infinite;
+    z-index: 1;
+}
+
+    .dashboard-stats::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M50 50c0-27.614-22.386-50-50-50s-50 22.386-50 50 22.386 50 50 50 50-22.386 50-50zm50 0c0-27.614-22.386-50-50-50s-50 22.386-50 50 22.386 50 50 50 50-22.386 50-50z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+        opacity: 0.4;
+        animation: backgroundMove 30s linear infinite reverse;
+    }
+
+    @keyframes backgroundFloat {
+        0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+        25% { transform: translateY(-30px) rotate(2deg) scale(1.05); }
+        50% { transform: translateY(0) rotate(0deg) scale(1.1); }
+        75% { transform: translateY(30px) rotate(-2deg) scale(1.05); }
+    }
+
+    .stats-container {
+    max-width: 100%;
+    margin: 0;
+    padding: 0 30px;
+    position: relative;
+    z-index: 3; /* Increased from 2 */
+}
+
+    .stats-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding-top: 30px;
+        animation: fadeInUp 1s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stats-title {
+        font-size: 42px;
+        font-weight: 800;
+        margin: 0 0 12px;
+        background: linear-gradient(45deg, #ffffff, #e3f2fd, #ffffff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        background-size: 200% 200%;
+        animation: titleGlow 4s ease-in-out infinite, gradientShift 3s ease-in-out infinite;
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        letter-spacing: -1px;
+    }
+
+    @keyframes titleGlow {
+        0%, 100% { 
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 255, 255, 0.2);
+        }
+        50% { 
+            text-shadow: 0 6px 12px rgba(0, 0, 0, 0.4), 0 0 40px rgba(255, 255, 255, 0.4);
+        }
+    }
+
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .stats-subtitle {
+        font-size: 18px;
+        opacity: 0.95;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        font-weight: 400;
+        letter-spacing: 0.5px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 25px; /* Reduced from 35px */
+        margin-bottom: 30px;
+        max-width: 100%;
+    }
+
+    .stat-card {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1));
+        backdrop-filter: blur(20px);
+        border-radius: 20px; /* Reduced from 28px */
+        padding: 30px 25px; /* Reduced from 45px 35px */
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 
+            0 12px 40px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        animation: cardSlideIn 0.8s ease-out forwards;
+        opacity: 0;
+        transform: translateY(50px);
+        min-height: 180px; /* Reduced from 220px */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* Staggered animation for cards */
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes cardSlideIn {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Unique gradient backgrounds for each card */
+    .stat-card:nth-child(1) {
+        background: linear-gradient(145deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.2));
+        border: 1px solid rgba(99, 102, 241, 0.4);
+    }
+
+    .stat-card:nth-child(2) {
+        background: linear-gradient(145deg, rgba(34, 197, 94, 0.3), rgba(16, 185, 129, 0.2));
+        border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    .stat-card:nth-child(3) {
+        background: linear-gradient(145deg, rgba(239, 68, 68, 0.3), rgba(244, 63, 94, 0.2));
+        border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .stat-card:nth-child(4) {
+        background: linear-gradient(145deg, rgba(245, 158, 11, 0.3), rgba(251, 146, 60, 0.2));
+        border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+        opacity: 0;
+        transition: all 0.4s ease;
+        transform: scale(0);
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        opacity: 0;
+        transition: all 0.6s ease;
+        animation: rotate 4s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .stat-card:hover {
+        transform: translateY(-12px) scale(1.05);
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.25),
+            0 0 0 1px rgba(255, 255, 255, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .stat-card:hover::after {
+        opacity: 1;
+    }
+
+    .stat-icon {
+        width: 80px; /* Reduced from 100px */
+        height: 80px; /* Reduced from 100px */
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px; /* Reduced from 30px */
+        font-size: 32px; /* Reduced from 40px */
+        color: var(--white);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 
+            0 10px 30px rgba(0, 0, 0, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-icon::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+
+    .stat-card:hover .stat-icon {
+        transform: scale(1.15) rotate(10deg);
+        box-shadow: 
+            0 12px 35px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .stat-card:hover .stat-icon::before {
+        transform: translateX(100%);
+    }
+
+    .stat-number {
+        font-size: 42px; /* Reduced from 54px */
+        font-weight: 800;
+        margin: 0 0 12px; /* Reduced from 15px */
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        transition: all 0.4s ease;
+        background: linear-gradient(45deg, #ffffff, #f0f9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        position: relative;
+        line-height: 1;
+    }
+
+    .stat-card:hover .stat-number {
+        transform: scale(1.1);
+        text-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .stat-label {
+        font-size: 14px;
+        opacity: 0.95;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 600;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Floating particles effect */
+    .stats-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.3), transparent),
+            radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.2), transparent),
+            radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.4), transparent),
+            radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.3), transparent);
+        background-repeat: repeat;
+        background-size: 150px 100px;
+        animation: floatingParticles 20s linear infinite;
+        pointer-events: none;
+    }
+
+    @keyframes floatingParticles {
+        0% { transform: translateY(0px); }
+        100% { transform: translateY(-100px); }
+    }
+
+    /* Content Section */
+    .content-section {
+        padding: 30px 0 60px;
+        background-color: var(--body-bg);
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
     }
 
     /* Page Title */
@@ -750,16 +1200,22 @@
     }
 
     @media (max-width: 1200px) {
-        .applications-grid {
+        .stats-grid {
             grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+
+        .stats-title {
+            font-size: 36px;
+        }
+        
+        .stat-card {
+            padding: 40px 30px;
+            min-height: 200px;
         }
     }
 
     @media (max-width: 992px) {
-        .header-container {
-            padding: 0 20px;
-        }
-
         .main-content {
             padding: 20px 0 40px;
         }
@@ -767,15 +1223,123 @@
         .page-title h1 {
             font-size: 24px;
         }
+
+        .content-container {
+            padding: 0 20px;
+        }
+
+        .header-logo {
+            font-size: 28px;
+            padding: 15px 0 15px 20px;
+            min-width: 180px;
+        }
+
+        .back-button {
+            padding: 12px 20px 12px 20px;
+            font-size: 14px;
+            min-width: 180px;
+        }
     }
 
     @media (max-width: 768px) {
-        .header-container {
+        .dashboard-stats {
+            padding: var(--header-height) 0 30px 0;
+        }
+
+        .stats-container {
+            padding: 0 25px;
+        }
+
+        .stats-title {
+            font-size: 32px;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .stat-card {
+            padding: 35px 25px;
+            min-height: 180px;
+        }
+
+        .stat-icon {
+            width: 85px;
+            height: 85px;
+            font-size: 34px;
+            margin: 0 auto 25px;
+        }
+
+        .stat-number {
+            font-size: 48px;
+        }
+
+        .content-container {
             padding: 0 15px;
         }
 
         .header-logo {
-            font-size: 22px;
+            font-size: 24px;
+            padding: 12px 0 12px 15px;
+            min-width: 150px;
+        }
+
+        .header-logo i {
+            font-size: 28px;
+            margin-right: 10px;
+        }
+
+        .back-button {
+            padding: 10px 15px;
+            font-size: 13px;
+            min-width: 150px;
+        }
+
+        .back-button span {
+            display: none;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+            max-width: 400px;
+            margin: 0 auto 30px;
+        }
+
+        .header-logo span {
+            display: none;
+        }
+        
+        .stats-title {
+            font-size: 28px;
+        }
+        
+        .stat-card {
+            padding: 30px 25px;
+            min-height: 160px;
+        }
+        
+        .stat-icon {
+            width: 75px;
+            height: 75px;
+            font-size: 30px;
+        }
+        
+        .stat-number {
+            font-size: 42px;
+        }
+
+        .content-container {
+            padding: 0 15px;
+        }
+
+        .header-logo {
+            font-size: 20px;
+            padding: 10px 0 10px 15px;
+            min-width: 120px;
         }
 
         .header-logo i {
@@ -783,63 +1347,8 @@
         }
 
         .back-button {
-            padding: 8px 16px;
-            font-size: 13px;
-        }
-
-        .filter-container {
-            flex-direction: column;
-        }
-
-        .filter-select {
-            width: 100%;
-        }
-
-        .applications-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .detail-item {
-            flex-direction: column;
-        }
-
-        .detail-label {
-            width: 100%;
-            margin-bottom: 5px;
-        }
-
-        .modal-content {
-            margin: 15px auto;
-        }
-
-        .btn {
-            padding: 10px 16px;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .header-logo span {
-            display: none;
-        }
-
-        .page-title h1 {
-            font-size: 22px;
-        }
-
-        .filter-title {
-            font-size: 16px;
-        }
-
-        .modal-body, .modal-header, .modal-footer {
-            padding: 15px;
-        }
-
-        .card-actions {
-            flex-direction: column;
-        }
-
-        .btn {
-            width: 100%;
+            padding: 8px 15px;
+            min-width: 60px;
         }
     }
 
@@ -885,108 +1394,147 @@
 {% endblock %}
 
 {% block content %}
-<!-- Main Header -->
+<!-- Enhanced Main Header -->
 <header class="main-header">
     <div class="header-container">
+        <!-- Logo Section - Far Left -->
         <a href="{% url 'employer_home' %}" class="header-logo">
             <i class="fas fa-briefcase"></i>
             Job<span>Portal</span>
         </a>
-        <nav class="header-nav">
-            <a href="{% url 'employer_home' %}" class="back-button">
-                <i class="fas fa-arrow-left"></i>
-                <span>Back to Dashboard</span>
-            </a>
-        </nav>
+        
+        <!-- Back Button - Far Right -->
+        <a href="{% url 'employer_home' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Dashboard</span>
+        </a>
     </div>
 </header>
 
 <!-- Main Content -->
 <main class="main-content">
-    <div class="container">
-        <!-- Page Title -->
-        <div class="page-title">
-            <h1>Applications Dashboard</h1>
-        </div>
-
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <h2 class="filter-title">
-                <i class="fas fa-filter"></i>
-                Filter Applications
-            </h2>
-            <div class="filter-container">
-                <select id="jobFilter" class="filter-select">
-                    <option value="all">All Jobs</option>
-                    {% for job in jobs %}
-                    <option value="{{ job.id }}">{{ job.title }}</option>
-                    {% endfor %}
-                </select>
-                <select id="statusFilter" class="filter-select">
-                    <option value="all">All Statuses</option>
-                    <option value="hired">Accept</option>
-                    <option value="rejected">Decline</option>
-                </select>
+    <!-- Dashboard Stats Visualization -->
+    <section class="dashboard-stats">
+        <div class="stats-container">
+            <div class="stats-header">
+                <h1 class="stats-title">Applications Overview</h1>
+                <p class="stats-subtitle">Monitor and manage your job applications efficiently</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number" id="totalApplications">{{ applications|length }}</div>
+                    <p class="stat-label">Total Applications</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-number" id="hiredCount">0</div>
+                    <p class="stat-label">Accepted</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-times"></i>
+                    </div>
+                    <div class="stat-number" id="rejectedCount">0</div>
+                    <p class="stat-label">Declined</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-number" id="pendingCount">0</div>
+                    <p class="stat-label">Pending Review</p>
+                </div>
             </div>
         </div>
+    </section>
 
-        <!-- Applications Grid -->
-        <div class="applications-grid">
-            {% for application in applications %}
-            <div class="application-card" data-job-id="{{ application.job.id }}" data-id="{{ application.id }}" data-status="{{ application.status }}">
-                <div class="card-header">
-                    <h3 class="job-title">{{ application.job.title }}</h3>
-                    <span class="status-badge status-{{ application.status }}">{{ application.get_status_display }}</span>
+    <!-- Content Section -->
+    <section class="content-section">
+        <div class="content-container">
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <h2 class="filter-title">
+                    <i class="fas fa-filter"></i>
+                    Filter Applications
+                </h2>
+                <div class="filter-container">
+                    <select id="jobFilter" class="filter-select">
+                        <option value="all">All Jobs</option>
+                        {% for job in jobs %}
+                        <option value="{{ job.id }}">{{ job.title }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="statusFilter" class="filter-select">
+                        <option value="all">All Statuses</option>
+                        <option value="hired">Accept</option>
+                        <option value="rejected">Decline</option>
+                    </select>
                 </div>
-                <div class="card-body">
-                    <div class="applicant-info">
-                        <div class="applicant-avatar">
-                            {{ application.employee.get_full_name|slice:":1" }}
-                        </div>
-                        <div class="applicant-details">
-                            <div class="applicant-name">{{ application.employee.get_full_name }}</div>
-                            <div class="applicant-email">{{ application.employee.email }}</div>
-                        </div>
+            </div>
+
+            <!-- Applications Grid -->
+            <div class="applications-grid">
+                {% for application in applications %}
+                <div class="application-card" data-job-id="{{ application.job.id }}" data-id="{{ application.id }}" data-status="{{ application.status }}">
+                    <div class="card-header">
+                        <h3 class="job-title">{{ application.job.title }}</h3>
+                        <span class="status-badge status-{{ application.status }}">{{ application.get_status_display }}</span>
                     </div>
-                    <div class="application-date">
-                        <i class="fas fa-calendar-alt"></i> Applied on {{ application.application_date|date:"M d, Y" }}
-                    </div>
-                    {% if application.interview_date %}
-                    <div class="interview-info">
-                        <div class="interview-info-title">
-                            <i class="fas fa-calendar-check"></i> Interview Scheduled
+                    <div class="card-body">
+                        <div class="applicant-info">
+                            <div class="applicant-avatar">
+                                {{ application.employee.get_full_name|slice:":1" }}
+                            </div>
+                            <div class="applicant-details">
+                                <div class="applicant-name">{{ application.employee.get_full_name }}</div>
+                                <div class="applicant-email">{{ application.employee.email }}</div>
+                            </div>
                         </div>
-                        <p><strong>Date:</strong> {{ application.interview_date|date:"M d, Y" }}</p>
-                        <p><strong>Time:</strong> {{ application.interview_date|date:"h:i A" }}</p>
-                        {% if application.interview_location %}
-                        <p><strong>Location:</strong> {{ application.interview_location }}</p>
+                        <div class="application-date">
+                            <i class="fas fa-calendar-alt"></i> Applied on {{ application.application_date|date:"M d, Y" }}
+                        </div>
+                        {% if application.interview_date %}
+                        <div class="interview-info">
+                            <div class="interview-info-title">
+                                <i class="fas fa-calendar-check"></i> Interview Scheduled
+                            </div>
+                            <p><strong>Date:</strong> {{ application.interview_date|date:"M d, Y" }}</p>
+                            <p><strong>Time:</strong> {{ application.interview_date|date:"h:i A" }}</p>
+                            {% if application.interview_location %}
+                            <p><strong>Location:</strong> {{ application.interview_location }}</p>
+                            {% endif %}
+                        </div>
                         {% endif %}
-                    </div>
-                    {% endif %}
-                    <div class="card-actions">
-                        <button class="btn btn-primary view-details" data-id="{{ application.id }}">
-                            <i class="fas fa-eye"></i> View Details
-                        </button>
-                        <button class="btn btn-outline update-status" data-id="{{ application.id }}">
-                            <i class="fas fa-edit"></i> Update Status
-                        </button>
+                        <div class="card-actions">
+                            <button class="btn btn-primary view-details" data-id="{{ application.id }}">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                            <button class="btn btn-outline update-status" data-id="{{ application.id }}">
+                                <i class="fas fa-edit"></i> Update Status
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% empty %}
-            <div class="empty-state" id="emptyState">
-                <div class="empty-state-icon">
-                    <i class="fas fa-search"></i>
+                {% empty %}
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 class="empty-state-title">No applications found</h3>
+                    <p class="empty-state-text">There are no applications matching your current filters.</p>
+                    <button id="resetFilters" class="btn btn-primary">
+                        <i class="fas fa-sync"></i> Reset Filters
+                    </button>
                 </div>
-                <h3 class="empty-state-title">No applications found</h3>
-                <p class="empty-state-text">There are no applications matching your current filters.</p>
-                <button id="resetFilters" class="btn btn-primary">
-                    <i class="fas fa-sync"></i> Reset Filters
-                </button>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
-    </div>
+    </section>
 </main>
 
 <!-- Application Detail Modal -->
@@ -1101,4 +1649,58 @@
 
 {% block extra_js %}
 <script src="{% static 'js/applications.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update statistics counters
+    function updateStats() {
+        const applications = document.querySelectorAll('.application-card');
+        let hired = 0, rejected = 0, pending = 0;
+        
+        applications.forEach(card => {
+            const status = card.dataset.status;
+            if (status === 'hired') hired++;
+            else if (status === 'rejected') rejected++;
+            else pending++;
+        });
+        
+        // Animate counters
+        animateCounter('hiredCount', hired);
+        animateCounter('rejectedCount', rejected);
+        animateCounter('pendingCount', pending);
+    }
+    
+    function animateCounter(elementId, targetValue) {
+        const element = document.getElementById(elementId);
+        const startValue = 0;
+        const duration = 1000;
+        const startTime = performance.now();
+        
+        function updateCounter(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const currentValue = Math.floor(startValue + (targetValue - startValue) * progress);
+            
+            element.textContent = currentValue;
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateCounter);
+            }
+        }
+        
+        requestAnimationFrame(updateCounter);
+    }
+    
+    // Initialize stats
+    updateStats();
+    
+    // Update stats when filters change
+    const originalFilterFunction = window.filterApplications;
+    if (originalFilterFunction) {
+        window.filterApplications = function() {
+            originalFilterFunction();
+            setTimeout(updateStats, 100); // Small delay to ensure DOM is updated
+        };
+    }
+});
+</script>
 {% endblock %}
