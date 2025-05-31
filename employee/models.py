@@ -96,3 +96,25 @@ class JobApplication(models.Model):
     def __str__(self):
         return f"{self.employee.username} - {self.job.title}"  # Updated to use employee.username directly
 
+class JobPreferences(models.Model):
+    """
+    Model to store employee job preferences for job matching
+    """
+    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, related_name='job_preferences')
+    industry = models.CharField(max_length=100)
+    job_type = models.CharField(max_length=50, default='Any Job Type')
+    work_arrangement = models.CharField(max_length=50, default='Any Arrangement')
+    skills = models.JSONField()  # Store as JSON array
+    experience = models.IntegerField(default=0)
+    current_role_years = models.CharField(max_length=50, default='Any Duration')
+    education_level = models.CharField(max_length=50, default='Any Education Level')
+    certifications = models.JSONField(null=True, blank=True)  # Store as JSON array
+    languages = models.JSONField(null=True, blank=True)  # Store as JSON array
+    salary_min = models.IntegerField(default=15000)
+    salary_max = models.IntegerField(default=150000)
+    availability = models.CharField(max_length=50, default='Any Availability')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.employee.username}'s Job Preferences"

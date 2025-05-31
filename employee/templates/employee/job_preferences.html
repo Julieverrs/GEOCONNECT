@@ -1,0 +1,1522 @@
+{% extends 'employee/base.html' %}
+{% load static %}
+
+{% block title %}Job Preferences{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.7.0/nouislider.min.css">
+<style>
+    :root {
+        --primary-color: #3144a2;
+        --secondary-color: #7987c2;
+        --accent-color: #f3a712;
+        --text-color: #333333;
+        --background-color: #f8f9fa;
+        --card-background: #ffffff;
+        --border-color: #e0e0e0;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    html, body {
+        height: 100%;
+        overflow-x: hidden;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 25%, #3949ab 50%, #5e35b1 75%, #673ab7 100%);
+        min-height: 100vh;
+        height: 100vh;
+        padding-top: 110px;
+        padding-bottom: 0;
+        position: relative;
+        overflow-x: hidden;
+        margin: 0;
+    }
+
+    /* Fixed Background Layer */
+    .background-layer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #1a237e 0%, #283593 25%, #3949ab 50%, #5e35b1 75%, #673ab7 100%);
+        z-index: -10;
+    }
+
+    /* Advanced Background Effects */
+    .background-layer::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 193, 7, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(63, 81, 181, 0.2) 0%, transparent 50%);
+        z-index: -3;
+        animation: backgroundShift 15s ease-in-out infinite;
+    }
+
+    .background-layer::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(45deg, rgba(255,255,255,0.02) 25%, transparent 25%),
+            linear-gradient(-45deg, rgba(255,255,255,0.02) 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.02) 75%),
+            linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.02) 75%);
+        background-size: 60px 60px;
+        background-position: 0 0, 0 30px, 30px -30px, -30px 0px;
+        z-index: -2;
+        animation: patternMove 20s linear infinite;
+    }
+
+    @keyframes backgroundShift {
+        0%, 100% {
+            transform: translateX(0) translateY(0) scale(1);
+        }
+        33% {
+            transform: translateX(-20px) translateY(-10px) scale(1.05);
+        }
+        66% {
+            transform: translateX(20px) translateY(10px) scale(0.95);
+        }
+    }
+
+    @keyframes patternMove {
+        0% {
+            background-position: 0 0, 0 30px, 30px -30px, -30px 0px;
+        }
+        100% {
+            background-position: 60px 60px, 60px 90px, 90px 30px, 30px 60px;
+        }
+    }
+
+    /* Floating Geometric Shapes */
+    .floating-shapes {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: -5;
+    }
+
+    .shape {
+        position: absolute;
+        opacity: 0.1;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .shape-1 {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(45deg, #ff9800, #ffc107);
+        border-radius: 50%;
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .shape-2 {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(45deg, #2196f3, #03a9f4);
+        transform: rotate(45deg);
+        top: 20%;
+        right: 15%;
+        animation-delay: 2s;
+    }
+
+    .shape-3 {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(45deg, #9c27b0, #e91e63);
+        border-radius: 30%;
+        bottom: 20%;
+        left: 20%;
+        animation-delay: 4s;
+    }
+
+    .shape-4 {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(45deg, #4caf50, #8bc34a);
+        clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        bottom: 30%;
+        right: 25%;
+        animation-delay: 1s;
+    }
+
+    .shape-5 {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(45deg, #ff5722, #ff9800);
+        border-radius: 20px;
+        top: 60%;
+        left: 70%;
+        animation-delay: 3s;
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+        }
+        50% {
+            transform: translateY(-20px) rotate(180deg);
+        }
+    }
+
+    /* Advanced Particles */
+    .advanced-particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: -4;
+    }
+
+    .particle {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        animation: particleFloat 8s linear infinite;
+    }
+
+    .particle-1 {
+        width: 4px;
+        height: 4px;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .particle-2 {
+        width: 6px;
+        height: 6px;
+        left: 20%;
+        animation-delay: 1s;
+    }
+
+    .particle-3 {
+        width: 3px;
+        height: 3px;
+        left: 30%;
+        animation-delay: 2s;
+    }
+
+    .particle-4 {
+        width: 5px;
+        height: 5px;
+        left: 40%;
+        animation-delay: 3s;
+    }
+
+    .particle-5 {
+        width: 4px;
+        height: 4px;
+        left: 50%;
+        animation-delay: 4s;
+    }
+
+    .particle-6 {
+        width: 6px;
+        height: 6px;
+        left: 60%;
+        animation-delay: 5s;
+    }
+
+    .particle-7 {
+        width: 3px;
+        height: 3px;
+        left: 70%;
+        animation-delay: 6s;
+    }
+
+    .particle-8 {
+        width: 5px;
+        height: 5px;
+        left: 80%;
+        animation-delay: 7s;
+    }
+
+    .particle-9 {
+        width: 4px;
+        height: 4px;
+        left: 90%;
+        animation-delay: 8s;
+    }
+
+    @keyframes particleFloat {
+        0% {
+            transform: translateY(100vh) scale(0);
+            opacity: 0;
+        }
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-100px) scale(1);
+            opacity: 0;
+        }
+    }
+
+    /* Navigation Back Button - Moved to Upper Left */
+    .nav-back-button {
+        position: fixed;
+        top: 120px;
+        left: 20px;
+        z-index: 1000;
+        background: linear-gradient(135deg, #3144a2 0%, #5e35b1 100%);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 15px rgba(49, 68, 162, 0.3);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-back-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(49, 68, 162, 0.4);
+        background: linear-gradient(135deg, #5e35b1 0%, #3144a2 100%);
+        color: white;
+    }
+
+    .nav-back-button i {
+        font-size: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .nav-back-button:hover i {
+        transform: translateX(-3px);
+    }
+
+    .nav-back-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 50px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .nav-back-button:hover::before {
+        opacity: 1;
+    }
+
+    /* Responsive adjustments for nav button */
+    @media (max-width: 768px) {
+        .nav-back-button {
+            top: 80px;
+            left: 15px;
+            padding: 10px 15px;
+            font-size: 0.8rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .nav-back-button {
+            top: 70px;
+            left: 10px;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+        }
+        
+        .nav-back-button span {
+            display: none;
+        }
+        
+        .nav-back-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            justify-content: center;
+            padding: 0;
+        }
+    }
+
+    /* Content Container */
+    .content-wrapper {
+        position: relative;
+        z-index: 1;
+        height: calc(100vh - 110px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 20px 0;
+    }
+    
+    .preferences-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .preferences-content {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        padding: 20px 30px;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 20px;
+    }
+    
+    .preferences-header {
+        text-align: center;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    
+    .preferences-header h1 {
+        color: var(--primary-color);
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    .preferences-header p {
+        color: #666;
+    }
+    
+    .preference-saved {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        padding: 12px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        display: none;
+        border-left: 4px solid #28a745;
+    }
+    
+    .tab-navigation {
+        display: flex;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    .tab-button {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        color: #666;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .tab-button.active {
+        color: var(--primary-color);
+        background-color: white;
+    }
+    
+    .tab-button i {
+        margin-right: 8px;
+    }
+    
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 8px;
+        display: block;
+        color: #495057;
+    }
+    
+    .required-label::after {
+        content: " *";
+        color: #dc3545;
+    }
+    
+    .select2-container {
+        width: 100% !important;
+    }
+    
+    .slider-container {
+        padding: 10px 0 30px;
+    }
+    
+    .slider-values {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .btn-save {
+        background: var(--primary-color);
+        border: none;
+        padding: 12px 30px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s;
+        color: white;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(49, 68, 162, 0.4);
+        background: #3949ab;
+    }
+    
+    .btn-reset {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        border: 1px solid #ced4da;
+        padding: 12px 30px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s;
+    }
+    
+    .btn-reset:hover {
+        background-color: #e9ecef;
+    }
+    
+    .btn-view {
+        background: var(--accent-color);
+        border: none;
+        padding: 12px 30px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s;
+        color: white;
+    }
+    
+    .btn-view:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(243, 167, 18, 0.4);
+        background: #e09000;
+    }
+    
+    .form-select, .form-control {
+        padding: 10px 15px;
+        border-radius: 5px;
+        border: 1px solid #ced4da;
+    }
+    
+    .tooltip-icon {
+        margin-left: 5px;
+        color: #6c757d;
+        cursor: help;
+    }
+    
+    /* Custom styling for noUiSlider */
+    .noUi-connect {
+        background: var(--primary-color);
+    }
+    
+    .noUi-handle {
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+    
+    .noUi-handle:before, .noUi-handle:after {
+        display: none;
+    }
+    
+    /* Custom styling for Select2 */
+    .select2-container--default .select2-selection--multiple,
+    .select2-container--default .select2-selection--single {
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        min-height: 42px;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 42px;
+        padding-left: 15px;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+    }
+    
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: rgba(49, 68, 162, 0.1);
+        border: 1px solid rgba(49, 68, 162, 0.2);
+        color: var(--primary-color);
+        border-radius: 15px;
+        padding: 2px 10px;
+    }
+    
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: var(--primary-color);
+    }
+    
+    /* Modal styles */
+    .preferences-modal .modal-header {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .preferences-modal .modal-body {
+        padding: 20px;
+    }
+    
+    .preference-item {
+        margin-bottom: 15px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+    }
+    
+    .preference-item:last-child {
+        border-bottom: none;
+    }
+    
+    .preference-label {
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .preference-value {
+        color: #6c757d;
+    }
+    
+    .preference-section {
+        margin-bottom: 20px;
+    }
+    
+    .preference-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+        border-bottom: 2px solid rgba(49, 68, 162, 0.1);
+    }
+    
+    .badge-skill {
+        background-color: rgba(49, 68, 162, 0.1);
+        color: var(--primary-color);
+        margin-right: 5px;
+        margin-bottom: 5px;
+        font-weight: 500;
+        padding: 5px 10px;
+        border-radius: 15px;
+    }
+    
+    /* Background animation */
+    .animated-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 L0,100 Z" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/></svg>');
+        background-size: 30px 30px;
+        opacity: 0.5;
+        animation: bg-animation 20s linear infinite;
+        pointer-events: none;
+    }
+    
+    @keyframes bg-animation {
+        0% {
+            background-position: 0 0;
+        }
+        100% {
+            background-position: 100% 100%;
+        }
+    }
+    
+    .particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+    
+    .particles:before,
+    .particles:after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-image: radial-gradient(circle, white 1px, transparent 1px);
+        background-size: 50px 50px;
+        background-position: 0 0;
+        opacity: 0.2;
+        animation: particles-animation 60s linear infinite;
+    }
+    
+    .particles:after {
+        background-size: 30px 30px;
+        background-position: 15px 15px;
+        opacity: 0.15;
+        animation-duration: 40s;
+        animation-direction: reverse;
+    }
+    
+    @keyframes particles-animation {
+        0% {
+            transform: translateY(0);
+        }
+        100% {
+            transform: translateY(-100%);
+        }
+    }
+
+    /* Custom Scrollbar for content */
+    .content-wrapper::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .content-wrapper::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+    .content-wrapper::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+    }
+
+    .content-wrapper::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 992px) {
+        .preferences-content {
+            padding: 15px 20px;
+        }
+        
+        .tab-button {
+            padding: 10px 5px;
+            font-size: 0.9rem;
+        }
+        
+        .tab-button i {
+            margin-right: 5px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .preferences-content {
+            padding: 15px;
+        }
+        
+        .tab-button {
+            padding: 8px 5px;
+            font-size: 0.8rem;
+        }
+        
+        .tab-button i {
+            display: block;
+            margin: 0 auto 5px;
+            font-size: 1rem;
+        }
+        
+        .btn-save, .btn-reset, .btn-view {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .preferences-container {
+            padding: 0 10px;
+        }
+        
+        .preferences-content {
+            padding: 10px;
+        }
+        
+        .preferences-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .preferences-header p {
+            font-size: 0.9rem;
+        }
+        
+        .tab-navigation {
+            flex-wrap: wrap;
+        }
+        
+        .tab-button {
+            flex: 0 0 50%;
+            padding: 10px 5px;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .form-actions button {
+            margin: 5px 0;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Fixed Background Layer -->
+<div class="background-layer"></div>
+
+<!-- Fixed Background Elements -->
+<div class="floating-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+    <div class="shape shape-4"></div>
+    <div class="shape shape-5"></div>
+</div>
+
+<div class="advanced-particles">
+    <div class="particle particle-1"></div>
+    <div class="particle particle-2"></div>
+    <div class="particle particle-3"></div>
+    <div class="particle particle-4"></div>
+    <div class="particle particle-5"></div>
+    <div class="particle particle-6"></div>
+    <div class="particle particle-7"></div>
+    <div class="particle particle-8"></div>
+    <div class="particle particle-9"></div>
+</div>
+
+<!-- Navigation Back Button - Moved to Upper Left -->
+<a href="/employee/home/" class="nav-back-button">
+    <i class="fas fa-arrow-left"></i>
+    <span>Back to Home</span>
+</a>
+
+<!-- Scrollable Content Wrapper -->
+<div class="content-wrapper">
+    <div class="container preferences-container">
+        <div class="preferences-content">
+            <div class="preferences-header">
+                <h1>Job Preferences</h1>
+                <p class="text-muted">Set your job preferences to help us find the perfect match for you</p>
+                
+                <div class="preference-saved" id="preferenceSaved">
+                    <i class="fas fa-check-circle me-2"></i> Your job preferences have been saved successfully!
+                </div>
+            </div>
+
+            <form id="jobPreferencesForm" method="post">
+                {% csrf_token %}
+                
+                <div class="tab-navigation">
+                    <button type="button" class="tab-button active" data-tab="basicTab">
+                        <i class="fas fa-briefcase"></i> Basic Requirements
+                    </button>
+                    <button type="button" class="tab-button" data-tab="skillsTab">
+                        <i class="fas fa-code"></i> Skills & Experience
+                    </button>
+                    <button type="button" class="tab-button" data-tab="educationTab">
+                        <i class="fas fa-graduation-cap"></i> Education
+                    </button>
+                    <button type="button" class="tab-button" data-tab="additionalTab">
+                        <i class="fas fa-plus-circle"></i> Additional
+                    </button>
+                </div>
+                
+                <!-- Basic Requirements Tab -->
+                <div class="tab-content active" id="basicTab">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="industry" class="form-label required-label">Industry</label>
+                                <select class="form-select" id="industry" name="industry" required>
+                                    <option value="" selected disabled>Select Industry</option>
+                                    <option value="BPO / Call Center">BPO / Call Center</option>
+                                    <option value="Information Technology">Information Technology</option>
+                                    <option value="Healthcare">Healthcare</option>
+                                    <option value="Banking & Finance">Banking & Finance</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Retail & E-commerce">Retail & E-commerce</option>
+                                    <option value="Manufacturing">Manufacturing</option>
+                                    <option value="Hospitality & Tourism">Hospitality & Tourism</option>
+                                    <option value="Media & Entertainment">Media & Entertainment</option>
+                                    <option value="Construction & Engineering">Construction & Engineering</option>
+                                    <option value="Government">Government</option>
+                                    <option value="Non-profit">Non-profit</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="jobType" class="form-label">Job Type</label>
+                                <select class="form-select" id="jobType" name="job_type">
+                                    <option value="Any Job Type" selected>Any Job Type</option>
+                                    <option value="Full-Time">Full-Time</option>
+                                    <option value="Part-Time">Part-Time</option>
+                                    <option value="Contract">Contract</option>
+                                    <option value="Temporary">Temporary</option>
+                                    <option value="Internship">Internship</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="workArrangement" class="form-label">Work Arrangement</label>
+                                <select class="form-select" id="workArrangement" name="work_arrangement">
+                                    <option value="Any Arrangement" selected>Any Arrangement</option>
+                                    <option value="On-site">On-site</option>
+                                    <option value="Remote">Remote</option>
+                                    <option value="Hybrid">Hybrid</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Skills & Experience Tab -->
+                <div class="tab-content" id="skillsTab">
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <div class="form-group">
+                                <label for="skills" class="form-label required-label">Skills</label>
+                                <select class="form-select" id="skills" name="skills[]" multiple required>
+                                    <optgroup label="Technical Skills">
+                                        <option value="Python">Python</option>
+                                        <option value="Java">Java</option>
+                                        <option value="JavaScript">JavaScript</option>
+                                        <option value="React">React</option>
+                                        <option value="Angular">Angular</option>
+                                        <option value="Vue.js">Vue.js</option>
+                                        <option value="Node.js">Node.js</option>
+                                        <option value="PHP">PHP</option>
+                                        <option value="C#">C#</option>
+                                        <option value="C++">C++</option>
+                                        <option value="Ruby">Ruby</option>
+                                        <option value="Swift">Swift</option>
+                                        <option value="Kotlin">Kotlin</option>
+                                        <option value="SQL">SQL</option>
+                                        <option value="MongoDB">MongoDB</option>
+                                        <option value="AWS">AWS</option>
+                                        <option value="Docker">Docker</option>
+                                        <option value="Kubernetes">Kubernetes</option>
+                                    </optgroup>
+                                    <optgroup label="Business Skills">
+                                        <option value="Project Management">Project Management</option>
+                                        <option value="Marketing">Marketing</option>
+                                        <option value="Sales">Sales</option>
+                                        <option value="Customer Service">Customer Service</option>
+                                        <option value="Business Analysis">Business Analysis</option>
+                                        <option value="Data Analysis">Data Analysis</option>
+                                        <option value="Financial Analysis">Financial Analysis</option>
+                                        <option value="Human Resources">Human Resources</option>
+                                        <option value="Operations Management">Operations Management</option>
+                                        <option value="Supply Chain Management">Supply Chain Management</option>
+                                    </optgroup>
+                                    <optgroup label="Soft Skills">
+                                        <option value="Communication">Communication</option>
+                                        <option value="Leadership">Leadership</option>
+                                        <option value="Teamwork">Teamwork</option>
+                                        <option value="Problem Solving">Problem Solving</option>
+                                        <option value="Critical Thinking">Critical Thinking</option>
+                                        <option value="Time Management">Time Management</option>
+                                        <option value="Adaptability">Adaptability</option>
+                                        <option value="Creativity">Creativity</option>
+                                        <option value="Emotional Intelligence">Emotional Intelligence</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="experience" class="form-label">Minimum Experience (Years)</label>
+                                <div class="slider-container">
+                                    <div id="experienceSlider"></div>
+                                    <div class="slider-values">
+                                        <span>0 years</span>
+                                        <span id="experienceValue">0 years</span>
+                                        <span>15 years</span>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="experienceInput" name="experience" value="0">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="currentRoleYears" class="form-label">Years in Current Role</label>
+                                <select class="form-select" id="currentRoleYears" name="current_role_years">
+                                    <option value="Any Duration" selected>Any Duration</option>
+                                    <option value="At least 1 year">At least 1 year</option>
+                                    <option value="At least 2 years">At least 2 years</option>
+                                    <option value="At least 3 years">At least 3 years</option>
+                                    <option value="At least 5 years">At least 5 years</option>
+                                    <option value="At least 10 years">At least 10 years</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Education & Certifications Tab -->
+                <div class="tab-content" id="educationTab">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="educationLevel" class="form-label">Minimum Education Level</label>
+                                <select class="form-select" id="educationLevel" name="education_level">
+                                    <option value="Any Education Level" selected>Any Education Level</option>
+                                    <option value="High School / K-12">High School / K-12</option>
+                                    <option value="Vocational / Technical">Vocational / Technical</option>
+                                    <option value="Some College">Some College</option>
+                                    <option value="Associate's Degree">Associate's Degree</option>
+                                    <option value="Bachelor's Degree">Bachelor's Degree</option>
+                                    <option value="Master's Degree">Master's Degree</option>
+                                    <option value="Doctorate">Doctorate</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="certifications" class="form-label">Certifications</label>
+                                <select class="form-select" id="certifications" name="certifications[]" multiple>
+                                    <option value="PRC License">PRC License</option>
+                                    <option value="TESDA Certification">TESDA Certification</option>
+                                    <option value="Civil Service Eligibility">Civil Service Eligibility</option>
+                                    <option value="AWS Certified">AWS Certified</option>
+                                    <option value="Microsoft Certified">Microsoft Certified</option>
+                                    <option value="Google Certified">Google Certified</option>
+                                    <option value="Cisco Certified">Cisco Certified</option>
+                                    <option value="CompTIA Certification">CompTIA Certification</option>
+                                    <option value="Project Management Professional (PMP)">Project Management Professional (PMP)</option>
+                                    <option value="Certified Public Accountant (CPA)">Certified Public Accountant (CPA)</option>
+                                    <option value="Certified Financial Analyst (CFA)">Certified Financial Analyst (CFA)</option>
+                                    <option value="Six Sigma">Six Sigma</option>
+                                    <option value="ITIL Certification">ITIL Certification</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Requirements Tab -->
+                <div class="tab-content" id="additionalTab">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="languages" class="form-label">Language Requirements</label>
+                                <select class="form-select" id="languages" name="languages[]" multiple>
+                                    <option value="English">English</option>
+                                    <option value="Filipino/Tagalog">Filipino/Tagalog</option>
+                                    <option value="Cebuano">Cebuano</option>
+                                    <option value="Ilocano">Ilocano</option>
+                                    <option value="Hiligaynon">Hiligaynon</option>
+                                    <option value="Bicolano">Bicolano</option>
+                                    <option value="Waray">Waray</option>
+                                    <option value="Kapampangan">Kapampangan</option>
+                                    <option value="Pangasinan">Pangasinan</option>
+                                    <option value="Maranao">Maranao</option>
+                                    <option value="Spanish">Spanish</option>
+                                    <option value="Japanese">Japanese</option>
+                                    <option value="Korean">Korean</option>
+                                    <option value="Mandarin">Mandarin</option>
+                                    <option value="French">French</option>
+                                    <option value="German">German</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="availability" class="form-label">Availability</label>
+                                <select class="form-select" id="availability" name="availability">
+                                    <option value="Any Availability" selected>Any Availability</option>
+                                    <option value="Immediate">Immediate</option>
+                                    <option value="Within 2 weeks">Within 2 weeks</option>
+                                    <option value="Within 1 month">Within 1 month</option>
+                                    <option value="Within 3 months">Within 3 months</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="salaryRange" class="form-label">Salary Range (PHP)</label>
+                                <div class="slider-container">
+                                    <div id="salarySlider"></div>
+                                    <div class="slider-values">
+                                        <span>₱15,000</span>
+                                        <span id="salaryValue">₱15,000 - ₱150,000</span>
+                                        <span>₱150,000</span>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="salaryMinInput" name="salary_min" value="15000">
+                                <input type="hidden" id="salaryMaxInput" name="salary_max" value="150000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4 mb-3">
+                    <div class="col-12 text-center d-flex justify-content-center form-actions">
+                        <button type="button" class="btn btn-reset me-2" id="resetForm">Reset</button>
+                        <button type="submit" class="btn btn-save mx-2">Save Preferences</button>
+                        <button type="button" class="btn btn-view ms-2" id="viewPreferences">
+                            <i class="fas fa-eye me-2"></i>View My Preferences
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Preferences Summary Modal -->
+<div class="modal fade preferences-modal" id="preferencesModal" tabindex="-1" aria-labelledby="preferencesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="preferencesModalLabel">
+                    <i class="fas fa-list-alt me-2"></i>My Job Preferences
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Basic Requirements Section -->
+                <div class="preference-section">
+                    <h5 class="preference-section-title">
+                        <i class="fas fa-briefcase me-2"></i>Basic Requirements
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="preference-item">
+                                <div class="preference-label">Industry</div>
+                                <div class="preference-value" id="modalIndustry">Not specified</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="preference-item">
+                                <div class="preference-label">Job Type</div>
+                                <div class="preference-value" id="modalJobType">Any Job Type</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="preference-item">
+                                <div class="preference-label">Work Arrangement</div>
+                                <div class="preference-value" id="modalWorkArrangement">Any Arrangement</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Skills & Experience Section -->
+                <div class="preference-section">
+                    <h5 class="preference-section-title">
+                        <i class="fas fa-code me-2"></i>Skills & Experience
+                    </h5>
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="preference-item">
+                                <div class="preference-label">Skills</div>
+                                <div class="preference-value" id="modalSkills">
+                                    <div class="d-flex flex-wrap mt-2" id="modalSkillsBadges">
+                                        <!-- Skills badges will be inserted here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="preference-item">
+                                <div class="preference-label">Minimum Experience</div>
+                                <div class="preference-value" id="modalExperience">0 years</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="preference-item">
+                                <div class="preference-label">Years in Current Role</div>
+                                <div class="preference-value" id="modalCurrentRoleYears">Any Duration</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Education & Certifications Section -->
+                <div class="preference-section">
+                    <h5 class="preference-section-title">
+                        <i class="fas fa-graduation-cap me-2"></i>Education & Certifications
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="preference-item">
+                                <div class="preference-label">Minimum Education Level</div>
+                                <div class="preference-value" id="modalEducationLevel">Any Education Level</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="preference-item">
+                                <div class="preference-label">Certifications</div>
+                                <div class="preference-value" id="modalCertifications">
+                                    <div class="d-flex flex-wrap mt-2" id="modalCertificationsBadges">
+                                        <!-- Certifications badges will be inserted here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Requirements Section -->
+                <div class="preference-section">
+                    <h5 class="preference-section-title">
+                        <i class="fas fa-plus-circle me-2"></i>Additional Requirements
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="preference-item">
+                                <div class="preference-label">Languages</div>
+                                <div class="preference-value" id="modalLanguages">
+                                    <div class="d-flex flex-wrap mt-2" id="modalLanguagesBadges">
+                                        <!-- Languages badges will be inserted here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="preference-item">
+                                <div class="preference-label">Availability</div>
+                                <div class="preference-value" id="modalAvailability">Any Availability</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="preference-item">
+                                <div class="preference-label">Salary Range</div>
+                                <div class="preference-value" id="modalSalaryRange">₱15,000 - ₱150,000</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.7.0/nouislider.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Tab navigation
+        $('.tab-button').on('click', function() {
+            const tabId = $(this).data('tab');
+            
+            // Remove active class from all tabs and content
+            $('.tab-button').removeClass('active');
+            $('.tab-content').removeClass('active');
+            
+            // Add active class to clicked tab and corresponding content
+            $(this).addClass('active');
+            $('#' + tabId).addClass('active');
+        });
+        
+        // Initialize Select2 for all dropdowns
+        $('#industry, #jobType, #workArrangement, #currentRoleYears, #educationLevel, #availability').select2({
+            width: '100%',
+            placeholder: 'Select an option',
+            dropdownParent: $('.preferences-content')
+        });
+        
+        // Initialize Select2 for multi-select dropdowns
+        $('#skills, #certifications, #languages').select2({
+            width: '100%',
+            placeholder: 'Select options',
+            tags: true,
+            tokenSeparators: [','],
+            dropdownParent: $('.preferences-content')
+        });
+        
+        // Initialize Experience Slider
+        const experienceSlider = document.getElementById('experienceSlider');
+        noUiSlider.create(experienceSlider, {
+            start: [0],
+            connect: 'lower',
+            range: {
+                'min': 0,
+                'max': 15
+            },
+            step: 1,
+            format: {
+                to: function(value) {
+                    return Math.round(value);
+                },
+                from: function(value) {
+                    return Number(value);
+                }
+            }
+        });
+        
+        // Update experience value display and hidden input
+        experienceSlider.noUiSlider.on('update', function(values, handle) {
+            const value = values[handle];
+            document.getElementById('experienceValue').textContent = value + ' years';
+            document.getElementById('experienceInput').value = value;
+        });
+        
+        // Initialize Salary Range Slider
+        const salarySlider = document.getElementById('salarySlider');
+        noUiSlider.create(salarySlider, {
+            start: [15000, 150000],
+            connect: true,
+            range: {
+                'min': 15000,
+                'max': 150000
+            },
+            step: 1000,
+            format: {
+                to: function(value) {
+                    return Math.round(value);
+                },
+                from: function(value) {
+                    return Number(value);
+                }
+            }
+        });
+        
+        // Update salary range value display and hidden inputs
+        salarySlider.noUiSlider.on('update', function(values, handle) {
+            const minValue = values[0];
+            const maxValue = values[1];
+            document.getElementById('salaryValue').textContent = '₱' + minValue.toLocaleString() + ' - ₱' + maxValue.toLocaleString();
+            document.getElementById('salaryMinInput').value = minValue;
+            document.getElementById('salaryMaxInput').value = maxValue;
+        });
+        
+        // Form submission
+        $('#jobPreferencesForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate required fields
+            if (!$('#industry').val()) {
+                alert('Please select an industry');
+                $('.tab-button[data-tab="basicTab"]').click();
+                return false;
+            }
+            
+            if ($('#skills').val().length === 0) {
+                alert('Please select at least one skill');
+                $('.tab-button[data-tab="skillsTab"]').click();
+                return false;
+            }
+            
+            // Simulate form submission with AJAX
+            $.ajax({
+                url: '/employee/job-preferences/',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    // Show success message
+                    $('#preferenceSaved').fadeIn().delay(3000).fadeOut();
+                    
+                    // Scroll to top
+                    $('.content-wrapper').animate({
+                        scrollTop: 0
+                    }, 500);
+                },
+                error: function(xhr, status, error) {
+                    alert('An error occurred while saving your preferences. Please try again.');
+                }
+            });
+        });
+        
+        // Reset form
+        $('#resetForm').on('click', function() {
+            if (confirm('Are you sure you want to reset all your preferences?')) {
+                // Reset Select2 dropdowns
+                $('#industry, #jobType, #workArrangement, #currentRoleYears, #educationLevel, #availability').val(null).trigger('change');
+                $('#skills, #certifications, #languages').val(null).trigger('change');
+                
+                // Reset sliders
+                experienceSlider.noUiSlider.set([0]);
+                salarySlider.noUiSlider.set([15000, 150000]);
+            }
+        });
+        
+        // View Preferences button click
+        $('#viewPreferences').on('click', function() {
+            updatePreferencesModal();
+            const preferencesModal = new bootstrap.Modal(document.getElementById('preferencesModal'));
+            preferencesModal.show();
+        });
+        
+        // Function to update the preferences modal with current form values
+        function updatePreferencesModal() {
+            // Basic Requirements
+            $('#modalIndustry').text($('#industry').val() || 'Not specified');
+            $('#modalJobType').text($('#jobType').val() || 'Any Job Type');
+            $('#modalWorkArrangement').text($('#workArrangement').val() || 'Any Arrangement');
+            
+            // Skills & Experience
+            const skills = $('#skills').val() || [];
+            $('#modalSkillsBadges').empty();
+            if (skills.length > 0) {
+                skills.forEach(function(skill) {
+                    $('#modalSkillsBadges').append('<span class="badge badge-skill">' + skill + '</span>');
+                });
+            } else {
+                $('#modalSkillsBadges').append('<span>No skills specified</span>');
+            }
+            
+            $('#modalExperience').text($('#experienceValue').text() || '0 years');
+            $('#modalCurrentRoleYears').text($('#currentRoleYears').val() || 'Any Duration');
+            
+            // Education & Certifications
+            $('#modalEducationLevel').text($('#educationLevel').val() || 'Any Education Level');
+            
+            const certifications = $('#certifications').val() || [];
+            $('#modalCertificationsBadges').empty();
+            if (certifications.length > 0) {
+                certifications.forEach(function(cert) {
+                    $('#modalCertificationsBadges').append('<span class="badge badge-skill">' + cert + '</span>');
+                });
+            } else {
+                $('#modalCertificationsBadges').append('<span>No certifications specified</span>');
+            }
+            
+            // Additional Requirements
+            const languages = $('#languages').val() || [];
+            $('#modalLanguagesBadges').empty();
+            if (languages.length > 0) {
+                languages.forEach(function(lang) {
+                    $('#modalLanguagesBadges').append('<span class="badge badge-skill">' + lang + '</span>');
+                });
+            } else {
+                $('#modalLanguagesBadges').append('<span>No languages specified</span>');
+            }
+            
+            $('#modalAvailability').text($('#availability').val() || 'Any Availability');
+            $('#modalSalaryRange').text($('#salaryValue').text() || '₱15,000 - ₱150,000');
+        }
+        
+        // Load saved preferences if they exist
+        function loadSavedPreferences() {
+            $.ajax({
+                url: '/employee/get-job-preferences/',
+                type: 'GET',
+                success: function(response) {
+                    if (response.success && response.preferences) {
+                        const prefs = response.preferences;
+                        
+                        // Basic Requirements
+                        if (prefs.industry) {
+                            $('#industry').val(prefs.industry).trigger('change');
+                        }
+                        
+                        if (prefs.job_type) {
+                            $('#jobType').val(prefs.job_type).trigger('change');
+                        }
+                        
+                        if (prefs.work_arrangement) {
+                            $('#workArrangement').val(prefs.work_arrangement).trigger('change');
+                        }
+                        
+                        // Skills & Experience
+                        if (prefs.skills && prefs.skills.length) {
+                            $('#skills').val(prefs.skills).trigger('change');
+                        }
+                        
+                        if (prefs.experience !== undefined) {
+                            experienceSlider.noUiSlider.set([prefs.experience]);
+                        }
+                        
+                        if (prefs.current_role_years) {
+                            $('#currentRoleYears').val(prefs.current_role_years).trigger('change');
+                        }
+                        
+                        // Education & Certifications
+                        if (prefs.education_level) {
+                            $('#educationLevel').val(prefs.education_level).trigger('change');
+                        }
+                        
+                        if (prefs.certifications && prefs.certifications.length) {
+                            $('#certifications').val(prefs.certifications).trigger('change');
+                        }
+                        
+                        // Additional Requirements
+                        if (prefs.languages && prefs.languages.length) {
+                            $('#languages').val(prefs.languages).trigger('change');
+                        }
+                        
+                        if (prefs.availability) {
+                            $('#availability').val(prefs.availability).trigger('change');
+                        }
+                        
+                        if (prefs.salary_min !== undefined && prefs.salary_max !== undefined) {
+                            salarySlider.noUiSlider.set([prefs.salary_min, prefs.salary_max]);
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading preferences:', error);
+                }
+            });
+        }
+        
+        // Try to load saved preferences when page loads
+        loadSavedPreferences();
+    });
+</script>
+{% endblock %}

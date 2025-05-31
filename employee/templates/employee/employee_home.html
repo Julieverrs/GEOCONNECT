@@ -78,6 +78,14 @@
             </a>
         </li>
         <li>
+            <a class="dropdown-item enhanced-item" href="/employee/job-preferences/" id="jobPreferencesLink">
+                <div class="item-icon preferences-icon">
+                    <i class="fas fa-sliders-h"></i>
+                </div>
+                <span>Job Preferences</span>
+            </a>
+        </li>
+        <li>
             <a class="dropdown-item enhanced-item" href="/employee/application-status/" id="applicationStatusLink">
                 <div class="item-icon application-icon">
                     <i class="fas fa-clipboard-list"></i>
@@ -1807,153 +1815,7 @@ body.modal-open {
     
     .navbar-nav {
         text-align: center;
-    }
     
-    .nav-item.dropdown {
-        text-align: center;
-        margin-top: 10px;
-    }
-}
-
-/* Enhanced Header and Navigation Styles */
-.navbar {
-    padding: 15px 0;
-    transition: all 0.3s ease;
-}
-
-.navbar-brand {
-    font-size: 1.5rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-.navbar-brand img {
-    margin-right: 10px;
-}
-
-.navbar .nav-link {
-    font-size: 1.05rem;
-    font-weight: 500;
-    padding: 0.5rem 1.2rem !important;
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.navbar .nav-link::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    background-color: white;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    transition: width 0.3s ease;
-}
-
-.navbar .nav-link:hover::after {
-    width: 70%;
-}
-
-.navbar .nav-link i {
-    margin-right: 6px;
-    font-size: 1.1rem;
-}
-
-.navbar-nav {
-    gap: 5px;
-}
-
-/* Make navbar more prominent when scrolled */
-.navbar-scrolled {
-    padding: 10px 0;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-@media (max-width: 991px) {
-    .navbar-collapse {
-        background-color: var(--primary-color);
-        padding: 15px;
-        border-radius: 0 0 15px 15px;
-        margin-top: 10px;
-    }
-    
-    .navbar-nav {
-        text-align: center;
-    
-    }
-    
-    .nav-item.dropdown {
-        text-align: center;
-        margin-top: 10px;
-    }
-}
-
-/* Enhanced Header and Navigation Styles */
-.navbar {
-    padding: 15px 0;
-    transition: all 0.3s ease;
-}
-
-.navbar-brand {
-    font-size: 1.5rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-.navbar-brand img {
-    margin-right: 10px;
-}
-
-.navbar .nav-link {
-    font-size: 1.05rem;
-    font-weight: 500;
-    padding: 0.5rem 1.2rem !important;
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.navbar .nav-link::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    background-color: white;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    transition: width 0.3s ease;
-}
-
-.navbar .nav-link:hover::after {
-    width: 70%;
-}
-
-.navbar .nav-link i {
-    margin-right: 6px;
-    font-size: 1.1rem;
-}
-
-.navbar-nav {
-    gap: 5px;
-}
-
-/* Make navbar more prominent when scrolled */
-.navbar-scrolled {
-    padding: 10px 0;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-@media (max-width: 991px) {
-    .navbar-collapse {
-        background-color: var(--primary-color);
-        padding: 15px;
-        border-radius: 0 0 15px 15px;
-        margin-top: 10px;
-    }
-    
-    .navbar-nav {
-        text-align: center;
     }
     
     .nav-item.dropdown {
@@ -3893,6 +3755,10 @@ document.addEventListener('DOMContentLoaded', function() {
         width: calc(100% - 20px);
         max-width: 320px;
     }
+}
+
+.preferences-icon {
+    background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
 }
 </style>
 

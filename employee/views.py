@@ -760,3 +760,138 @@ def application_status(request):
         'rejected_applications': rejected_applications,
     }
     return render(request, 'employee/application_status.html', context)
+
+# Add this to your existing employee/views.py file
+
+@employee_login_required
+def job_preferences(request):
+    """
+    View for handling job preferences form for employees
+    """
+    employee_username = request.session.get('employee_username')
+    
+    # Get the employee object
+    employee = Employee.objects.filter(username=employee_username).first()
+    if not employee:
+        messages.error(request, "User not found.")
+        return redirect('employee_login')
+    
+    # Get current employee's job preferences if they exist
+    try:
+        from .models import JobPreferences
+        preferences = JobPreferences.objects.get(employee=employee)
+    except JobPreferences.DoesNotExist:
+        preferences = None
+    
+    if request.method == 'POST':
+        # Process form submission
+        industry = request.POST.get('industry')
+        job_type = request.POST.get('job_type')
+        work_arrangement = request.POST.get('work_arrangement')
+        skills = request.POST.getlist('skills[]')
+        experience = request.POST.get('experience')
+        current_role_years = request.POST.get('current_role_years')
+        education_level = request.POST.get('education_level')
+        certifications = request.POST.getlist('certifications[]')
+        languages = request.POST.getlist('languages[]')
+        salary_min = request.POST.get('salary_min')
+        salary_max = request.POST.get('salary_max')
+        availability = request.POST.get('availability')
+        
+        # Save to database (create or update)
+        if preferences:
+            # Update existing preferences
+            preferences.industry = industry
+            preferences.job_type = job_type
+            preferences.work_arrangement = work_arrangement
+            preferences.skills = json.dumps(skills) if skills else '[]'
+            preferences.experience = experience
+            preferences.current_role_years = current_role_years
+            preferences.education_level = education_level
+            preferences.certifications = json.dumps(certifications) if certifications else '[]'
+            preferences.languages = json.dumps(languages) if languages else '[]'
+            preferences.salary_min = salary_min
+            preferences.salary_max = salary_max
+            preferences.availability = availability
+            preferences.save()
+        else:
+            # Create new preferences
+            from .models import JobPreferences
+            preferences = JobPreferences.objects.create(
+                employee=employee,
+                industry=industry,
+                job_type=job_type,
+                work_arrangement=work_arrangement,
+                skills=json.dumps(skills) if skills else '[]',
+                experience=experience,
+                current_role_years=current_role_years,
+                education_level=education_level,
+                certifications=json.dumps(certifications) if certifications else '[]',
+                languages=json.dumps(languages) if languages else '[]',
+                salary_min=salary_min,
+                salary_max=salary_max,
+                availability=availability
+            )
+        
+        return JsonResponse({'status': 'success', 'message': 'Your job preferences have been saved successfully!'})
+    
+    # For GET requests, render the form
+    context = {
+        'employee': employee,
+        'username': employee_username,
+        'preferences': preferences
+    }
+    return render(request, 'employee/job_preferences.html', context)
+
+# Add this new view to get job preferences
+@employee_login_required
+def get_job_preferences(request):
+    """API endpoint to get the current employee's job preferences"""
+    try:
+        employee = Employee.objects.get(username=request.session.get('employee_username'))
+        
+        try:
+            from .models import JobPreferences
+            preferences = JobPreferences.objects.get(employee=employee)
+            
+            # Parse JSON fields
+            skills = json.loads(preferences.skills) if preferences.skills else []
+            certifications = json.loads(preferences.certifications) if preferences.certifications else []
+            languages = json.loads(preferences.languages) if preferences.languages else []
+            
+            preferences_data = {
+                'industry': preferences.industry,
+                'job_type': preferences.job_type,
+                'work_arrangement': preferences.work_arrangement,
+                'skills': skills,
+                'experience': preferences.experience,
+                'current_role_years': preferences.current_role_years,
+                'education_level': preferences.education_level,
+                'certifications': certifications,
+                'languages': languages,
+                'salary_min': preferences.salary_min,
+                'salary_max': preferences.salary_max,
+                'availability': preferences.availability
+            }
+            
+            return JsonResponse({
+                'success': True,
+                'preferences': preferences_data
+            })
+            
+        except JobPreferences.DoesNotExist:
+            return JsonResponse({
+                'success': True,
+                'preferences': None
+            })
+            
+    except Employee.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Employee not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)

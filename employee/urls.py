@@ -17,4 +17,6 @@ urlpatterns = [
     path('get-applied-jobs/', views.get_applied_jobs, name='get_applied_jobs'),
     path('send-contact-message/', views.send_contact_message, name='send_contact_message'),
     path('application-status/', views.application_status, name='application_status'),
+    path('job-preferences/', views.job_preferences, name='job_preferences'),
+    path('get-job-preferences/', views.get_job_preferences, name='get_job_preferences'),
 ]
