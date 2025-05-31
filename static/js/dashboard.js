@@ -480,6 +480,8 @@ document.addEventListener("DOMContentLoaded", () => {
           viewJobModal.classList.add("active")
           document.body.style.overflow = "hidden"
         }
+        // Set the job ID as a data attribute on the modal for the Edit button
+        viewJobModal.dataset.jobId = jobId
       }
     } catch (error) {
       console.error("Error:", error)
