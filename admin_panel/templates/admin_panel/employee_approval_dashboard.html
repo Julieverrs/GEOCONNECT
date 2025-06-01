@@ -8,21 +8,21 @@
 <link rel="stylesheet" href="{% static 'css/employee_approval.css' %}">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    /* Enhanced Employee Approval Dashboard Styles - Green Theme */
+    /* Enhanced Employee Approval Dashboard Styles - Blue Theme */
     :root {
-        --employee-primary: #059669;
-        --employee-primary-light: #10b981;
-        --employee-primary-dark: #047857;
-        --employee-secondary: #065f46;
-        --employee-accent: #34d399;
-        --employee-light: #d1fae5;
-        --employee-lighter: #ecfdf5;
-        --employee-gradient: linear-gradient(135deg, #059669, #10b981);
-        --employee-gradient-light: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        --employee-primary: #2563eb;
+        --employee-primary-light: #3b82f6;
+        --employee-primary-dark: #1d4ed8;
+        --employee-secondary: #1e40af;
+        --employee-accent: #60a5fa;
+        --employee-light: #dbeafe;
+        --employee-lighter: #eff6ff;
+        --employee-gradient: linear-gradient(135deg, #2563eb, #3b82f6);
+        --employee-gradient-light: linear-gradient(135deg, #dbeafe, #bfdbfe);
     }
 
     .main-content {
-        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         min-height: 100vh;
     }
 
@@ -33,7 +33,7 @@
         padding: 2rem;
         border-radius: 1rem;
         margin-bottom: 2rem;
-        box-shadow: 0 10px 25px rgba(5, 150, 105, 0.2);
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
         position: relative;
         overflow: hidden;
     }
@@ -73,12 +73,11 @@
         margin-bottom: 2rem;
         overflow: hidden;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(5, 150, 105, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.1);
         transition: all 0.3s ease;
     }
 
     .section:hover {
-        transform: translateY(-2px);
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
 
@@ -175,7 +174,6 @@
 
     .data-table tr:hover {
         background: var(--employee-lighter);
-        transform: scale(1.01);
     }
 
     .data-table tr:hover td {
@@ -225,12 +223,12 @@
     .btn-icon.view {
         background: var(--employee-gradient);
         color: white;
-        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
     }
 
     .btn-icon.view:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
     }
 
     .btn-icon.approve {
@@ -291,7 +289,7 @@
     .document-link:hover {
         background: var(--employee-light);
         transform: translateX(4px);
-        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
     }
 
     .document-link i {
@@ -324,8 +322,8 @@
         background: white;
         border-radius: 1rem;
         width: 90%;
-        max-width: 900px;
-        max-height: 90vh;
+        max-width: 800px;
+        max-height: 85vh;
         overflow-y: auto;
         position: relative;
         transform: translateY(-20px);
@@ -371,7 +369,7 @@
     }
 
     .modal-body {
-        padding: 2rem;
+        padding: 1.5rem;
     }
 
     .modal-actions {
@@ -381,6 +379,198 @@
         justify-content: flex-end;
         gap: 1rem;
         background: #f0fdf4;
+    }
+
+    /* Enhanced Employee Details Modal */
+    .employee-details {
+        color: #334155;
+    }
+
+    .detail-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f0fdf4;
+        transition: all 0.3s ease;
+    }
+
+    .detail-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .detail-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--employee-primary-dark);
+        margin-top: 0;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--employee-light);
+        position: relative;
+    }
+
+    .detail-section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 60px;
+        height: 2px;
+        background: var(--employee-primary);
+    }
+
+    .detail-group {
+        margin-bottom: 1rem;
+    }
+
+    .detail-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .detail-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #64748b;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #334155;
+        margin: 0;
+        padding: 0.5rem 0.75rem;
+        background: #f8fafc;
+        border-radius: 0.5rem;
+        border-left: 3px solid var(--employee-primary);
+    }
+
+    /* Document Preview Styles */
+    .documents-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .document-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .document-item label {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #64748b;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .document-preview {
+        background: #f8fafc;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+    .document-preview:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .document-actions {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .document-link.primary {
+        background: var(--employee-primary);
+        color: white;
+        border-color: var(--employee-primary-dark);
+    }
+
+    .document-link.primary:hover {
+        background: var(--employee-primary-dark);
+    }
+
+    .document-link.secondary {
+        background: white;
+        color: var(--employee-primary);
+        border-color: var(--employee-primary);
+    }
+
+    .document-link.secondary:hover {
+        background: var(--employee-lighter);
+    }
+
+    .document-image {
+        padding: 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .document-image img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .document-file {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .document-file i {
+        font-size: 3rem;
+        color: #ef4444;
+    }
+
+    .document-file span {
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+
+    .no-document {
+        padding: 2rem;
+        text-align: center;
+        color: #94a3b8;
+        font-style: italic;
+        background: #f8fafc;
+        border-radius: 0.5rem;
+        border: 1px dashed #cbd5e1;
+    }
+
+    /* Grid Layout for Details */
+    .grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .grid-cols-1 {
+        grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 768px) {
+        .md\:grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
     /* Enhanced Form Styles */
@@ -409,7 +599,7 @@
     .form-input:focus {
         outline: none;
         border-color: var(--employee-primary);
-        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
     /* Enhanced Button Styles */
@@ -856,75 +1046,79 @@ async function viewEmployeeDetails(employeeId) {
         const modalBody = document.querySelector('#viewDetailsModal .modal-body');
         
         modalBody.innerHTML = `
-            <div class="employee-details">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="detail-card">
-                        <h4 class="detail-section-title">Personal Information</h4>
-                        <div class="detail-group">
-                            <label>Full Name</label>
-                            <p class="detail-value">${data.first_name} ${data.last_name}</p>
-                        </div>
-                        <div class="detail-group">
-                            <label>Email</label>
-                            <p class="detail-value">${data.email}</p>
-                        </div>
-                        <div class="detail-group">
-                            <label>Phone</label>
-                            <p class="detail-value">${data.phone || 'N/A'}</p>
-                        </div>
-                        <div class="detail-group">
-                            <label>Location</label>
-                            <p class="detail-value">${data.location || 'N/A'}</p>
-                        </div>
-                    </div>
-
-                    <div class="detail-card">
-                        <h4 class="detail-section-title">Professional Information</h4>
-                        <div class="detail-group">
-                            <label>Job Title</label>
-                            <p class="detail-value">${data.job_title || 'N/A'}</p>
-                        </div>
-                        <div class="detail-group">
-                            <label>Years of Experience</label>
-                            <p class="detail-value">${data.years_of_experience || 'N/A'}</p>
-                        </div>
-                    </div>
-
-                    <div class="detail-card">
-                        <h4 class="detail-section-title">Documents</h4>
-                        <div class="documents-grid">
-                            <div class="document-item">
-                                <label>Resume/CV</label>
-                                ${data.document ? 
-                                    `<div class="document-preview">
-                                        <div class="document-actions">
-                                            <a href="${data.document}" target="_blank" class="document-link primary">
-                                                <i class="fas fa-eye"></i>
-                                                View
-                                            </a>
-                                            <a href="${data.document}" download class="document-link secondary">
-                                                <i class="fas fa-download"></i>
-                                                Download
-                                            </a>
-                                        </div>
-                                        ${isImageFile(data.document) ? 
-                                            `<div class="document-image">
-                                                <img src="${data.document}" alt="Resume/CV" />
-                                            </div>` :
-                                            `<div class="document-file">
-                                                <i class="fas fa-file-pdf"></i>
-                                                <span>Resume/CV Document</span>
-                                            </div>`
-                                        }
-                                    </div>` : 
-                                    '<p class="no-document">No resume/CV uploaded</p>'
-                                }
-                            </div>
-                        </div>
-                    </div>
+    <div class="employee-details">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="detail-card" style="margin-bottom: 1rem;">
+                <h4 class="detail-section-title" style="margin-bottom: 1rem;">
+                    <i class="fas fa-user-circle mr-2" style="color: var(--employee-primary);"></i>
+                    Personal Information
+                </h4>
+                <div class="detail-group" style="margin-bottom: 0.75rem;">
+                    <label>Full Name</label>
+                    <p class="detail-value" style="padding: 0.4rem 0.6rem;">
+                        <i class="fas fa-id-card mr-2" style="color: var(--employee-primary-light);"></i>
+                        ${data.first_name} ${data.last_name}
+                    </p>
+                </div>
+                <div class="detail-group" style="margin-bottom: 0.75rem;">
+                    <label>Email</label>
+                    <p class="detail-value" style="padding: 0.4rem 0.6rem;">
+                        <i class="fas fa-envelope mr-2" style="color: var(--employee-primary-light);"></i>
+                        ${data.email}
+                    </p>
+                </div>
+                <div class="detail-group" style="margin-bottom: 0.75rem;">
+                    <label>Phone</label>
+                    <p class="detail-value" style="padding: 0.4rem 0.6rem;">
+                        <i class="fas fa-phone mr-2" style="color: var(--employee-primary-light);"></i>
+                        ${data.phone || 'N/A'}
+                    </p>
+                </div>
+                <div class="detail-group" style="margin-bottom: 0;">
+                    <label>Location</label>
+                    <p class="detail-value" style="padding: 0.4rem 0.6rem;">
+                        <i class="fas fa-map-marker-alt mr-2" style="color: var(--employee-primary-light);"></i>
+                        ${data.location || 'N/A'}
+                    </p>
                 </div>
             </div>
-        `;
+
+            <div class="detail-card" style="margin-bottom: 1rem;">
+                <h4 class="detail-section-title" style="margin-bottom: 1rem;">
+                    <i class="fas fa-file-alt mr-2" style="color: var(--employee-primary);"></i>
+                    Documents
+                </h4>
+                <div class="document-item">
+                    <label style="margin-bottom: 0.5rem;">Resume/CV</label>
+                    ${data.document ? 
+                        `<div class="document-preview" style="max-height: 200px;">
+                            <div class="document-actions" style="padding: 0.5rem;">
+                                <a href="${data.document}" target="_blank" class="document-link primary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
+                                    <i class="fas fa-eye"></i>
+                                    View
+                                </a>
+                                <a href="${data.document}" download class="document-link secondary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
+                                    <i class="fas fa-download"></i>
+                                    Download
+                                </a>
+                            </div>
+                            ${isImageFile(data.document) ? 
+                                `<div class="document-image" style="padding: 0.5rem;">
+                                    <img src="${data.document}" alt="Resume/CV" style="max-height: 150px;" />
+                                </div>` :
+                                `<div class="document-file" style="padding: 1rem;">
+                                    <i class="fas fa-file-pdf" style="font-size: 2rem;"></i>
+                                    <span style="font-size: 0.8rem;">Resume/CV Document</span>
+                                </div>`
+                            }
+                        </div>` : 
+                        '<p class="no-document" style="padding: 1rem; font-size: 0.85rem;">No resume/CV uploaded</p>'
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+`;
         
         openModal('viewDetailsModal');
     } catch (error) {

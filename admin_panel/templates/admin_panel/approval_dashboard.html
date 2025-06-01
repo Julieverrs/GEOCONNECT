@@ -577,6 +577,95 @@
         background-size: 200px 100%;
         animation: shimmer 1.5s infinite;
     }
+
+    /* Enhanced Employer Details Modal */
+    .employer-details {
+        color: #334155;
+    }
+
+    .detail-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f0fdf4;
+        transition: all 0.3s ease;
+    }
+
+    .detail-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .detail-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--employer-primary-dark);
+        margin-top: 0;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--employer-light);
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .detail-section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 60px;
+        height: 2px;
+        background: var(--employer-primary);
+    }
+
+    .detail-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #64748b;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #334155;
+        margin: 0;
+        background: #f8fafc;
+        border-radius: 0.5rem;
+        border-left: 3px solid var(--employer-primary);
+    }
+
+    .website-link {
+        color: var(--employer-primary);
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .website-link:hover {
+        text-decoration: underline;
+    }
+
+    .grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .grid-cols-1 {
+        grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 768px) {
+        .md\:grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .gap-3 {
+        gap: 0.75rem;
+    }
 </style>
 {% endblock %}
 
@@ -873,119 +962,137 @@ async function viewEmployerDetails(employerId) {
         
         modalBody.innerHTML = `
             <div class="employer-details">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="detail-card">
-                        <h4 class="detail-section-title">Company Information</h4>
-                        <div class="detail-group">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="detail-card" style="margin-bottom: 1rem;">
+                        <h4 class="detail-section-title" style="margin-bottom: 1rem;">
+                            <i class="fas fa-building mr-2" style="color: var(--employer-primary);"></i>
+                            Company Information
+                        </h4>
+                        <div class="detail-group" style="margin-bottom: 0.75rem;">
                             <label>Company Name</label>
-                            <p class="detail-value">${data.company_name || 'N/A'}</p>
+                            <p class="detail-value" style="padding: 0.4rem 0.6rem;">
+                                <i class="fas fa-briefcase mr-2" style="color: var(--employer-primary-light);"></i>
+                                ${data.company_name || 'N/A'}
+                            </p>
                         </div>
-                        <div class="detail-group">
+                        <div class="detail-group" style="margin-bottom: 0.75rem;">
                             <label>Industry</label>
-                            <p class="detail-value">${data.industry || 'N/A'}</p>
+                            <p class="detail-value" style="padding: 0.4rem 0.6rem;">
+                                <i class="fas fa-industry mr-2" style="color: var(--employer-primary-light);"></i>
+                                ${data.industry || 'N/A'}
+                            </p>
                         </div>
-                        <div class="detail-group">
+                        <div class="detail-group" style="margin-bottom: 0;">
                             <label>Company Description</label>
-                            <p class="detail-value description">${data.company_description || 'N/A'}</p>
+                            <p class="detail-value description" style="padding: 0.4rem 0.6rem; max-height: 80px; overflow-y: auto;">
+                                <i class="fas fa-info-circle mr-2" style="color: var(--employer-primary-light);"></i>
+                                ${data.company_description || 'N/A'}
+                            </p>
                         </div>
                     </div>
 
-                    <div class="detail-card">
-                        <h4 class="detail-section-title">Registration Details</h4>
-                        <div class="detail-group">
+                    <div class="detail-card" style="margin-bottom: 1rem;">
+                        <h4 class="detail-section-title" style="margin-bottom: 1rem;">
+                            <i class="fas fa-id-card mr-2" style="color: var(--employer-primary);"></i>
+                            Registration Details
+                        </h4>
+                        <div class="detail-group" style="margin-bottom: 0.75rem;">
                             <label>Registration Type</label>
-                            <p class="detail-value">${data.registration_type || 'N/A'}</p>
+                            <p class="detail-value" style="padding: 0.4rem 0.6rem;">
+                                <i class="fas fa-file-alt mr-2" style="color: var(--employer-primary-light);"></i>
+                                ${data.registration_type || 'N/A'}
+                            </p>
                         </div>
-                        <div class="detail-group">
+                        <div class="detail-group" style="margin-bottom: 0.75rem;">
                             <label>Registration Number</label>
-                            <p class="detail-value">${data.registration_number || 'N/A'}</p>
+                            <p class="detail-value" style="padding: 0.4rem 0.6rem;">
+                                <i class="fas fa-hashtag mr-2" style="color: var(--employer-primary-light);"></i>
+                                ${data.registration_number || 'N/A'}
+                            </p>
                         </div>
-                        <div class="detail-group">
+                        <div class="detail-group" style="margin-bottom: 0;">
                             <label>Registration Date</label>
-                            <p class="detail-value">${data.registration_date || 'N/A'}</p>
+                            <p class="detail-value" style="padding: 0.4rem 0.6rem;">
+                                <i class="fas fa-calendar-alt mr-2" style="color: var(--employer-primary-light);"></i>
+                                ${data.registration_date || 'N/A'}
+                            </p>
                         </div>
                     </div>
-
-                    <div class="detail-card">
-                        <h4 class="detail-section-title">Contact Information</h4>
-                        <div class="detail-group">
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="detail-card" style="margin-bottom: 1rem;">
+                        <h4 class="detail-section-title" style="margin-bottom: 1rem;">
+                            <i class="fas fa-address-card mr-2" style="color: var(--employer-primary);"></i>
+                            Contact Information
+                        </h4>
+                        <div class="detail-group" style="margin-bottom: 0.75rem;">
                             <label>Email</label>
-                            <p class="detail-value">${data.email || 'N/A'}</p>
+                            <p class="detail-value" style="padding: 0.4rem 0.6rem;">
+                                <i class="fas fa-envelope mr-2" style="color: var(--employer-primary-light);"></i>
+                                ${data.email || 'N/A'}
+                            </p>
                         </div>
-                        <div class="detail-group">
+                        <div class="detail-group" style="margin-bottom: 0.75rem;">
                             <label>Company Website</label>
-                            <p class="detail-value">
+                            <p class="detail-value" style="padding: 0.4rem 0.6rem;">
+                                <i class="fas fa-globe mr-2" style="color: var(--employer-primary-light);"></i>
                                 ${data.company_website ? 
                                     `<a href="${data.company_website}" target="_blank" class="website-link">
-                                        <i class="fas fa-external-link-alt"></i> ${data.company_website}
+                                        ${data.company_website}
                                     </a>` : 
                                     'N/A'}
                             </p>
                         </div>
-                        <div class="detail-group">
+                        <div class="detail-group" style="margin-bottom: 0;">
                             <label>Company Location</label>
-                            <p class="detail-value">${data.company_location || 'N/A'}</p>
+                            <p class="detail-value" style="padding: 0.4rem 0.6rem;">
+                                <i class="fas fa-map-marker-alt mr-2" style="color: var(--employer-primary-light);"></i>
+                                ${data.company_location || 'N/A'}
+                            </p>
                         </div>
                     </div>
 
-                    <div class="detail-card">
-                        <h4 class="detail-section-title">Required Documents</h4>
-                        <div class="documents-grid">
-                            <div class="document-item">
-                                <label>Business Permit</label>
-                                ${data.business_permit_url ? 
-                                    `<div class="document-preview">
-                                        <div class="document-actions">
-                                            <a href="${data.business_permit_url}" target="_blank" class="document-link primary">
-                                                <i class="fas fa-eye"></i>
-                                                View
-                                            </a>
-                                            <a href="${data.business_permit_url}" download class="document-link secondary">
-                                                <i class="fas fa-download"></i>
-                                                Download
-                                            </a>
-                                        </div>
-                                        ${isImageFile(data.business_permit_url) ? 
-                                            `<div class="document-image">
-                                                <img src="${data.business_permit_url}" alt="Business Permit" />
-                                            </div>` :
-                                            `<div class="document-file">
-                                                <i class="fas fa-file-pdf"></i>
-                                                <span>Business Permit Document</span>
-                                            </div>`
-                                        }
-                                    </div>` : 
-                                    '<p class="no-document">No business permit uploaded</p>'
-                                }
-                            </div>
-
-                            <div class="document-item">
-                                <label>Registration Document</label>
-                                ${data.registration_document_url ? 
-                                    `<div class="document-preview">
-                                        <div class="document-actions">
-                                            <a href="${data.registration_document_url}" target="_blank" class="document-link primary">
-                                                <i class="fas fa-eye"></i>
-                                                View
-                                            </a>
-                                            <a href="${data.registration_document_url}" download class="document-link secondary">
-                                                <i class="fas fa-download"></i>
-                                                Download
-                                            </a>
-                                        </div>
-                                        ${isImageFile(data.registration_document_url) ? 
-                                            `<div class="document-image">
-                                                <img src="${data.registration_document_url}" alt="Registration Document" />
-                                            </div>` :
-                                            `<div class="document-file">
-                                                <i class="fas fa-file-pdf"></i>
-                                                <span>Registration Document</span>
-                                            </div>`
-                                        }
-                                    </div>` : 
-                                    '<p class="no-document">No registration document uploaded</p>'
-                                }
-                            </div>
+                    <div class="detail-card" style="margin-bottom: 0;">
+                        <h4 class="detail-section-title" style="margin-bottom: 1rem;">
+                            <i class="fas fa-file-contract mr-2" style="color: var(--employer-primary);"></i>
+                            Required Documents
+                        </h4>
+                        <div class="document-item" style="margin-bottom: 0.75rem;">
+                            <label style="margin-bottom: 0.5rem;">Business Permit</label>
+                            ${data.business_permit_url ? 
+                                `<div class="document-preview" style="max-height: 150px;">
+                                    <div class="document-actions" style="padding: 0.5rem;">
+                                        <a href="${data.business_permit_url}" target="_blank" class="document-link primary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
+                                            <i class="fas fa-eye"></i>
+                                            View
+                                        </a>
+                                        <a href="${data.business_permit_url}" download class="document-link secondary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
+                                            <i class="fas fa-download"></i>
+                                            Download
+                                        </a>
+                                    </div>
+                                </div>` : 
+                                '<p class="no-document" style="padding: 0.75rem; font-size: 0.85rem;">No business permit uploaded</p>'
+                            }
+                        </div>
+                        <div class="document-item">
+                            <label style="margin-bottom: 0.5rem;">Registration Document</label>
+                            ${data.registration_document_url ? 
+                                `<div class="document-preview" style="max-height: 150px;">
+                                    <div class="document-actions" style="padding: 0.5rem;">
+                                        <a href="${data.registration_document_url}" target="_blank" class="document-link primary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
+                                            <i class="fas fa-eye"></i>
+                                            View
+                                        </a>
+                                        <a href="${data.registration_document_url}" download class="document-link secondary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
+                                            <i class="fas fa-download"></i>
+                                            Download
+                                        </a>
+                                    </div>
+                                </div>` : 
+                                '<p class="no-document" style="padding: 0.75rem; font-size: 0.85rem;">No registration document uploaded</p>'
+                            }
                         </div>
                     </div>
                 </div>
