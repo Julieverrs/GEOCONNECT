@@ -13,7 +13,7 @@
 
     .resume-analyzer-page {
         margin-top: 0 !important;
-        padding-top: 0 !important;
+        padding: 0 !important;
     }
 
     /* Override any base template styles */
@@ -25,23 +25,17 @@
 
     /* Ensure full coverage */
     html, body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        min-height: 100vh !important;
-    }
+    background: linear-gradient(135deg, #3144a2 0%, #7987c2 50%, #3144a2 100%) !important;
+    min-height: 100vh !important;
+}
 
-    /* Remove any header/nav white space */
-    header, nav, .header, .navbar {
-        background: transparent !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    /* Enhanced Resume Analyzer Styles */
-    .resume-analyzer-page {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        position: relative;
-        overflow-x: hidden;
-    }
+/* Enhanced Resume Analyzer Styles */
+.resume-analyzer-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #3144a2 0%, #7987c2 50%, #3144a2 100%);
+    position: relative;
+    overflow-x: hidden;
+}
     
     /* Animated Background Elements */
     .resume-analyzer-page::before {
@@ -110,31 +104,32 @@
     
     /* Navigation Button */
     .back-to-home-btn {
-        position: fixed;
-        top: 80px;
-        left: 20px;
-        z-index: 1000;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 50px;
-        font-weight: 600;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
+    position: fixed;
+    top: 15px;
+    left: 20px;
+    z-index: 1000;
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    color: #3144a2;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
     
     .back-to-home-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        color: white;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        color: #3144a2;
         text-decoration: none;
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
     }
     
     .back-to-home-btn i {
@@ -164,22 +159,22 @@
     }
     
     .page-header h1 {
-        font-size: 3rem;
-        font-weight: 800;
-        color: white;
-        margin-bottom: 1rem;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        animation: slideInDown 0.8s ease-out;
-    }
+    font-size: 3rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    animation: slideInDown 0.8s ease-out;
+}
     
     .page-header p {
-        font-size: 1.2rem;
-        color: rgba(255, 255, 255, 0.9);
-        max-width: 700px;
-        margin: 0 auto;
-        text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
-        animation: slideInUp 0.8s ease-out 0.2s both;
-    }
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 700px;
+    margin: 0 auto;
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+    animation: slideInUp 0.8s ease-out 0.2s both;
+}
     
     @keyframes slideInDown {
         from {
@@ -205,17 +200,17 @@
     
     /* Upload Area */
     .upload-area {
-        border: 2px dashed rgba(255, 255, 255, 0.3);
-        border-radius: 20px;
-        padding: 3rem 2rem;
-        text-align: center;
-        margin-bottom: 2rem;
-        transition: all 0.3s ease;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        animation: fadeInScale 0.8s ease-out 0.4s both;
-    }
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    animation: fadeInScale 0.8s ease-out 0.4s both;
+}
     
     .upload-area:hover, .upload-area.dragover {
         border-color: rgba(255, 255, 255, 0.6);
@@ -236,11 +231,11 @@
     }
     
     .upload-icon {
-        font-size: 4rem;
-        color: rgba(255, 255, 255, 0.8);
-        margin-bottom: 1.5rem;
-        animation: uploadIconFloat 3s ease-in-out infinite;
-    }
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1.5rem;
+    animation: uploadIconFloat 3s ease-in-out infinite;
+}
     
     @keyframes uploadIconFloat {
         0%, 100% {
@@ -252,29 +247,30 @@
     }
     
     .upload-area h3 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: white;
-        text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
-    }
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: white;
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
     
     .upload-area p {
-        color: rgba(255, 255, 255, 0.8);
-        margin-bottom: 1.5rem;
-    }
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1.5rem;
+}
     
     /* File Info */
     .file-info {
-        margin-top: 1.5rem;
-        padding: 1.5rem;
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 12px;
-        display: none;
-        animation: slideInFade 0.5s ease;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    display: none;
+    animation: slideInFade 0.5s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
     
     @keyframes slideInFade {
         from {
@@ -288,35 +284,36 @@
     }
     
     .file-info p {
-        margin-bottom: 1rem;
-        color: white;
-    }
+    margin-bottom: 1rem;
+    color: #333333;
+    font-weight: 500;
+}
     
     .file-name {
-        font-weight: 600;
-        color: #ffd700;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    }
+    font-weight: 600;
+    color: #3144a2;
+    text-shadow: none;
+}
     
     /* Enhanced Buttons */
     .btn-primary {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border: none;
-        padding: 12px 24px;
-        border-radius: 50px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        color: white;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
+    background: linear-gradient(135deg, #3144a2, #7987c2);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(49, 68, 162, 0.3);
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
     
     .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        background: linear-gradient(135deg, #764ba2, #667eea);
-    }
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(49, 68, 162, 0.4);
+    background: linear-gradient(135deg, #7987c2, #3144a2);
+}
     
     .btn-success {
         background: linear-gradient(135deg, #11998e, #38ef7d);

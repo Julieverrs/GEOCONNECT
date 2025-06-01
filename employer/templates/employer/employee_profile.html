@@ -1,0 +1,266 @@
+{% extends 'employer/base.html' %}
+{% load static %}
+
+{% block title %}Employee Profile - {{ employee.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Main color scheme to match employer_home.html indigo gradient */
+    :root {
+        --primary-color: #1a237e; /* Deep indigo */
+        --primary-light: #283593; /* Lighter indigo */
+        --secondary-color: #3949ab; /* Indigo 500 */
+        --accent-color: #536dfe; /* Indigo accent */
+        --light-bg: #f5f5f5; /* Light background */
+        --dark-text: #212121; /* Dark text */
+        --light-text: #ffffff; /* Light text */
+        --border-color: #c5cae9; /* Indigo 100 */
+        --hover-color: #3f51b5; /* Indigo 500 */
+    }
+    
+    .profile-header {
+        background: linear-gradient(to right, #1a237e, #283593);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px 10px 0 0;
+        margin-bottom: 0;
+    }
+    
+    .profile-body {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 0 0 10px 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .profile-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .profile-section:last-child {
+        border-bottom: none;
+    }
+    
+    .section-title {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+    
+    .skill-badge {
+        background-color: var(--light-bg);
+        color: var(--dark-text);
+        padding: 6px 12px;
+        border-radius: 20px;
+        display: inline-block;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+    }
+    
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        background: var(--secondary-color);
+        color: var(--light-text);
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+    
+    .back-button:hover {
+        background: var(--hover-color);
+        color: var(--light-text);
+        text-decoration: none;
+    }
+    
+    .back-button i {
+        margin-right: 8px;
+    }
+    
+    .contact-btn {
+        background-color: var(--secondary-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .contact-btn:hover {
+        background-color: var(--hover-color);
+        transform: translateY(-2px);
+    }
+    
+    .avatar-container {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid white;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .avatar-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .profile-name {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .profile-title {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .profile-location {
+        display: flex;
+        align-items: center;
+        margin-top: 0.5rem;
+    }
+    
+    .profile-location i {
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <a href="{% url 'candidate_recommendations' %}" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Recommendations
+    </a>
+    
+    <div class="profile-header d-flex align-items-center">
+        <div class="avatar-container me-4">
+            {% if employee.avatar %}
+                <img src="{{ employee.avatar.url }}" alt="{{ employee.username }}'s avatar">
+            {% else %}
+                <img src="{% static 'images/default-avatar.png' %}" alt="Default avatar">
+            {% endif %}
+        </div>
+        <div>
+            <h1 class="profile-name">{{ employee.full_name|default:employee.username }}</h1>
+            <p class="profile-title">{{ employee.job_title|default:"No job title specified" }}</p>
+            {% if employee.location %}
+            <p class="profile-location">
+                <i class="fas fa-map-marker-alt"></i> {{ employee.location }}
+            </p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="profile-body">
+        {% if employee.bio %}
+        <div class="profile-section">
+            <h3 class="section-title">About</h3>
+            <p>{{ employee.bio }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="profile-section">
+            <h3 class="section-title">Professional Information</h3>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p class="info-label">Years of Experience</p>
+                    <p>{{ employee.years_of_experience }} years</p>
+                </div>
+                {% if employee.expected_salary %}
+                <div class="col-md-4">
+                    <p class="info-label">Expected Salary</p>
+                    <p>₱{{ employee.expected_salary|floatformat:2 }}</p>
+                </div>
+                {% endif %}
+                <div class="col-md-4">
+                    <p class="info-label">Preferred Job Type</p>
+                    <p>{{ employee.preferred_job_type|default:"Not specified" }}</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="info-label">Remote Work</p>
+                    <p>{% if employee.remote_work_preference %}Interested in remote work{% else %}Prefers on-site work{% endif %}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="info-label">Relocation</p>
+                    <p>{% if employee.willing_to_relocate %}Willing to relocate{% else %}Not willing to relocate{% endif %}</p>
+                </div>
+            </div>
+        </div>
+        
+        {% if employee.skills %}
+        <div class="profile-section">
+            <h3 class="section-title">Skills</h3>
+            <div>
+                {% for skill in employee.skills.split %}
+                <span class="skill-badge">{{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if employee.education %}
+        <div class="profile-section">
+            <h3 class="section-title">Education</h3>
+            <p>{{ employee.education|linebreaks }}</p>
+        </div>
+        {% endif %}
+        
+        {% if employee.certifications %}
+        <div class="profile-section">
+            <h3 class="section-title">Certifications</h3>
+            <p>{{ employee.certifications|linebreaks }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="profile-section">
+            <h3 class="section-title">Contact Information</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="info-label">Email</p>
+                    <p>{{ employee.email }}</p>
+                </div>
+                {% if employee.phone %}
+                <div class="col-md-6">
+                    <p class="info-label">Phone</p>
+                    <p>{{ employee.phone }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if employee.resume %}
+        <div class="profile-section">
+            <h3 class="section-title">Resume</h3>
+            <a href="{{ employee.resume.url }}" class="btn btn-primary" target="_blank">
+                <i class="fas fa-file-download me-2"></i> Download Resume
+            </a>
+        </div>
+        {% endif %}
+        
+        <div class="text-center mt-4">
+            <button class="contact-btn btn-lg" onclick="alert('Contact functionality will be implemented soon!')">
+                <i class="fas fa-envelope me-2"></i> Contact Candidate
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

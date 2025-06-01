@@ -14,7 +14,7 @@
             <i class="fas fa-arrow-left me-2"></i>
             Back to Home
         </a>
-        <h1 class="page-title">Application Results</h1>
+        <h1 class="page-title">APPLICATION RESULTS</h1>
         <div class="user-info">
             <span class="username">{{ username }}</span>
         </div>
@@ -201,8 +201,9 @@ body {
     justify-content: space-between;
     padding: 0 30px;
     height: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: none; /* Remove max-width constraint */
+    margin: 0; /* Remove auto margin */
+    width: 100%; /* Ensure full width */
 }
 
 .back-btn {
@@ -214,20 +215,11 @@ body {
     font-weight: 500;
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.3);
+    margin-left: 0; /* Ensure it's at the very left */
 }
 
-.back-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.page-title {
-    color: white;
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0;
+.user-info {
+    margin-right: 0; /* Ensure it's at the very right */
 }
 
 .user-info .username {
@@ -533,6 +525,16 @@ body {
         margin-left: 0;
         margin-top: 0.5rem;
     }
+}
+
+.page-title {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 </style>
 

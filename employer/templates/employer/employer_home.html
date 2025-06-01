@@ -231,11 +231,11 @@
         {% csrf_token %}
         <div class="form-group">
           <label for="contactName">Full Name</label>
-          <input type="text" id="contactName" name="name" placeholder="Enter your name" required>
+          <input type="text" id="contactName" name="name" placeholder="What is this regarding?" required>
         </div>
         <div class="form-group">
           <label for="contactEmail">Email Address</label>
-          <input type="email" id="contactEmail" name="email" placeholder="Enter your email" required>
+          <input type="email" id="contactEmail" name="email" placeholder="What is this regarding?" required>
         </div>
         <div class="form-group">
           <label for="contactSubject">Subject</label>
@@ -243,7 +243,7 @@
         </div>
         <div class="form-group">
           <label for="contactMessage">Message</label>
-          <textarea id="contactMessage" name="message" placeholder="How can we help you?" required></textarea>
+          <textarea id="contactMessage" name="message" placeholder="What is this regarding?" required></textarea>
         </div>
         <button type="submit" id="contactSubmitBtn">
           <i class="fas fa-paper-plane me-2"></i>Send Message
@@ -494,10 +494,7 @@
                 
                 <div class="job-metric-card">
                     <div class="metric-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="1" x2="12" y2="23"></line>
-                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                        </svg>
+                        <span style="font-size: 20px; font-weight: bold; color: currentColor;">₱</span>
                     </div>
                     <div class="metric-content">
                         <h4>Salary Range</h4>
@@ -673,11 +670,7 @@
                     <div class="enhanced-form-row">
                         <div class="enhanced-form-group">
                             <label for="editSalary" class="enhanced-label">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="12" y1="1" x2="12" y2="23"></line>
-                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                                </svg>
-                                Salary Range
+                                <span style="font-size: 16px; font-weight: bold; color: currentColor;">₱</span>
                             </label>
                             <input type="text" id="editSalary" class="enhanced-input" placeholder="e.g., ₱30,000 - ₱50,000" required>
                         </div>
@@ -724,6 +717,7 @@
                                 <polyline points="14,2 14,8 20,8"></polyline>
                                 <line x1="16" y1="13" x2="8" y2="13"></line>
                                 <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10,9 9,9 8,9"></polyline>
                             </svg>
                             Job Description
                         </label>

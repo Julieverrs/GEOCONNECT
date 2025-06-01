@@ -23,7 +23,12 @@ from .tokens import employer_password_reset_token
 from datetime import datetime # Import datetime for interview_date
 from django.views.decorators.http import require_http_methods
 
+# Add these imports at the top of the file
+from django.views.decorators.http import require_POST
+from .candidate_recommender import CandidateRecommender
+import json
 
+# Update the candidate_recommendations view to handle both GET and POST requests
 def candidate_recommendations(request):
     """
     View for the candidate recommendations page.
@@ -40,11 +45,359 @@ def candidate_recommendations(request):
         messages.error(request, "User not found.")
         return redirect('employer_login')
     
+    # Check if this is a form submission
+    if request.method == 'POST':
+        try:
+            # Debug: Print form data
+            print("Form submitted with data:", request.POST)
+            
+            # Process the form data
+            form_data = request.POST
+            
+            # Extract job requirements
+            job_requirements = {
+                'industry': form_data.get('industry'),
+                'job_type': form_data.get('job_type'),
+                'work_arrangement': form_data.get('work_arrangement'),
+                'skills': form_data.getlist('skills'),
+                'experience': form_data.get('experience', '0'),
+                'current_role_years': form_data.get('current_role_years'),
+                'education': form_data.get('education'),
+                'certifications': form_data.getlist('certifications'),
+                'languages': form_data.getlist('languages'),
+                'salary_range': form_data.get('salary_range', '25000'),
+                'availability': form_data.get('availability')
+            }
+            
+            print("Processed job requirements:", job_requirements)
+            
+            # Check if we have any employees in the database
+            from employee.models import Employee, JobPreferences
+            total_employees = Employee.objects.count()
+            active_employees = Employee.objects.filter(is_active=True, is_approved=True).count()
+            
+            print(f"Total employees in database: {total_employees}")
+            print(f"Active/approved employees: {active_employees}")
+            
+            if total_employees == 0:
+                messages.warning(request, "No employees found in the database.")
+                context = {
+                    'employer': employer,
+                    'username': employer_username,
+                    'candidates': [],
+                    'job_requirements': job_requirements,
+                    'show_results': True
+                }
+                return render(request, 'employer/candidate_recommendations.html', context)
+            
+            # Use the recommender to find candidates
+            recommender = CandidateRecommender()
+            recommendations = recommender.recommend_candidates(job_requirements, max_candidates=20)  # Increased max candidates
+            
+            print(f"Found {len(recommendations)} recommendations")
+            
+            # Prepare data for the template
+            candidates = []
+            for employee, score, details in recommendations:
+                # Get job preferences from the JobPreferences model
+                try:
+                    job_prefs = JobPreferences.objects.get(employee=employee)
+                    
+                    # Parse JSON fields safely
+                    try:
+                        skills = json.loads(job_prefs.skills) if job_prefs.skills else []
+                    except (json.JSONDecodeError, TypeError):
+                        skills = []
+                        
+                    try:
+                        certifications = json.loads(job_prefs.certifications) if job_prefs.certifications else []
+                    except (json.JSONDecodeError, TypeError):
+                        certifications = []
+                        
+                    try:
+                        languages = json.loads(job_prefs.languages) if job_prefs.languages else []
+                    except (json.JSONDecodeError, TypeError):
+                        languages = []
+                    
+                    job_preferences = {
+                        'preferred_job_type': job_prefs.job_type or "Not specified",
+                        'preferred_work_setup': job_prefs.work_arrangement or "Not specified",
+                        'preferred_industry': job_prefs.industry or "Not specified",
+                        'preferred_salary': f"₱{job_prefs.salary_min:,} - ₱{job_prefs.salary_max:,}" if job_prefs.salary_min and job_prefs.salary_max else "Not specified",
+                        'preferred_location': "Not specified",  # This field might not exist in JobPreferences
+                        'skills': skills,
+                        'certifications': certifications,
+                        'languages': languages,
+                        'availability': job_prefs.availability or "Not specified",
+                        'experience': job_prefs.experience if job_prefs.experience is not None else "Not specified",
+                        'current_role_years': job_prefs.current_role_years or "Not specified",
+                        'education_level': job_prefs.education_level or "Not specified",
+                    }
+                except JobPreferences.DoesNotExist:
+                    # If no job preferences found, use default values
+                    job_preferences = {
+                        'preferred_job_type': "Not specified",
+                        'preferred_work_setup': "Not specified",
+                        'preferred_industry': "Not specified",
+                        'preferred_salary': "Not specified",
+                        'preferred_location': "Not specified",
+                        'skills': [],
+                        'certifications': [],
+                        'languages': [],
+                        'availability': "Not specified",
+                        'experience': "Not specified",
+                        'current_role_years': "Not specified",
+                        'education_level': "Not specified",
+                    }
+                
+                # Format the candidate data
+                candidate = {
+                    'id': employee.id,
+                    'name': employee.full_name or employee.username,
+                    'job_title': employee.job_title or 'Not specified',
+                    'location': employee.location or 'Not specified',
+                    'years_experience': employee.years_of_experience or 0,
+                    'skills': employee.skills.split(',') if employee.skills else [],
+                    'education': employee.education or 'Not specified',
+                    'match_percentage': max(10, int(score * 100)),  # Minimum 10% match
+                    'match_details': details,
+                    'job_preferences': job_preferences  # Add job preferences to the candidate data
+                }
+                candidates.append(candidate)
+                print(f"Added candidate: {candidate['name']} with {candidate['match_percentage']}% match")
+                print(f"Job preferences: {job_preferences}")
+            
+            # If no candidates found, try to get some employees anyway
+            if not candidates:
+                print("No candidates from recommender, getting fallback candidates")
+                fallback_employees = Employee.objects.all()[:10]
+                for employee in fallback_employees:
+                    # Get job preferences for fallback candidates too
+                    try:
+                        job_prefs = JobPreferences.objects.get(employee=employee)
+                        
+                        # Parse JSON fields safely
+                        try:
+                            skills = json.loads(job_prefs.skills) if job_prefs.skills else []
+                        except (json.JSONDecodeError, TypeError):
+                            skills = []
+                            
+                        try:
+                            certifications = json.loads(job_prefs.certifications) if job_prefs.certifications else []
+                        except (json.JSONDecodeError, TypeError):
+                            certifications = []
+                            
+                        try:
+                            languages = json.loads(job_prefs.languages) if job_prefs.languages else []
+                        except (json.JSONDecodeError, TypeError):
+                            languages = []
+                        
+                        job_preferences = {
+                            'preferred_job_type': job_prefs.job_type or "Not specified",
+                            'preferred_work_setup': job_prefs.work_arrangement or "Not specified",
+                            'preferred_industry': job_prefs.industry or "Not specified",
+                            'preferred_salary': f"₱{job_prefs.salary_min:,} - ₱{job_prefs.salary_max:,}" if job_prefs.salary_min and job_prefs.salary_max else "Not specified",
+                            'preferred_location': "Not specified",  # This field might not exist in JobPreferences
+                            'skills': skills,
+                            'certifications': certifications,
+                            'languages': languages,
+                            'availability': job_prefs.availability or "Not specified",
+                            'experience': job_prefs.experience if job_prefs.experience is not None else "Not specified",
+                            'current_role_years': job_prefs.current_role_years or "Not specified",
+                            'education_level': job_prefs.education_level or "Not specified",
+                        }
+                    except JobPreferences.DoesNotExist:
+                        # If no job preferences found, use default values
+                        job_preferences = {
+                            'preferred_job_type': "Not specified",
+                            'preferred_work_setup': "Not specified",
+                            'preferred_industry': "Not specified",
+                            'preferred_salary': "Not specified",
+                            'preferred_location': "Not specified",
+                            'skills': [],
+                            'certifications': [],
+                            'languages': [],
+                            'availability': "Not specified",
+                            'experience': "Not specified",
+                            'current_role_years': "Not specified",
+                            'education_level': "Not specified",
+                        }
+                    
+                    candidate = {
+                        'id': employee.id,
+                        'name': employee.full_name or employee.username,
+                        'job_title': employee.job_title or 'Not specified',
+                        'location': employee.location or 'Not specified',
+                        'years_experience': employee.years_of_experience or 0,
+                        'skills': employee.skills.split(',') if employee.skills else [],
+                        'education': employee.education or 'Not specified',
+                        'match_percentage': 25,  # Default 25% match
+                        'match_details': {
+                            'nlp_score': 25,
+                            'experience_score': 50,
+                            'education_score': 50,
+                            'salary_score': 50,
+                            'skill_matches': [],
+                            'matched_skills_count': 0,
+                            'total_skills_count': len(job_requirements.get('skills', []))
+                        },
+                        'job_preferences': job_preferences  # Add job preferences to fallback candidates too
+                    }
+                    candidates.append(candidate)
+            
+            print(f"Final candidate count: {len(candidates)}")
+            
+            # Render the template with recommendations
+            context = {
+                'employer': employer,
+                'username': employer_username,
+                'candidates': candidates,
+                'job_requirements': job_requirements,
+                'show_results': True
+            }
+            return render(request, 'employer/candidate_recommendations.html', context)
+            
+        except Exception as e:
+            import traceback
+            print(f"Error processing recommendation form: {str(e)}")
+            print(traceback.format_exc())
+            messages.error(request, f"An error occurred while processing your request. Please try again.")
+            
+            # Still try to show some basic results
+            from employee.models import Employee, JobPreferences
+            fallback_employees = Employee.objects.all()[:5]
+            candidates = []
+            for employee in fallback_employees:
+                # Get job preferences for error fallback candidates too
+                try:
+                    job_prefs = JobPreferences.objects.get(employee=employee)
+                    
+                    # Parse JSON fields safely
+                    try:
+                        skills = json.loads(job_prefs.skills) if job_prefs.skills else []
+                    except (json.JSONDecodeError, TypeError):
+                        skills = []
+                        
+                    try:
+                        certifications = json.loads(job_prefs.certifications) if job_prefs.certifications else []
+                    except (json.JSONDecodeError, TypeError):
+                        certifications = []
+                        
+                    try:
+                        languages = json.loads(job_prefs.languages) if job_prefs.languages else []
+                    except (json.JSONDecodeError, TypeError):
+                        languages = []
+                    
+                    job_preferences = {
+                        'preferred_job_type': job_prefs.job_type or "Not specified",
+                        'preferred_work_setup': job_prefs.work_arrangement or "Not specified",
+                        'preferred_industry': job_prefs.industry or "Not specified",
+                        'preferred_salary': f"₱{job_prefs.salary_min:,} - ₱{job_prefs.salary_max:,}" if job_prefs.salary_min and job_prefs.salary_max else "Not specified",
+                        'preferred_location': "Not specified",  # This field might not exist in JobPreferences
+                        'skills': skills,
+                        'certifications': certifications,
+                        'languages': languages,
+                        'availability': job_prefs.availability or "Not specified",
+                        'experience': job_prefs.experience if job_prefs.experience is not None else "Not specified",
+                        'current_role_years': job_prefs.current_role_years or "Not specified",
+                        'education_level': job_prefs.education_level or "Not specified",
+                    }
+                except JobPreferences.DoesNotExist:
+                    # If no job preferences found, use default values
+                    job_preferences = {
+                        'preferred_job_type': "Not specified",
+                        'preferred_work_setup': "Not specified",
+                        'preferred_industry': "Not specified",
+                        'preferred_salary': "Not specified",
+                        'preferred_location': "Not specified",
+                        'skills': [],
+                        'certifications': [],
+                        'languages': [],
+                        'availability': "Not specified",
+                        'experience': "Not specified",
+                        'current_role_years': "Not specified",
+                        'education_level': "Not specified",
+                    }
+                
+                candidate = {
+                    'id': employee.id,
+                    'name': employee.full_name or employee.username,
+                    'job_title': employee.job_title or 'Not specified',
+                    'location': employee.location or 'Not specified',
+                    'years_experience': employee.years_of_experience or 0,
+                    'skills': employee.skills.split(',') if employee.skills else [],
+                    'education': employee.education or 'Not specified',
+                    'match_percentage': 20,
+                    'match_details': {
+                        'nlp_score': 20,
+                        'experience_score': 50,
+                        'education_score': 50,
+                        'salary_score': 50,
+                        'skill_matches': [],
+                        'matched_skills_count': 0,
+                        'total_skills_count': 0
+                    },
+                    'job_preferences': job_preferences  # Add job preferences to error fallback candidates too
+                }
+                candidates.append(candidate)
+            
+            context = {
+                'employer': employer,
+                'username': employer_username,
+                'candidates': candidates,
+                'job_requirements': {},
+                'show_results': True
+            }
+            return render(request, 'employer/candidate_recommendations.html', context)
+    
+    # For GET requests, just show the form
     context = {
         'employer': employer,
         'username': employer_username,
+        'show_results': False
     }
     return render(request, 'employer/candidate_recommendations.html', context)
+
+# Add a new API endpoint for AJAX requests if needed
+@require_POST
+def api_candidate_recommendations(request):
+    """API endpoint for candidate recommendations"""
+    if not request.session.get('employer_username'):
+        return JsonResponse({'error': 'Not authenticated'}, status=403)
+    
+    try:
+        # Parse JSON data
+        data = json.loads(request.body)
+        
+        # Use the recommender
+        recommender = CandidateRecommender()
+        recommendations = recommender.recommend_candidates(data)
+        
+        # Format the response
+        candidates = []
+        for employee, score, details in recommendations:
+            candidate = {
+                'id': employee.id,
+                'name': employee.full_name or employee.username,
+                'job_title': employee.job_title or 'Not specified',
+                'location': employee.location or 'Not specified',
+                'years_experience': employee.years_of_experience,
+                'skills': employee.skills.split(',') if employee.skills else [],
+                'education': employee.education or 'Not specified',
+                'match_percentage': int(score * 100),
+                'match_details': details
+            }
+            candidates.append(candidate)
+        
+        return JsonResponse({
+            'success': True,
+            'candidates': candidates
+        })
+    except Exception as e:
+        import traceback
+        print(f"Error in API recommendation: {str(e)}")
+        print(traceback.format_exc())
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 
@@ -875,3 +1228,26 @@ def send_contact_message(request):
         'success': False,
         'message': 'Invalid request method'
     })
+
+# Add this view function
+def employee_profile(request, employee_id):
+    """View an employee's profile"""
+    # Check if user is logged in
+    employer_username = request.session.get('employer_username')
+    if not employer_username:
+        messages.error(request, "Please login to access this page.")
+        return redirect('employer_login')
+    
+    try:
+        # Get the employee
+        from employee.models import Employee
+        employee = get_object_or_404(Employee, id=employee_id)
+        
+        context = {
+            'employee': employee,
+            'username': employer_username,
+        }
+        return render(request, 'employer/employee_profile.html', context)
+    except Exception as e:
+        messages.error(request, f"Error viewing profile: {str(e)}")
+        return redirect('candidate_recommendations')

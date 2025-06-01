@@ -255,68 +255,74 @@ document.addEventListener("DOMContentLoaded", () => {
   const deleteModal = document.getElementById("deleteConfirmModal")
   const confirmDeleteBtn = document.getElementById("confirmDelete")
   const cancelDeleteBtn = document.getElementById("cancelDelete")
-  const closeModalBtn = deleteModal.querySelector(".close-modal")
+  const closeModalBtn = deleteModal?.querySelector(".close-modal")
 
   // Confirm delete handler
-  confirmDeleteBtn.addEventListener("click", async () => {
-    if (!userToDelete) return
+  if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener("click", async () => {
+      if (!userToDelete) return
 
-    try {
-      const csrfToken = getCookie("csrftoken")
-      // Updated URL to match the new Django URL pattern
-      const response = await fetch(`/admin-panel/${userToDelete.type}/${userToDelete.id}/delete/`, {
-        method: "POST",
-        headers: {
-          "X-CSRFToken": csrfToken,
-          "Content-Type": "application/json",
-        },
-      })
+      try {
+        const csrfToken = getCookie("csrftoken")
+        // Updated URL to match the new Django URL pattern
+        const response = await fetch(`/admin-panel/${userToDelete.type}/${userToDelete.id}/delete/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/json",
+          },
+        })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data = await response.json()
+
+        // Remove the row from the table
+        const row = document.querySelector(`tr[data-${userToDelete.type}-id="${userToDelete.id}"]`)
+        if (row) {
+          row.remove()
+        }
+
+        // Update the total entries count
+        const totalEntriesSpan = document.querySelector(`#${userToDelete.type}s-content .total-entries`)
+        if (totalEntriesSpan) {
+          const currentTotal = Number.parseInt(totalEntriesSpan.textContent.match(/\d+/)[0])
+          totalEntriesSpan.textContent = `Total: ${currentTotal - 1} entries`
+        }
+
+        showToast(
+          data.message ||
+            `${userToDelete.type.charAt(0).toUpperCase() + userToDelete.type.slice(1)} deleted successfully`,
+          "success",
+        )
+      } catch (error) {
+        console.error("Error:", error)
+        showToast(`Failed to delete ${userToDelete.type}`, "error")
       }
 
-      const data = await response.json()
-
-      // Remove the row from the table
-      const row = document.querySelector(`tr[data-${userToDelete.type}-id="${userToDelete.id}"]`)
-      if (row) {
-        row.remove()
-      }
-
-      // Update the total entries count
-      const totalEntriesSpan = document.querySelector(`#${userToDelete.type}s-content .total-entries`)
-      if (totalEntriesSpan) {
-        const currentTotal = Number.parseInt(totalEntriesSpan.textContent.match(/\d+/)[0])
-        totalEntriesSpan.textContent = `Total: ${currentTotal - 1} entries`
-      }
-
-      showToast(
-        data.message ||
-          `${userToDelete.type.charAt(0).toUpperCase() + userToDelete.type.slice(1)} deleted successfully`,
-        "success",
-      )
-    } catch (error) {
-      console.error("Error:", error)
-      showToast(`Failed to delete ${userToDelete.type}`, "error")
-    }
-
-    // Close modal and reset
-    deleteModal.style.display = "none"
-    userToDelete = null
-  })
+      // Close modal and reset
+      deleteModal.style.display = "none"
+      userToDelete = null
+    })
+  }
 
   // Cancel delete handler
-  cancelDeleteBtn.addEventListener("click", () => {
-    deleteModal.style.display = "none"
-    userToDelete = null
-  })
+  if (cancelDeleteBtn) {
+    cancelDeleteBtn.addEventListener("click", () => {
+      deleteModal.style.display = "none"
+      userToDelete = null
+    })
+  }
 
   // Close modal handler
-  closeModalBtn.addEventListener("click", () => {
-    deleteModal.style.display = "none"
-    userToDelete = null
-  })
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener("click", () => {
+      deleteModal.style.display = "none"
+      userToDelete = null
+    })
+  }
 
   // Close modal when clicking outside
   window.addEventListener("click", (event) => {
@@ -334,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(toastContainer)
   }
 
-  // Tab switching functionality
+  // Tab switching functionality - FIXED
   const tabButtons = document.querySelectorAll(".tab-btn")
   const tabContents = document.querySelectorAll(".tab-content")
 
@@ -347,47 +353,24 @@ document.addEventListener("DOMContentLoaded", () => {
       // Add active class to clicked button and corresponding content
       button.classList.add("active")
       const contentId = `${button.getAttribute("data-tab")}-content`
-      document.getElementById(contentId).classList.add("active")
+      const targetContent = document.getElementById(contentId)
+      if (targetContent) {
+        targetContent.classList.add("active")
+      }
     })
   })
 
   // Search functionality
-  document.querySelectorAll(".search-box input").forEach((input) => {
+  document.querySelectorAll(".search-input").forEach((input) => {
     input.addEventListener("input", function () {
       const searchTerm = this.value.toLowerCase()
-      const tableBody = this.closest(".table-container").querySelector("tbody")
+      const tableBody = this.closest(".tab-content").querySelector("tbody")
       const rows = tableBody.querySelectorAll("tr")
 
       rows.forEach((row) => {
         const text = row.textContent.toLowerCase()
         row.style.display = text.includes(searchTerm) ? "" : "none"
       })
-    })
-  })
-
-  // Sort Functionality
-  const sortButtons = document.querySelectorAll(".sort-btn")
-  sortButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const column = button.getAttribute("data-sort")
-      const type = button.closest(".tab-content").getAttribute("id").replace("-content", "")
-      const table = document.querySelector(`#${type}s-table`)
-      const tbody = table.querySelector("tbody")
-      const rows = Array.from(tbody.querySelectorAll("tr"))
-
-      // Toggle sort direction
-      const isAscending = button.classList.toggle("asc")
-
-      // Sort rows
-      rows.sort((a, b) => {
-        const aValue = a.querySelector(`td[data-${column}]`).textContent
-        const bValue = b.querySelector(`td[data-${column}]`).textContent
-        return isAscending ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
-      })
-
-      // Update table
-      tbody.innerHTML = ""
-      rows.forEach((row) => tbody.appendChild(row))
     })
   })
 
@@ -451,7 +434,8 @@ async function handleDeleteConfirmation() {
   }
 
   // Close modal and reset current user
-  deleteModal2.style.display = "none"
+  if (deleteModal2) {
+    deleteModal2.style.display = "none"
+  }
   currentDeleteUser = null
 }
-
