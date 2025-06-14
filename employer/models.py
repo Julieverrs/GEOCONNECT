@@ -19,6 +19,12 @@ class Employer(models.Model):
     REGISTRATION_TYPE_CHOICES = [
         ('SEC', 'SEC Registration'),
         ('DTI', 'DTI Registration'),
+        ('BRGY', 'Barangay Clearance'),
+        ('MAYOR', 'Mayor\'s Permit / Business Permit'),
+        ('BIR', 'BIR Certificate of Registration (Form 2303)'),
+        ('SANITARY', 'Sanitary Permit / Health Permit'),
+        ('FDA', 'BFAD / FDA Permit'),
+        ('LABEL', 'DTI or FDA Labeling Compliance'),
     ]
 
     username = models.CharField(max_length=100, unique=True)
@@ -32,12 +38,14 @@ class Employer(models.Model):
     longitude = models.FloatField(null=True, blank=True)
     industry = models.CharField(max_length=100, blank=True)
     
-    # New fields for business registration
-    registration_type = models.CharField(
-        max_length=3, 
-        choices=REGISTRATION_TYPE_CHOICES,
-        blank=True
+    # Updated field for multiple registration types
+    registration_types = models.CharField(
+        max_length=255, 
+        blank=True,
+        help_text='Selected registration types'
     )
+    
+    # Document fields
     business_permit = models.FileField(
         upload_to='business_permits/',
         validators=[validate_file_extension, validate_file_size],
@@ -61,6 +69,50 @@ class Employer(models.Model):
         null=True,
         blank=True,
         help_text='Date of SEC/DTI registration'
+    )
+    
+    # New document fields
+    barangay_clearance = models.FileField(
+        upload_to='barangay_clearances/',
+        validators=[validate_file_extension, validate_file_size],
+        blank=True,
+        null=True,
+        help_text='Upload your Barangay Clearance (PDF, JPG, JPEG, or PNG, max 10MB)'
+    )
+    mayors_permit = models.FileField(
+        upload_to='mayors_permits/',
+        validators=[validate_file_extension, validate_file_size],
+        blank=True,
+        null=True,
+        help_text='Upload your Mayor\'s Permit (PDF, JPG, JPEG, or PNG, max 10MB)'
+    )
+    bir_certificate = models.FileField(
+        upload_to='bir_certificates/',
+        validators=[validate_file_extension, validate_file_size],
+        blank=True,
+        null=True,
+        help_text='Upload your BIR Certificate (Form 2303) (PDF, JPG, JPEG, or PNG, max 10MB)'
+    )
+    sanitary_permit = models.FileField(
+        upload_to='sanitary_permits/',
+        validators=[validate_file_extension, validate_file_size],
+        blank=True,
+        null=True,
+        help_text='Upload your Sanitary Permit (PDF, JPG, JPEG, or PNG, max 10MB)'
+    )
+    fda_permit = models.FileField(
+        upload_to='fda_permits/',
+        validators=[validate_file_extension, validate_file_size],
+        blank=True,
+        null=True,
+        help_text='Upload your FDA Permit (PDF, JPG, JPEG, or PNG, max 10MB)'
+    )
+    labeling_compliance = models.FileField(
+        upload_to='labeling_compliance/',
+        validators=[validate_file_extension, validate_file_size],
+        blank=True,
+        null=True,
+        help_text='Upload your DTI or FDA Labeling Compliance (PDF, JPG, JPEG, or PNG, max 10MB)'
     )
     
     # Password reset fields

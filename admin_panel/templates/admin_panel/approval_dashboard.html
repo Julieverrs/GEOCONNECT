@@ -951,7 +951,7 @@ function showToast(message, type = 'info') {
     });
 }
 
-// Update only the viewEmployerDetails function to handle document URLs properly
+// Update the viewEmployerDetails function to handle the new data structure
 async function viewEmployerDetails(employerId) {
     try {
         const response = await fetch(`/secret-admin/employer/${employerId}/details/`);
@@ -959,6 +959,14 @@ async function viewEmployerDetails(employerId) {
         
         const data = await response.json();
         const modalBody = document.querySelector('#viewDetailsModal .modal-body');
+        
+        // Format registration types for display
+        const registrationTypes = Array.isArray(data.registration_types) 
+            ? data.registration_types.join(', ') 
+            : (data.registration_types || data.registration_type || 'N/A');
+        
+        // Get document URLs from the document_urls object
+        const documentUrls = data.document_urls || {};
         
         modalBody.innerHTML = `
             <div class="employer-details">
@@ -997,10 +1005,10 @@ async function viewEmployerDetails(employerId) {
                             Registration Details
                         </h4>
                         <div class="detail-group" style="margin-bottom: 0.75rem;">
-                            <label>Registration Type</label>
+                            <label>Registration Types</label>
                             <p class="detail-value" style="padding: 0.4rem 0.6rem;">
                                 <i class="fas fa-file-alt mr-2" style="color: var(--employer-primary-light);"></i>
-                                ${data.registration_type || 'N/A'}
+                                ${registrationTypes}
                             </p>
                         </div>
                         <div class="detail-group" style="margin-bottom: 0.75rem;">
@@ -1058,41 +1066,8 @@ async function viewEmployerDetails(employerId) {
                             <i class="fas fa-file-contract mr-2" style="color: var(--employer-primary);"></i>
                             Required Documents
                         </h4>
-                        <div class="document-item" style="margin-bottom: 0.75rem;">
-                            <label style="margin-bottom: 0.5rem;">Business Permit</label>
-                            ${data.business_permit_url ? 
-                                `<div class="document-preview" style="max-height: 150px;">
-                                    <div class="document-actions" style="padding: 0.5rem;">
-                                        <a href="${data.business_permit_url}" target="_blank" class="document-link primary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
-                                            <i class="fas fa-eye"></i>
-                                            View
-                                        </a>
-                                        <a href="${data.business_permit_url}" download class="document-link secondary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
-                                            <i class="fas fa-download"></i>
-                                            Download
-                                        </a>
-                                    </div>
-                                </div>` : 
-                                '<p class="no-document" style="padding: 0.75rem; font-size: 0.85rem;">No business permit uploaded</p>'
-                            }
-                        </div>
-                        <div class="document-item">
-                            <label style="margin-bottom: 0.5rem;">Registration Document</label>
-                            ${data.registration_document_url ? 
-                                `<div class="document-preview" style="max-height: 150px;">
-                                    <div class="document-actions" style="padding: 0.5rem;">
-                                        <a href="${data.registration_document_url}" target="_blank" class="document-link primary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
-                                            <i class="fas fa-eye"></i>
-                                            View
-                                        </a>
-                                        <a href="${data.registration_document_url}" download class="document-link secondary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
-                                            <i class="fas fa-download"></i>
-                                            Download
-                                        </a>
-                                    </div>
-                                </div>` : 
-                                '<p class="no-document" style="padding: 0.75rem; font-size: 0.85rem;">No registration document uploaded</p>'
-                            }
+                        <div class="documents-container" style="max-height: 200px; overflow-y: auto;">
+                            ${createDocumentLinks(documentUrls)}
                         </div>
                     </div>
                 </div>
@@ -1106,244 +1081,102 @@ async function viewEmployerDetails(employerId) {
     }
 }
 
+// Helper function to create document links
+function createDocumentLinks(documentUrls) {
+    if (!documentUrls || Object.keys(documentUrls).length === 0) {
+        // Handle legacy structure
+        return `
+            <div class="document-item" style="margin-bottom: 0.75rem;">
+                <label style="margin-bottom: 0.5rem;">Business Permit</label>
+                <div class="document-preview" style="max-height: 150px;">
+                    <div class="document-actions" style="padding: 0.5rem;">
+                        <a href="${documentUrls?.business_permit_url || '#'}" target="_blank" class="document-link primary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
+                            <i class="fas fa-file-contract"></i>
+                            View
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="document-item">
+                <label style="margin-bottom: 0.5rem;">Registration Document</label>
+                <div class="document-preview" style="max-height: 150px;">
+                    <div class="document-actions" style="padding: 0.5rem;">
+                        <a href="${documentUrls?.registration_document_url || '#'}" target="_blank" class="document-link primary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
+                            <i class="fas fa-file-alt"></i>
+                            View
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    const documentLabels = {
+        'business_permit': 'Business Permit',
+        'registration_document': 'Registration Document',
+        'barangay_clearance': 'Barangay Clearance',
+        'mayors_permit': 'Mayor\'s Permit',
+        'bir_certificate': 'BIR Certificate',
+        'sanitary_permit': 'Sanitary Permit',
+        'fda_permit': 'FDA Permit',
+        'labeling_compliance': 'Labeling Compliance'
+    };
+    
+    const documentIcons = {
+        'business_permit': 'fa-file-contract',
+        'registration_document': 'fa-file-alt',
+        'barangay_clearance': 'fa-file-signature',
+        'mayors_permit': 'fa-file-certificate',
+        'bir_certificate': 'fa-file-invoice',
+        'sanitary_permit': 'fa-file-medical',
+        'fda_permit': 'fa-file-prescription',
+        'labeling_compliance': 'fa-file-check'
+    };
+    
+    let html = '';
+    
+    // Check if any document exists
+    const hasDocuments = Object.values(documentUrls).some(url => url !== null && url !== undefined);
+    
+    if (!hasDocuments) {
+        return '<p class="no-document" style="padding: 0.75rem; font-size: 0.85rem;">No documents uploaded</p>';
+    }
+    
+    // Create links for each document
+    for (const [key, url] of Object.entries(documentUrls)) {
+        if (url) {
+            const label = documentLabels[key] || key;
+            const icon = documentIcons[key] || 'fa-file';
+            
+            html += `
+                <div class="document-item" style="margin-bottom: 0.75rem;">
+                    <label style="margin-bottom: 0.5rem;">${label}</label>
+                    <div class="document-preview" style="max-height: 150px;">
+                        <div class="document-actions" style="padding: 0.5rem;">
+                            <a href="${url}" target="_blank" class="document-link primary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
+                                <i class="fas ${icon}"></i>
+                                View
+                            </a>
+                            <a href="${url}" download class="document-link secondary" style="padding: 0.4rem 0.6rem; font-size: 0.75rem;">
+                                <i class="fas fa-download"></i>
+                                Download
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    return html || '<p class="no-document" style="padding: 0.75rem; font-size: 0.85rem;">No documents uploaded</p>';
+}
+
 // Add this utility function to check if a file is an image
 function isImageFile(url) {
+    if (!url) return false;
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
     return imageExtensions.some(ext => url.toLowerCase().endsWith(ext));
 }
-
-// Add these additional styles
-const additionalStyles = `
-    <style>
-        /* Document preview styles */
-        .document-item {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .document-item label {
-            display: block;
-            font-weight: 600;
-            color: #475569;
-            margin-bottom: 0.75rem;
-        }
-
-        .document-preview {
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        .document-actions {
-            display: flex;
-            gap: 0.5rem;
-            padding: 0.75rem;
-            background: #fff;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .document-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            font-size: 0.875rem;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-
-        .document-link.primary {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .document-link.secondary {
-            background: #64748b;
-            color: white;
-        }
-
-        .document-link:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        .document-image {
-            position: relative;
-            width: 100%;
-            height: 200px;
-            overflow: hidden;
-            background: #f1f5f9;
-        }
-
-        .document-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .document-file {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            background: #f1f5f9;
-            color: #64748b;
-            gap: 0.5rem;
-        }
-
-        .document-file i {
-            font-size: 2rem;
-            color: #94a3b8;
-        }
-
-        .no-document {
-            color: #94a3b8;
-            font-style: italic;
-            padding: 1rem;
-            text-align: center;
-            background: #f1f5f9;
-            border-radius: 4px;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .documents-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .document-actions {
-                flex-direction: column;
-            }
-
-            .document-link {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
-`;
-
-// Add the additional styles to the document head
-document.head.insertAdjacentHTML('beforeend', additionalStyles);
-
-// Add these styles to your existing CSS
-const styles = `
-    <style>
-        .detail-card {
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1rem;
-        }
-
-        .detail-section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .detail-group {
-            margin-bottom: 1rem;
-        }
-
-        .detail-group label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #64748b;
-            margin-bottom: 0.25rem;
-        }
-
-        .detail-value {
-            font-size: 1rem;
-            color: #1e293b;
-            line-height: 1.5;
-        }
-
-        .detail-value.description {
-            white-space: pre-line;
-            max-height: 100px;
-            overflow-y: auto;
-            padding: 0.5rem;
-            background: #f8fafc;
-            border-radius: 4px;
-        }
-
-        .website-link {
-            color: #3b82f6;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .website-link:hover {
-            text-decoration: underline;
-        }
-
-        .documents-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 0.5rem;
-        }
-
-        .document-link {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem;
-            background: #f1f5f9;
-            border-radius: 6px;
-            color: #475569;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-
-        .document-link:hover {
-            background: #e2e8f0;
-            transform: translateY(-1px);
-        }
-
-        .no-document {
-            color: #94a3b8;
-            font-size: 0.875rem;
-            font-style: italic;
-        }
-
-        @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr !important;
-            }
-            
-            .detail-card {
-                padding: 1rem;
-            }
-        }
-
-        /* Enhanced modal styles */
-        .modal-content {
-            max-width: 900px;
-            margin: 2rem;
-            max-height: 85vh;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-        }
-    </style>
-`;
-
-// Add the styles to the document head
-document.head.insertAdjacentHTML('beforeend', styles);
 
 // Update the approveEmployer function to handle real-time updates
 async function approveEmployer(employerId) {
@@ -1441,6 +1274,7 @@ document.getElementById('confirmReject').addEventListener('click', async () => {
         const rejectedTableBody = document.querySelector('.section.mt-6:last-child table tbody');
         if (rejectedTableBody) {
             const newRow = document.createElement('tr');
+            newRow.setAttribute('data-employer-id', selectedEmployerId);
             newRow.innerHTML = `
                 <td>${data.employer.company_name}</td>
                 <td>${data.employer.registration_type}</td>

@@ -112,6 +112,22 @@ def approval_dashboard(request):
 def get_employer_details(request, employer_id):
     try:
         employer = Employer.objects.get(id=employer_id)
+        
+        # Handle the registration_types field (which is now a list)
+        registration_types = employer.registration_types.split(',') if employer.registration_types else []
+        
+        # Create a dictionary for all document URLs
+        document_urls = {
+            'business_permit': employer.business_permit.url if employer.business_permit else None,
+            'registration_document': employer.registration_document.url if employer.registration_document else None,
+            'barangay_clearance': employer.barangay_clearance.url if hasattr(employer, 'barangay_clearance') and employer.barangay_clearance else None,
+            'mayors_permit': employer.mayors_permit.url if hasattr(employer, 'mayors_permit') and employer.mayors_permit else None,
+            'bir_certificate': employer.bir_certificate.url if hasattr(employer, 'bir_certificate') and employer.bir_certificate else None,
+            'sanitary_permit': employer.sanitary_permit.url if hasattr(employer, 'sanitary_permit') and employer.sanitary_permit else None,
+            'fda_permit': employer.fda_permit.url if hasattr(employer, 'fda_permit') and employer.fda_permit else None,
+            'labeling_compliance': employer.labeling_compliance.url if hasattr(employer, 'labeling_compliance') and employer.labeling_compliance else None,
+        }
+        
         data = {
             'company_name': employer.company_name,
             'email': employer.email,
@@ -119,14 +135,13 @@ def get_employer_details(request, employer_id):
             'company_website': employer.company_website,
             'company_location': employer.company_location,
             'industry': employer.industry,
-            'registration_type': employer.registration_type,
+            'registration_types': registration_types,
             'registration_number': employer.registration_number,
             'registration_date': employer.registration_date.strftime('%Y-%m-%d') if employer.registration_date else None,
             'date_joined': employer.date_joined.strftime('%Y-%m-%d'),
             'is_active': employer.is_active,
             'is_verified': employer.is_verified,
-            'business_permit_url': employer.business_permit.url if employer.business_permit else None,
-            'registration_document_url': employer.registration_document.url if employer.registration_document else None,
+            'document_urls': document_urls
         }
         return JsonResponse(data)
     except Employer.DoesNotExist:
@@ -194,7 +209,7 @@ def reject_employer(request, employer_id):
         
         # Store the original values before updating
         company_name = employer.company_name
-        registration_type = employer.registration_type
+        registration_types = employer.registration_types
         
         # Update employer status
         employer.is_approved = False
@@ -232,7 +247,7 @@ The GEOCONNECT Team'''
             'employer': {
                 'id': employer.id,
                 'company_name': company_name,
-                'registration_type': registration_type
+                'registration_types': registration_types
             }
         })
         
@@ -291,39 +306,12 @@ The GEOCONNECT Team'''
             'employer': {
                 'id': employer.id,
                 'company_name': employer.company_name,
-                'registration_type': employer.registration_type,
+                'registration_types': employer.registration_types,
                 'business_permit_url': employer.business_permit.url if employer.business_permit else None,
                 'registration_document_url': employer.registration_document.url if employer.registration_document else None,
             }
         })
         
-    except Employer.DoesNotExist:
-        return JsonResponse({'error': 'Employer not found'}, status=404)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-        
-@login_required
-@user_passes_test(is_admin)
-def get_employer_details(request, employer_id):
-    try:
-        employer = Employer.objects.get(id=employer_id)
-        data = {
-            'company_name': employer.company_name,
-            'email': employer.email,
-            'company_description': employer.company_description,
-            'company_website': employer.company_website,
-            'company_location': employer.company_location,
-            'industry': employer.industry,
-            'registration_type': employer.registration_type,
-            'registration_number': employer.registration_number,
-            'registration_date': employer.registration_date.strftime('%Y-%m-%d') if employer.registration_date else None,
-            'date_joined': employer.date_joined.strftime('%Y-%m-%d'),
-            'is_active': employer.is_active,
-            'is_verified': employer.is_verified,
-            'business_permit_url': employer.business_permit.url if employer.business_permit else None,
-            'registration_document_url': employer.registration_document.url if employer.registration_document else None,
-        }
-        return JsonResponse(data)
     except Employer.DoesNotExist:
         return JsonResponse({'error': 'Employer not found'}, status=404)
     except Exception as e:
@@ -371,7 +359,7 @@ def get_user_details(request, user_id, user_type):
                 'company_website': user.company_website,
                 'company_location': user.company_location,
                 'industry': user.industry,
-                'registration_type': user.registration_type,
+                'registration_types': user.registration_types.split(',') if user.registration_types else [],
                 'registration_number': user.registration_number,
                 'registration_date': user.registration_date.strftime('%Y-%m-%d') if user.registration_date else None,
                 'date_joined': user.date_joined.strftime('%Y-%m-%d'),
@@ -672,4 +660,3 @@ def employee_approval_dashboard(request):
     }
     
     return render(request, 'admin_panel/employee_approval_dashboard.html', context)
-

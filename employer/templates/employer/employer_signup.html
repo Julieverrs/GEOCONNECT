@@ -74,6 +74,16 @@
                     {% if form.password.errors %}
                     <div class="error-message">{{ form.password.errors }}</div>
                     {% endif %}
+                    <div class="password-requirements">
+                        <p class="text-sm text-gray-600">Password must have:</p>
+                        <ul class="text-xs text-gray-600 pl-4">
+                            <li id="length-check">At least 8 characters</li>
+                            <li id="uppercase-check">At least one uppercase letter</li>
+                            <li id="lowercase-check">At least one lowercase letter</li>
+                            <li id="number-check">At least one number</li>
+                            <li id="special-check">At least one special character</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -90,47 +100,124 @@
             </div>
 
             <div class="form-tab-content" id="business-info" style="display: none;">
-                <div class="form-group">
-                    <label>Registration Type</label>
-                    {{ form.registration_type }}
-                    {% if form.registration_type.errors %}
-                    <div class="error-message">{{ form.registration_type.errors }}</div>
-                    {% endif %}
-                    <span class="help-text">{{ form.registration_type.help_text }}</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="id_business_permit">Business Permit</label>
-                    {{ form.business_permit }}
-                    {% if form.business_permit.errors %}
-                    <div class="error-message">{{ form.business_permit.errors }}</div>
-                    {% endif %}
-                    <span class="help-text">{{ form.business_permit.help_text }}</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="id_registration_document">Registration Document</label>
-                    {{ form.registration_document }}
-                    {% if form.registration_document.errors %}
-                    <div class="error-message">{{ form.registration_document.errors }}</div>
-                    {% endif %}
-                    <span class="help-text">{{ form.registration_document.help_text }}</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="id_registration_number">Registration Number</label>
-                    {{ form.registration_number }}
-                    {% if form.registration_number.errors %}
-                    <div class="error-message">{{ form.registration_number.errors }}</div>
+                <div class="form-group registration-types-group">
+                    <label>Registration Types <span class="required-asterisk">*</span></label>
+                    <p class="help-text">Select at least one registration type</p>
+                    <div class="registration-types-container">
+                        {{ form.registration_types }}
+                    </div>
+                    {% if form.registration_types.errors %}
+                    <div class="error-message">{{ form.registration_types.errors }}</div>
                     {% endif %}
                 </div>
 
-                <div class="form-group">
-                    <label for="id_registration_date">Registration Date</label>
-                    {{ form.registration_date }}
-                    {% if form.registration_date.errors %}
-                    <div class="error-message">{{ form.registration_date.errors }}</div>
-                    {% endif %}
+                <div class="document-sections">
+                    <!-- SEC/DTI Registration Section -->
+                    <div class="document-section" id="sec-dti-section">
+                        <h3>SEC/DTI Registration</h3>
+                        <div class="form-group">
+                            <label for="id_registration_document">Registration Document</label>
+                            {{ form.registration_document }}
+                            {% if form.registration_document.errors %}
+                            <div class="error-message">{{ form.registration_document.errors }}</div>
+                            {% endif %}
+                            <span class="help-text">{{ form.registration_document.help_text }}</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_registration_number">Registration Number</label>
+                            {{ form.registration_number }}
+                            {% if form.registration_number.errors %}
+                            <div class="error-message">{{ form.registration_number.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_registration_date">Registration Date</label>
+                            {{ form.registration_date }}
+                            {% if form.registration_date.errors %}
+                            <div class="error-message">{{ form.registration_date.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Barangay Clearance Section -->
+                    <div class="document-section" id="brgy-section">
+                        <h3>Barangay Clearance</h3>
+                        <div class="form-group">
+                            <label for="id_barangay_clearance">Barangay Clearance</label>
+                            {{ form.barangay_clearance }}
+                            {% if form.barangay_clearance.errors %}
+                            <div class="error-message">{{ form.barangay_clearance.errors }}</div>
+                            {% endif %}
+                            <span class="help-text">{{ form.barangay_clearance.help_text }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Mayor's Permit Section -->
+                    <div class="document-section" id="mayor-section">
+                        <h3>Mayor's Permit / Business Permit</h3>
+                        <div class="form-group">
+                            <label for="id_mayors_permit">Mayor's Permit</label>
+                            {{ form.mayors_permit }}
+                            {% if form.mayors_permit.errors %}
+                            <div class="error-message">{{ form.mayors_permit.errors }}</div>
+                            {% endif %}
+                            <span class="help-text">{{ form.mayors_permit.help_text }}</span>
+                        </div>
+                    </div>
+
+                    <!-- BIR Certificate Section -->
+                    <div class="document-section" id="bir-section">
+                        <h3>BIR Certificate of Registration</h3>
+                        <div class="form-group">
+                            <label for="id_bir_certificate">BIR Certificate (Form 2303)</label>
+                            {{ form.bir_certificate }}
+                            {% if form.bir_certificate.errors %}
+                            <div class="error-message">{{ form.bir_certificate.errors }}</div>
+                            {% endif %}
+                            <span class="help-text">{{ form.bir_certificate.help_text }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Sanitary Permit Section -->
+                    <div class="document-section" id="sanitary-section">
+                        <h3>Sanitary Permit / Health Permit</h3>
+                        <div class="form-group">
+                            <label for="id_sanitary_permit">Sanitary Permit</label>
+                            {{ form.sanitary_permit }}
+                            {% if form.sanitary_permit.errors %}
+                            <div class="error-message">{{ form.sanitary_permit.errors }}</div>
+                            {% endif %}
+                            <span class="help-text">{{ form.sanitary_permit.help_text }}</span>
+                        </div>
+                    </div>
+
+                    <!-- FDA Permit Section -->
+                    <div class="document-section" id="fda-section">
+                        <h3>BFAD / FDA Permit</h3>
+                        <div class="form-group">
+                            <label for="id_fda_permit">FDA Permit</label>
+                            {{ form.fda_permit }}
+                            {% if form.fda_permit.errors %}
+                            <div class="error-message">{{ form.fda_permit.errors }}</div>
+                            {% endif %}
+                            <span class="help-text">{{ form.fda_permit.help_text }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Labeling Compliance Section -->
+                    <div class="document-section" id="label-section">
+                        <h3>DTI or FDA Labeling Compliance</h3>
+                        <div class="form-group">
+                            <label for="id_labeling_compliance">Labeling Compliance Document</label>
+                            {{ form.labeling_compliance }}
+                            {% if form.labeling_compliance.errors %}
+                            <div class="error-message">{{ form.labeling_compliance.errors }}</div>
+                            {% endif %}
+                            <span class="help-text">{{ form.labeling_compliance.help_text }}</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="form-nav">
@@ -189,11 +276,108 @@
     transform: translateX(-2px);
 }
 
-/* Enhanced Responsive adjustments for navigation button */
+/* Registration Types Styling */
+.registration-types-group {
+    margin-bottom: 2rem;
+}
+
+.registration-types-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.registration-types-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: contents;
+}
+
+.registration-types-container li {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.registration-types-container input[type="checkbox"] {
+    margin-right: 8px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.registration-types-container label {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+/* Document Sections Styling */
+.document-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.document-section {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background-color: #f9fafb;
+    display: none; /* Hidden by default, shown when selected */
+}
+
+.document-section h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: #4f46e5;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.5rem;
+}
+
+.required-asterisk {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+/* Password Requirements Styling */
+.password-requirements {
+    margin-top: 8px;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+}
+
+.password-requirements ul {
+    margin-top: 5px;
+    margin-bottom: 0;
+}
+
+.password-requirements li {
+    margin-bottom: 3px;
+}
+
+.password-requirements li.valid {
+    color: #10b981;
+}
+
+.password-requirements li.invalid {
+    color: #ef4444;
+}
+
+/* Enhanced Responsive adjustments */
 @media (max-width: 1024px) {
     .nav-button-container {
         top: 15px;
         right: 15px;
+    }
+    
+    .registration-types-container {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     }
 }
 
@@ -217,6 +401,10 @@
     .auth-container {
         margin-top: 60px;
         padding-top: 0;
+    }
+    
+    .registration-types-container {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -252,6 +440,10 @@
     /* Adjust form header spacing on mobile */
     .auth-form {
         padding: 2rem 1.5rem;
+    }
+    
+    .document-section {
+        padding: 1rem;
     }
 }
 
@@ -371,6 +563,106 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Registration type checkboxes
+    const registrationCheckboxes = document.querySelectorAll('input[name="registration_types"]');
+    const documentSections = {
+        'SEC': document.getElementById('sec-dti-section'),
+        'DTI': document.getElementById('sec-dti-section'),
+        'BRGY': document.getElementById('brgy-section'),
+        'MAYOR': document.getElementById('mayor-section'),
+        'BIR': document.getElementById('bir-section'),
+        'SANITARY': document.getElementById('sanitary-section'),
+        'FDA': document.getElementById('fda-section'),
+        'LABEL': document.getElementById('label-section')
+    };
+
+    // Function to toggle document sections based on selected registration types
+    function toggleDocumentSections() {
+        // Hide all document sections first
+        Object.values(documentSections).forEach(section => {
+            if (section) section.style.display = 'none';
+        });
+        
+        // Show sections for selected registration types
+        registrationCheckboxes.forEach(checkbox => {
+            if (checkbox.checked && documentSections[checkbox.value]) {
+                documentSections[checkbox.value].style.display = 'block';
+            }
+        });
+        
+        // Special case for SEC/DTI section (shared)
+        if (document.querySelector('input[value="SEC"]').checked || 
+            document.querySelector('input[value="DTI"]').checked) {
+            documentSections['SEC'].style.display = 'block';
+        }
+    }
+
+    // Add event listeners to checkboxes
+    registrationCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', toggleDocumentSections);
+    });
+
+    // Initialize document sections on page load
+    toggleDocumentSections();
+
+    // Password validation
+    const passwordInput = document.getElementById('id_password');
+    const confirmPasswordInput = document.getElementById('id_confirm_password');
+    const lengthCheck = document.getElementById('length-check');
+    const uppercaseCheck = document.getElementById('uppercase-check');
+    const lowercaseCheck = document.getElementById('lowercase-check');
+    const numberCheck = document.getElementById('number-check');
+    const specialCheck = document.getElementById('special-check');
+
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        
+        // Check length
+        if (password.length >= 8) {
+            lengthCheck.classList.add('valid');
+            lengthCheck.classList.remove('invalid');
+        } else {
+            lengthCheck.classList.add('invalid');
+            lengthCheck.classList.remove('valid');
+        }
+        
+        // Check uppercase
+        if (/[A-Z]/.test(password)) {
+            uppercaseCheck.classList.add('valid');
+            uppercaseCheck.classList.remove('invalid');
+        } else {
+            uppercaseCheck.classList.add('invalid');
+            uppercaseCheck.classList.remove('valid');
+        }
+        
+        // Check lowercase
+        if (/[a-z]/.test(password)) {
+            lowercaseCheck.classList.add('valid');
+            lowercaseCheck.classList.remove('invalid');
+        } else {
+            lowercaseCheck.classList.add('invalid');
+            lowercaseCheck.classList.remove('valid');
+        }
+        
+        // Check number
+        if (/[0-9]/.test(password)) {
+            numberCheck.classList.add('valid');
+            numberCheck.classList.remove('invalid');
+        } else {
+            numberCheck.classList.add('invalid');
+            numberCheck.classList.remove('valid');
+        }
+        
+        // Check special character
+        if (/[!@#$%^&*()_+\-=\[\]{};:\'",.<>/?]/.test(password)) {
+            specialCheck.classList.add('valid');
+            specialCheck.classList.remove('invalid');
+        } else {
+            specialCheck.classList.add('invalid');
+            specialCheck.classList.remove('valid');
+        }
+    });
+
     // Toast notification function
     function showToast(message, type = 'info') {
         const toast = document.createElement('div');
@@ -409,7 +701,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         requiredFields.forEach(field => {
             const input = document.getElementById(`id_${field}`);
-            if (!input.value.trim()) {
+            if (input && !input.value.trim()) {
                 showToast(`${field.replace('_', ' ')} is required`, 'error');
                 isValid = false;
             }
@@ -423,19 +715,73 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
         }
 
-        // Check file uploads
-        const businessPermit = document.getElementById('id_business_permit');
-        const registrationDoc = document.getElementById('id_registration_document');
-        
-        if (!businessPermit.files.length) {
-            showToast('Business permit is required', 'error');
+        // Check if at least one registration type is selected
+        const registrationTypesSelected = Array.from(registrationCheckboxes).some(checkbox => checkbox.checked);
+        if (!registrationTypesSelected) {
+            showToast('Please select at least one registration type', 'error');
             isValid = false;
         }
-        
-        if (!registrationDoc.files.length) {
-            showToast('Registration document is required', 'error');
-            isValid = false;
-        }
+
+        // Check required documents based on selected registration types
+        registrationCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const value = checkbox.value;
+                let fileInput = null;
+                
+                switch(value) {
+                    case 'SEC':
+                    case 'DTI':
+                        fileInput = document.getElementById('id_registration_document');
+                        if (!fileInput.files.length) {
+                            showToast('Registration document is required for SEC/DTI registration', 'error');
+                            isValid = false;
+                        }
+                        break;
+                    case 'BRGY':
+                        fileInput = document.getElementById('id_barangay_clearance');
+                        if (!fileInput.files.length) {
+                            showToast('Barangay Clearance is required when selected', 'error');
+                            isValid = false;
+                        }
+                        break;
+                    case 'MAYOR':
+                        fileInput = document.getElementById('id_mayors_permit');
+                        if (!fileInput.files.length) {
+                            showToast('Mayor\'s Permit is required when selected', 'error');
+                            isValid = false;
+                        }
+                        break;
+                    case 'BIR':
+                        fileInput = document.getElementById('id_bir_certificate');
+                        if (!fileInput.files.length) {
+                            showToast('BIR Certificate is required when selected', 'error');
+                            isValid = false;
+                        }
+                        break;
+                    case 'SANITARY':
+                        fileInput = document.getElementById('id_sanitary_permit');
+                        if (!fileInput.files.length) {
+                            showToast('Sanitary Permit is required when selected', 'error');
+                            isValid = false;
+                        }
+                        break;
+                    case 'FDA':
+                        fileInput = document.getElementById('id_fda_permit');
+                        if (!fileInput.files.length) {
+                            showToast('FDA Permit is required when selected', 'error');
+                            isValid = false;
+                        }
+                        break;
+                    case 'LABEL':
+                        fileInput = document.getElementById('id_labeling_compliance');
+                        if (!fileInput.files.length) {
+                            showToast('Labeling Compliance document is required when selected', 'error');
+                            isValid = false;
+                        }
+                        break;
+                }
+            }
+        });
 
         if (!isValid) {
             e.preventDefault();

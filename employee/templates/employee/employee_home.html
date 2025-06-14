@@ -42,12 +42,12 @@
     <button class="profile-trigger enhanced-profile-btn" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
         <div class="profile-info">
             <div class="profile-avatar enhanced-avatar">
-                {% if employee.avatar %}
-                    <img src="{{ employee.avatar.url }}" alt="Profile" class="rounded-circle">
-                {% else %}
-                    <span class="avatar-text">{{ username|first|upper }}</span>
-                {% endif %}
-            </div>
+    {% if employee.avatar %}
+        <img src="{{ employee.avatar.url }}" alt="Profile" class="rounded-circle">
+    {% else %}
+        <span class="avatar-text">{{ username|first|upper }}</span>
+    {% endif %}
+</div>
             <span class="profile-name">{{ username }}</span>
             <i class="fas fa-chevron-down dropdown-arrow"></i>
         </div>
@@ -56,12 +56,12 @@
         <li class="dropdown-header">
             <div class="dropdown-header-content">
                 <div class="header-avatar">
-                    {% if employee.avatar %}
-                        <img src="{{ employee.avatar.url }}" alt="Profile" class="rounded-circle">
-                    {% else %}
-                        <span class="avatar-text-small">{{ username|first|upper }}</span>
-                    {% endif %}
-                </div>
+    {% if employee.avatar %}
+        <img src="{{ employee.avatar.url }}" alt="Profile" class="rounded-circle">
+    {% else %}
+        <span class="avatar-text-small">{{ username|first|upper }}</span>
+    {% endif %}
+</div>
                 <div class="header-user-info">
                     <span class="header-username">{{ username }}</span>
                     <span class="header-email">{{ employee.email }}</span>
@@ -206,38 +206,34 @@
             <p class="text-muted">Discover opportunities that match your skills and experience</p>
         </div>
 
-        <div class="jobs-filter mb-4">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="search-input">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="jobSearch" class="form-control" placeholder="Search jobs...">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <select id="jobCategory" class="form-select">
-                        <option value="">All Categories</option>
-                        <option value="Full-time">Full-time</option>
-                        <option value="Part-time">Part-time</option>
-                        <option value="Contract">Contract</option>
-                        <option value="Internship">Internship</option>
-                        <option value="Temporary">Temporary</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select id="jobLocation" class="form-select">
-                        <option value="">Work-Setups</option>
-                        <option value="On-site">On-site</option>
-                        <option value="Remote">Remote</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button id="mapJobs" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#jobMapModal">
-                        <i class="fas fa-map-marked-alt me-2"></i>Mapping
-                    </button>
-                </div>
+        
+<div class="jobs-filter mb-4">
+    <div class="row g-3">
+        <div class="col-md-5">
+            <div class="search-input">
+                <i class="fas fa-search"></i>
+                <input type="text" id="jobSearch" class="form-control" placeholder="Search jobs...">
             </div>
         </div>
+        <div class="col-md-4">
+            <select id="jobCategory" class="form-select">
+                <option value="">All Categories</option>
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Contract">Contract</option>
+                <option value="Internship">Internship</option>
+                <option value="Temporary">Temporary</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select id="jobLocation" class="form-select">
+                <option value="">Work-Setups</option>
+                <option value="On-site">On-site</option>
+                <option value="Remote">Remote</option>
+            </select>
+        </div>
+    </div>
+</div>
 
         <div id="jobsGrid">
     <div class="scrollable-jobs-container pt-3">
@@ -564,7 +560,7 @@
             <div class="profile-photo-section">
               <div class="avatar-container">
                 <div class="avatar-preview-wrapper">
-                  <img id="avatarPreview" src="{{ employee.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Profile Picture" class="avatar-preview">
+                  <img id="avatarPreview" src="{% if employee.avatar %}{{ employee.avatar.url }}{% else %}/static/images/default-avatar.png{% endif %}" alt="Profile Picture" class="avatar-preview">
                   <div class="avatar-overlay">
                     <i class="fas fa-camera"></i>
                   </div>
@@ -813,7 +809,7 @@
                         <h6 class="section-title mb-3 mt-4">Additional Information</h6>
                         
                         <div class="mb-3">
-                            <label for="coverLetter" class="form-label">Cover Letter</label>
+                            <label for="coverLetter" class="form-label">Why Should We Hire You?</label>
                             <textarea class="form-control" 
                                       id="coverLetter" 
                                       name="cover_letter"
@@ -1816,6 +1812,79 @@ body.modal-open {
     .navbar-nav {
         text-align: center;
     
+    }
+    
+    .nav-item.dropdown {
+        text-align: center;
+        margin-top: 10px;
+    }
+}
+
+/* Enhanced Header and Navigation Styles */
+.navbar {
+    padding: 15px 0;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.navbar-brand img {
+    margin-right: 10px;
+}
+
+.navbar .nav-link {
+    font-size: 1.05rem;
+    font-weight: 500;
+    padding: 0.5rem 1.2rem !important;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.navbar .nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background-color: white;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
+}
+
+.navbar .nav-link:hover::after {
+    width: 70%;
+}
+
+.navbar .nav-link i {
+    margin-right: 6px;
+    font-size: 1.1rem;
+}
+
+.navbar-nav {
+    gap: 5px;
+}
+
+/* Make navbar more prominent when scrolled */
+.navbar-scrolled {
+    padding: 10px 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background-color: var(--primary-color);
+        padding: 15px;
+        border-radius: 0 0 15px 15px;
+        margin-top: 10px;
+    }
+    
+    .navbar-nav {
+        text-align: center;
     }
     
     .nav-item.dropdown {
