@@ -64,48 +64,30 @@
 
     /* Enhanced Main Header */
     .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #8b5cf6 100%);
-        box-shadow: 
-            0 8px 32px rgba(65, 84, 241, 0.4),
-            0 0 0 1px rgba(255, 255, 255, 0.1);
-        padding: 0;
-        width: 100%;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 100;
-        height: var(--header-height);
-        backdrop-filter: blur(20px);
-        overflow: hidden;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    }
+    background: #2563eb; /* Simple blue instead of gradient */
+    box-shadow: 
+        0 8px 32px rgba(37, 99, 235, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    padding: 0;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    height: var(--header-height);
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
 
     /* Enhanced animated background with multiple layers */
     .main-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: 
-            radial-gradient(circle at 15% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 85% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-            linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
-        animation: headerGlow 8s ease-in-out infinite;
-    }
+    display: none;
+}
 
     .main-header::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M40 40c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20zm20 0c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
-        opacity: 0.3;
-        animation: backgroundMove 25s linear infinite;
-    }
+    display: none;
+}
 
     @keyframes headerGlow {
         0%, 100% { 
@@ -260,9 +242,7 @@
 
     /* Dashboard Stats Section - Enhanced Visual Appeal */
     .dashboard-stats {
-    background: 
-        linear-gradient(135deg, #667eea 0%, #764ba2 50%, #8b5cf6 100%),
-        #667eea; /* Solid fallback color */
+    background: #2563eb; /* Simple blue instead of gradient */
     padding: var(--header-height) 0 40px 0;
     color: var(--white);
     position: relative;
@@ -278,31 +258,12 @@
 
     /* Enhanced animated background with multiple layers */
     .dashboard-stats::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: 
-            radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-    animation: backgroundFloat 25s ease-in-out infinite;
-    z-index: 1;
+    display: none;
 }
 
     .dashboard-stats::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M50 50c0-27.614-22.386-50-50-50s-50 22.386-50 50 22.386 50 50 50 50-22.386 50-50zm50 0c0-27.614-22.386-50-50-50s-50 22.386-50 50 22.386 50 50 50 50-22.386 50-50z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
-        opacity: 0.4;
-        animation: backgroundMove 30s linear infinite reverse;
-    }
+    display: none;
+}
 
     @keyframes backgroundFloat {
         0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }

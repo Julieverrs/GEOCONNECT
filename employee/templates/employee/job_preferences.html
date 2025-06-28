@@ -92,15 +92,16 @@ body {
 }
 
 .preferences-content {
-    background: var(--card-background);
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    margin-bottom: 20px;
-}
+        background: var(--card-background);
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        padding: 40px; /* Increased padding for more space */
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        margin-bottom: 20px;
+        min-height: 600px; /* Set a minimum height to ensure visibility */
+    }
 
 .preferences-header {
     text-align: center;
@@ -204,13 +205,13 @@ body {
 }
 
 .form-select, .form-control {
-    padding: 12px 15px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background: white;
-    transition: all 0.3s ease;
-    font-size: 0.95rem;
-}
+        padding: 14px 20px; /* Increased padding for dropdowns */
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: white;
+        transition: all 0.3s ease;
+        font-size: 1rem; /* Slightly larger font size */
+    }
 
 .form-select:focus, .form-control:focus {
     outline: none;
@@ -353,16 +354,31 @@ body {
     color: white;
     border-radius: 12px 12px 0 0;
 }
+.preferences-modal .modal-dialog {
+        max-width: 800px; /* Set a maximum width for the modal */
+        margin: 1.75rem auto; /* Center the modal */
+    }
 
 .preferences-modal .modal-content {
-    border-radius: 12px;
-    border: none;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-}
-
-.preferences-modal .modal-body {
-    padding: 30px;
-}
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        height: auto; /* Allow height to adjust based on content */
+        overflow: hidden; /* Prevent scrolling */
+    }
+    .preferences-modal .modal-body {
+        padding: 30px;
+        max-height: 600px; /* Set a maximum height for the modal body */
+        overflow-y: auto; /* Allow vertical scrolling only if necessary */
+    }
+    .preferences-modal .modal-header {
+        background: var(--primary-color);
+        color: white;
+        border-radius: 12px 12px 0 0;
+    }
+    .preferences-modal .modal-footer {
+        border-top: none; /* Remove border for a cleaner look */
+    }
 
 .preference-item {
     margin-bottom: 20px;
@@ -454,7 +470,7 @@ body {
     }
     
     .preferences-content {
-        padding: 15px;
+        padding: 30px;
     }
     
     .preferences-header {
@@ -516,8 +532,16 @@ body {
         padding: 12px 8px;
     }
     
+    .row.mt-4.mb-3 {
+        margin-top: 20px; /* Reduced margin-top for the button row */
+        margin-bottom: 10px; /* Reduced margin-bottom for the button row */
+    }
     .form-actions {
-        flex-direction: column;
+        flex-direction: row; /* Ensure buttons are in a row */
+        justify-content: center; /* Center the buttons */
+    }
+    .btn-save, .btn-reset, .btn-view {
+        margin: 0 5px; /* Adjust margin between buttons */
     }
     
     .form-actions button {
@@ -640,59 +664,202 @@ body {
                 </div>
                 
                 <!-- Skills & Experience Tab -->
-                <div class="tab-content" id="skillsTab">
-                    <div class="row">
-                        <div class="col-12 mb-4">
-                            <div class="form-group">
-                                <label for="skills" class="form-label required-label">Skills</label>
-                                <select class="form-select" id="skills" name="skills[]" multiple required>
-                                    <optgroup label="Technical Skills">
-                                        <option value="Python">Python</option>
-                                        <option value="Java">Java</option>
-                                        <option value="JavaScript">JavaScript</option>
-                                        <option value="React">React</option>
-                                        <option value="Angular">Angular</option>
-                                        <option value="Vue.js">Vue.js</option>
-                                        <option value="Node.js">Node.js</option>
-                                        <option value="PHP">PHP</option>
-                                        <option value="C#">C#</option>
-                                        <option value="C++">C++</option>
-                                        <option value="Ruby">Ruby</option>
-                                        <option value="Swift">Swift</option>
-                                        <option value="Kotlin">Kotlin</kotlin>
-                                        <option value="SQL">SQL</option>
-                                        <option value="MongoDB">MongoDB</option>
-                                        <option value="AWS">AWS</option>
-                                        <option value="Docker">Docker</option>
-                                        <option value="Kubernetes">Kubernetes</option>
-                                    </optgroup>
-                                    <optgroup label="Business Skills">
-                                        <option value="Project Management">Project Management</option>
-                                        <option value="Marketing">Marketing</option>
-                                        <option value="Sales">Sales</option>
-                                        <option value="Customer Service">Customer Service</option>
-                                        <option value="Business Analysis">Business Analysis</option>
-                                        <option value="Data Analysis">Data Analysis</option>
-                                        <option value="Financial Analysis">Financial Analysis</option>
-                                        <option value="Human Resources">Human Resources</option>
-                                        <option value="Operations Management">Operations Management</option>
-                                        <option value="Supply Chain Management">Supply Chain Management</option>
-                                    </optgroup>
-                                    <optgroup label="Soft Skills">
-                                        <option value="Communication">Communication</option>
-                                        <option value="Leadership">Leadership</option>
-                                        <option value="Teamwork">Teamwork</option>
-                                        <option value="Problem Solving">Problem Solving</option>
-                                        <option value="Critical Thinking">Critical Thinking</option>
-                                        <option value="Time Management">Time Management</option>
-                                        <option value="Adaptability">Adaptability</option>
-                                        <option value="Creativity">Creativity</option>
-                                        <option value="Emotional Intelligence">Emotional Intelligence</option>
-                                    </optgroup>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+<div class="tab-content" id="skillsTab">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="form-group">
+                <label for="skills" class="form-label required-label">Skills</label>
+                <select class="form-select" id="skills" name="skills[]" multiple required>
+                    <!-- Technical Skills -->
+                    <optgroup label="Technical Skills">
+                        <option value="Python">Python</option>
+                        <option value="Java">Java</option>
+                        <option value="JavaScript">JavaScript</option>
+                        <option value="TypeScript">TypeScript</option>
+                        <option value="C#">C#</option>
+                        <option value="C++">C++</option>
+                        <option value="PHP">PHP</option>
+                        <option value="Ruby">Ruby</option>
+                        <option value="Swift">Swift</option>
+                        <option value="Kotlin">Kotlin</option>
+                        <option value="Go">Go</option>
+                        <option value="Rust">Rust</option>
+                        <option value="Scala">Scala</option>
+                        <option value="React">React</option>
+                        <option value="Angular">Angular</option>
+                        <option value="Vue.js">Vue.js</option>
+                        <option value="Node.js">Node.js</option>
+                        <option value="Django">Django</option>
+                        <option value="Flask">Flask</option>
+                        <option value="Spring Boot">Spring Boot</option>
+                        <option value="Laravel">Laravel</option>
+                        <option value="ASP.NET">ASP.NET</option>
+                        <option value="REST APIs">REST APIs</option>
+                        <option value="GraphQL">GraphQL</option>
+                        <option value="SQL">SQL</option>
+                        <option value="MySQL">MySQL</option>
+                        <option value="PostgreSQL">PostgreSQL</option>
+                        <option value="MongoDB">MongoDB</option>
+                        <option value="Redis">Redis</option>
+                        <option value="Firebase">Firebase</option>
+                        <option value="Oracle">Oracle</option>
+                        <option value="MariaDB">MariaDB</option>
+                        <option value="SQLite">SQLite</option>
+                        <option value="AWS">AWS</option>
+                        <option value="Microsoft Azure">Microsoft Azure</option>
+                        <option value="Google Cloud Platform">Google Cloud Platform</option>
+                        <option value="Docker">Docker</option>
+                        <option value="Kubernetes">Kubernetes</option>
+                        <option value="Jenkins">Jenkins</option>
+                        <option value="Terraform">Terraform</option>
+                        <option value="Ansible">Ansible</option>
+                        <option value="CI/CD">CI/CD</option>
+                        <option value="DevOps">DevOps</option>
+                    </optgroup>
+
+                    <!-- Business Skills -->
+                    <optgroup label="Business Skills">
+                        <option value="Project Management">Project Management</option>
+                        <option value="Product Management">Product Management</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Customer Service">Customer Service</option>
+                        <option value="Business Analysis">Business Analysis</option>
+                        <option value="Data Analysis">Data Analysis</option>
+                        <option value="Financial Analysis">Financial Analysis</option>
+                        <option value="Human Resources">Human Resources</option>
+                        <option value="Operations Management">Operations Management</option>
+                        <option value="Supply Chain Management">Supply Chain Management</option>
+                        <option value="Entrepreneurship">Entrepreneurship</option>
+                        <option value="Business Strategy">Business Strategy</option>
+                    </optgroup>
+
+                    <!-- Frontend Development -->
+                    <optgroup label="Frontend Development">
+                        <option value="HTML">HTML</option>
+                        <option value="CSS">CSS</option>
+                        <option value="jQuery">jQuery</option>
+                        <option value="Bootstrap">Bootstrap</option>
+                        <option value="Sass">Sass</option>
+                        <option value="Tailwind CSS">Tailwind CSS</option>
+                        <option value="Web Design">Web Design</option>
+                    </optgroup>
+
+                    <!-- Backend & APIs -->
+                    <optgroup label="Backend & APIs">
+                        <option value="Node.js">Node.js</option>
+                        <option value="Django">Django</option>
+                        <option value="Flask">Flask</option>
+                        <option value="Spring Boot">Spring Boot</option>
+                        <option value="Laravel">Laravel</option>
+                        <option value="ASP.NET">ASP.NET</option>
+                        <option value="REST APIs">REST APIs</option>
+                        <option value="GraphQL">GraphQL</option>
+                    </optgroup>
+
+                    <!-- Data Science & AI -->
+                    <optgroup label="Data Science & AI">
+                        <option value="Machine Learning">Machine Learning</option>
+                        <option value="Deep Learning">Deep Learning</option>
+                        <option value="Natural Language Processing">Natural Language Processing</option>
+                        <option value="Pandas">Pandas</option>
+                        <option value="NumPy">NumPy</option>
+                        <option value="TensorFlow">TensorFlow</option>
+                        <option value="PyTorch">PyTorch</option>
+                        <option value="Statistics">Statistics</option>
+                        <option value="Big Data">Big Data</option>
+                    </optgroup>
+
+                    <!-- Mobile Development -->
+                    <optgroup label="Mobile Development">
+                        <option value="Android">Android</option>
+                        <option value="iOS">iOS</option>
+                        <option value="Flutter">Flutter</option>
+                        <option value="React Native">React Native</option>
+                        <option value="Ionic">Ionic</option>
+                        <option value="Xamarin">Xamarin</option>
+                    </optgroup>
+
+                    <!-- Game Development -->
+                    <optgroup label="Game Development">
+                        <option value="Unity">Unity</option>
+                        <option value="Unreal Engine">Unreal Engine</option>
+                        <option value="Godot">Godot</option>
+                        <option value="Game Development">Game Development</option>
+                    </optgroup>
+
+                    <!-- Cybersecurity -->
+                    <optgroup label="Cybersecurity">
+                        <option value="Cybersecurity">Cybersecurity</option>
+                        <option value="Network Security">Network Security</option>
+                        <option value="Ethical Hacking">Ethical Hacking</option>
+                        <option value="Penetration Testing">Penetration Testing</option>
+                        <option value="Information Security">Information Security</option>
+                    </optgroup>
+
+                    <!-- QA & Testing -->
+                    <optgroup label="QA & Testing">
+                        <option value="Manual Testing">Manual Testing</option>
+                        <option value="Automation Testing">Automation Testing</option>
+                        <option value="Selenium">Selenium</option>
+                        <option value="JUnit">JUnit</option>
+                        <option value="TestNG">TestNG</option>
+                        <option value="Postman">Postman</option>
+                    </optgroup>
+
+                    <!-- Design & UX/UI -->
+                    <optgroup label="Design & UX/UI">
+                        <option value="Figma">Figma</option>
+                        <option value="Adobe XD">Adobe XD</option>
+                        <option value="Sketch">Sketch</option>
+                        <option value="Photoshop">Photoshop</option>
+                        <option value="Illustrator">Illustrator</option>
+                        <option value="UI/UX Design">UI/UX Design</option>
+                        <option value="Wireframing">Wireframing</option>
+                        <option value="Prototyping">Prototyping</option>
+                    </optgroup>
+
+                    <!-- Soft Skills -->
+                    <optgroup label="Soft Skills">
+                        <option value="Communication">Communication</option>
+                        <option value="Teamwork">Teamwork</option>
+                        <option value="Problem Solving">Problem Solving</option>
+                        <option value="Time Management">Time Management</option>
+                        <option value="Adaptability">Adaptability</option>
+                        <option value="Leadership">Leadership</option>
+                        <option value="Creativity">Creativity</option>
+                        <option value="Critical Thinking">Critical Thinking</option>
+                        <option value="Decision Making">Decision Making</option>
+                        <option value="Negotiation">Negotiation</option>
+                    </optgroup>
+
+                    <!-- Miscellaneous -->
+                    <optgroup label="Miscellaneous">
+                        <option value="Blockchain">Blockchain</option>
+                        <option value="IoT">IoT</option>
+                        <option value="Robotics">Robotics</option>
+                        <option value="Embedded Systems">Embedded Systems</option>
+                        <option value="Agile Methodology">Agile Methodology</option>
+                        <option value="Scrum">Scrum</option>
+                        <option value="Git">Git</option>
+                        <option value="GitHub">GitHub</option>
+                        <option value="Bitbucket">Bitbucket</option>
+                        <option value="Jira">Jira</option>
+                        <option value="Trello">Trello</option>
+                        <option value="Linux">Linux</option>
+                        <option value="Bash Scripting">Bash Scripting</option>
+                        <option value="PowerShell">PowerShell</option>
+                        <option value="Excel">Excel</option>
+                        <option value="Power BI">Power BI</option>
+                        <option value="Tableau">Tableau</option>
+                        <option value="SAP">SAP</option>
+                        <option value="ERP">ERP</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">

@@ -957,36 +957,207 @@ body::after {
                         <div class="form-group">
                             <label for="skills" class="form-label">Required Skills <i class="fas fa-info-circle tooltip-icon" title="Select or type skills required for the position"></i></label>
                             <select class="form-select" id="skills" name="skills" multiple="multiple" required>
-                                <!-- Technical Skills -->
-                                <option value="python" {% if 'python' in job_requirements.skills %}selected{% endif %}>Python</option>
-                                <option value="java" {% if 'java' in job_requirements.skills %}selected{% endif %}>Java</option>
-                                <option value="javascript" {% if 'javascript' in job_requirements.skills %}selected{% endif %}>JavaScript</option>
-                                <option value="react" {% if 'react' in job_requirements.skills %}selected{% endif %}>React</option>
-                                <option value="angular" {% if 'angular' in job_requirements.skills %}selected{% endif %}>Angular</option>
-                                <option value="vue" {% if 'vue' in job_requirements.skills %}selected{% endif %}>Vue.js</option>
-                                <option value="node" {% if 'node' in job_requirements.skills %}selected{% endif %}>Node.js</option>
-                                <option value="django" {% if 'django' in job_requirements.skills %}selected{% endif %}>Django</option>
-                                <option value="flask" {% if 'flask' in job_requirements.skills %}selected{% endif %}>Flask</option>
-                                <option value="sql" {% if 'sql' in job_requirements.skills %}selected{% endif %}>SQL</option>
-                                <option value="nosql" {% if 'nosql' in job_requirements.skills %}selected{% endif %}>NoSQL</option>
-                                <option value="aws" {% if 'aws' in job_requirements.skills %}selected{% endif %}>AWS</option>
-                                <option value="docker" {% if 'docker' in job_requirements.skills %}selected{% endif %}>Docker</option>
-                                <option value="kubernetes" {% if 'kubernetes' in job_requirements.skills %}selected{% endif %}>Kubernetes</option>
-                                <option value="devops" {% if 'devops' in job_requirements.skills %}selected{% endif %}>DevOps</option>
-                                
-                                <!-- Business Skills -->
-                                <option value="project_management" {% if 'project_management' in job_requirements.skills %}selected{% endif %}>Project Management</option>
-                                <option value="marketing" {% if 'marketing' in job_requirements.skills %}selected{% endif %}>Marketing</option>
-                                <option value="sales" {% if 'sales' in job_requirements.skills %}selected{% endif %}>Sales</option>
-                                <option value="customer_service" {% if 'customer_service' in job_requirements.skills %}selected{% endif %}>Customer Service</option>
-                                <option value="accounting" {% if 'accounting' in job_requirements.skills %}selected{% endif %}>Accounting</option>
-                                <option value="hr" {% if 'hr' in job_requirements.skills %}selected{% endif %}>Human Resources</option>
-                                <option value="communication" {% if 'communication' in job_requirements.skills %}selected{% endif %}>Communication</option>
-                                <option value="leadership" {% if 'leadership' in job_requirements.skills %}selected{% endif %}>Leadership</option>
-                                <option value="problem_solving" {% if 'problem_solving' in job_requirements.skills %}selected{% endif %}>Problem Solving</option>
-                                <option value="teamwork" {% if 'teamwork' in job_requirements.skills %}selected{% endif %}>Teamwork</option>
-                                <option value="time_management" {% if 'time_management' in job_requirements.skills %}selected{% endif %}>Time Management</option>
-                            </select>
+    <!-- Technical Skills -->
+    <optgroup label="Technical">
+        <option value="python" {% if 'python' in job_requirements.skills %}selected{% endif %}>Python</option>
+        <option value="java" {% if 'java' in job_requirements.skills %}selected{% endif %}>Java</option>
+        <option value="javascript" {% if 'javascript' in job_requirements.skills %}selected{% endif %}>JavaScript</option>
+        <option value="typescript" {% if 'typescript' in job_requirements.skills %}selected{% endif %}>TypeScript</option>
+        <option value="csharp" {% if 'csharp' in job_requirements.skills %}selected{% endif %}>C#</option>
+        <option value="cpp" {% if 'cpp' in job_requirements.skills %}selected{% endif %}>C++</option>
+        <option value="php" {% if 'php' in job_requirements.skills %}selected{% endif %}>PHP</option>
+        <option value="ruby" {% if 'ruby' in job_requirements.skills %}selected{% endif %}>Ruby</option>
+        <option value="swift" {% if 'swift' in job_requirements.skills %}selected{% endif %}>Swift</option>
+        <option value="kotlin" {% if 'kotlin' in job_requirements.skills %}selected{% endif %}>Kotlin</option>
+        <option value="go" {% if 'go' in job_requirements.skills %}selected{% endif %}>Go</option>
+        <option value="rust" {% if 'rust' in job_requirements.skills %}selected{% endif %}>Rust</option>
+        <option value="scala" {% if 'scala' in job_requirements.skills %}selected{% endif %}>Scala</option>
+        <option value="react" {% if 'react' in job_requirements.skills %}selected{% endif %}>React</option>
+        <option value="angular" {% if 'angular' in job_requirements.skills %}selected{% endif %}>Angular</option>
+        <option value="vue" {% if 'vue' in job_requirements.skills %}selected{% endif %}>Vue.js</option>
+        <option value="node" {% if 'node' in job_requirements.skills %}selected{% endif %}>Node.js</option>
+        <option value="django" {% if 'django' in job_requirements.skills %}selected{% endif %}>Django</option>
+        <option value="flask" {% if 'flask' in job_requirements.skills %}selected{% endif %}>Flask</option>
+        <option value="sql" {% if 'sql' in job_requirements.skills %}selected{% endif %}>SQL</option>
+        <option value="nosql" {% if 'nosql' in job_requirements.skills %}selected{% endif %}>NoSQL</option>
+        <option value="aws" {% if 'aws' in job_requirements.skills %}selected{% endif %}>AWS</option>
+        <option value="docker" {% if 'docker' in job_requirements.skills %}selected{% endif %}>Docker</option>
+        <option value="kubernetes" {% if 'kubernetes' in job_requirements.skills %}selected{% endif %}>Kubernetes</option>
+        <option value="devops" {% if 'devops' in job_requirements.skills %}selected{% endif %}>DevOps</option>
+        <option value="springboot" {% if 'springboot' in job_requirements.skills %}selected{% endif %}>Spring Boot</option>
+        <option value="laravel" {% if 'laravel' in job_requirements.skills %}selected{% endif %}>Laravel</option>
+        <option value="aspnet" {% if 'aspnet' in job_requirements.skills %}selected{% endif %}>ASP.NET</option>
+        <option value="rest_apis" {% if 'rest_apis' in job_requirements.skills %}selected{% endif %}>REST APIs</option>
+        <option value="graphql" {% if 'graphql' in job_requirements.skills %}selected{% endif %}>GraphQL</option>
+    </optgroup>
+
+    <!-- Business & Management -->
+    <optgroup label="Business & Management">
+        <option value="project_management" {% if 'project_management' in job_requirements.skills %}selected{% endif %}>Project Management</option>
+        <option value="product_management" {% if 'product_management' in job_requirements.skills %}selected{% endif %}>Product Management</option>
+        <option value="marketing" {% if 'marketing' in job_requirements.skills %}selected{% endif %}>Marketing</option>
+        <option value="sales" {% if 'sales' in job_requirements.skills %}selected{% endif %}>Sales</option>
+        <option value="customer_service" {% if 'customer_service' in job_requirements.skills %}selected{% endif %}>Customer Service</option>
+        <option value="accounting" {% if 'accounting' in job_requirements.skills %}selected{% endif %}>Accounting</option>
+        <option value="hr" {% if 'hr' in job_requirements.skills %}selected{% endif %}>Human Resources</option>
+        <option value="entrepreneurship" {% if 'entrepreneurship' in job_requirements.skills %}selected{% endif %}>Entrepreneurship</option>
+        <option value="business_strategy" {% if 'business_strategy' in job_requirements.skills %}selected{% endif %}>Business Strategy</option>
+        <option value="financial_analysis" {% if 'financial_analysis' in job_requirements.skills %}selected{% endif %}>Financial Analysis</option>
+    </optgroup>
+
+    <!-- Frontend Development -->
+    <optgroup label="Frontend">
+        <option value="react" {% if 'react' in job_requirements.skills %}selected{% endif %}>React</option>
+        <option value="angular" {% if 'angular' in job_requirements.skills %}selected{% endif %}>Angular</option>
+        <option value="vue" {% if 'vue' in job_requirements.skills %}selected{% endif %}>Vue.js</option>
+        <option value="jquery" {% if 'jquery' in job_requirements.skills %}selected{% endif %}>jQuery</option>
+        <option value="bootstrap" {% if 'bootstrap' in job_requirements.skills %}selected{% endif %}>Bootstrap</option>
+        <option value="sass" {% if 'sass' in job_requirements.skills %}selected{% endif %}>Sass</option>
+        <option value="tailwind" {% if 'tailwind' in job_requirements.skills %}selected{% endif %}>Tailwind CSS</option>
+        <option value="html" {% if 'html' in job_requirements.skills %}selected{% endif %}>HTML</option>
+        <option value="css" {% if 'css' in job_requirements.skills %}selected{% endif %}>CSS</option>
+        <option value="web_design" {% if 'web_design' in job_requirements.skills %}selected{% endif %}>Web Design</option>
+    </optgroup>
+
+    <!-- Backend & APIs -->
+    <optgroup label="Backend & APIs">
+        <option value="node" {% if 'node' in job_requirements.skills %}selected{% endif %}>Node.js</option>
+        <option value="django" {% if 'django' in job_requirements.skills %}selected{% endif %}>Django</option>
+        <option value="flask" {% if 'flask' in job_requirements.skills %}selected{% endif %}>Flask</option>
+        <option value="springboot" {% if 'springboot' in job_requirements.skills %}selected{% endif %}>Spring Boot</option>
+        <option value="laravel" {% if 'laravel' in job_requirements.skills %}selected{% endif %}>Laravel</option>
+        <option value="aspnet" {% if 'aspnet' in job_requirements.skills %}selected{% endif %}>ASP.NET</option>
+        <option value="rest_apis" {% if 'rest_apis' in job_requirements.skills %}selected{% endif %}>REST APIs</option>
+        <option value="graphql" {% if 'graphql' in job_requirements.skills %}selected{% endif %}>GraphQL</option>
+    </optgroup>
+
+    <!-- Databases -->
+    <optgroup label="Databases">
+        <option value="sql" {% if 'sql' in job_requirements.skills %}selected{% endif %}>SQL</option>
+        <option value="mysql" {% if 'mysql' in job_requirements.skills %}selected{% endif %}>MySQL</option>
+        <option value="postgresql" {% if 'postgresql' in job_requirements.skills %}selected{% endif %}>PostgreSQL</option>
+        <option value="mongodb" {% if 'mongodb' in job_requirements.skills %}selected{% endif %}>MongoDB</option>
+        <option value="redis" {% if 'redis' in job_requirements.skills %}selected{% endif %}>Redis</option>
+        <option value="firebase" {% if 'firebase' in job_requirements.skills %}selected{% endif %}>Firebase</option>
+        <option value="oracle" {% if 'oracle' in job_requirements.skills %}selected{% endif %}>Oracle</option>
+        <option value="mariadb" {% if 'mariadb' in job_requirements.skills %}selected{% endif %}>MariaDB</option>
+        <option value="sqlite" {% if 'sqlite' in job_requirements.skills %}selected{% endif %}>SQLite</option>
+    </optgroup>
+
+    <!-- Cloud & DevOps -->
+    <optgroup label="Cloud & DevOps">
+        <option value="aws" {% if 'aws' in job_requirements.skills %}selected{% endif %}>AWS</option>
+        <option value="azure" {% if 'azure' in job_requirements.skills %}selected{% endif %}>Microsoft Azure</option>
+        <option value="gcp" {% if 'gcp' in job_requirements.skills %}selected{% endif %}>Google Cloud Platform</option>
+        <option value="docker" {% if 'docker' in job_requirements.skills %}selected{% endif %}>Docker</option>
+        <option value="kubernetes" {% if 'kubernetes' in job_requirements.skills %}selected{% endif %}>Kubernetes</option>
+        <option value="jenkins" {% if 'jenkins' in job_requirements.skills %}selected{% endif %}>Jenkins</option>
+        <option value="terraform" {% if 'terraform' in job_requirements.skills %}selected{% endif %}>Terraform</option>
+        <option value="ansible" {% if 'ansible' in job_requirements.skills %}selected{% endif %}>Ansible</option>
+        <option value="ci_cd" {% if 'ci_cd' in job_requirements.skills %}selected{% endif %}>CI/CD</option>
+        <option value="devops" {% if 'devops' in job_requirements.skills %}selected{% endif %}>DevOps</option>
+    </optgroup>
+
+    <!-- Data Science & AI -->
+    <optgroup label="Data Science & AI">
+        <option value="machine_learning" {% if 'machine_learning' in job_requirements.skills %}selected{% endif %}>Machine Learning</option>
+        <option value="deep_learning" {% if 'deep_learning' in job_requirements.skills %}selected{% endif %}>Deep Learning</option>
+        <option value="data_analysis" {% if 'data_analysis' in job_requirements.skills %}selected{% endif %}>Data Analysis</option>
+        <option value="pandas" {% if 'pandas' in job_requirements.skills %}selected{% endif %}>Pandas</option>
+        <option value="numpy" {% if 'numpy' in job_requirements.skills %}selected{% endif %}>NumPy</option>
+        <option value="tensorflow" {% if 'tensorflow' in job_requirements.skills %}selected{% endif %}>TensorFlow</option>
+        <option value="pytorch" {% if 'pytorch' in job_requirements.skills %}selected{% endif %}>PyTorch</option>
+        <option value="nlp" {% if 'nlp' in job_requirements.skills %}selected{% endif %}>Natural Language Processing (NLP)</option>
+        <option value="statistics" {% if 'statistics' in job_requirements.skills %}selected{% endif %}>Statistics</option>
+        <option value="big_data" {% if 'big_data' in job_requirements.skills %}selected{% endif %}>Big Data</option>
+    </optgroup>
+
+    <!-- Mobile Development -->
+    <optgroup label="Mobile Development">
+        <option value="android" {% if 'android' in job_requirements.skills %}selected{% endif %}>Android</option>
+        <option value="ios" {% if 'ios' in job_requirements.skills %}selected{% endif %}>iOS</option>
+        <option value="flutter" {% if 'flutter' in job_requirements.skills %}selected{% endif %}>Flutter</option>
+        <option value="react_native" {% if 'react_native' in job_requirements.skills %}selected{% endif %}>React Native</option>
+        <option value="ionic" {% if 'ionic' in job_requirements.skills %}selected{% endif %}>Ionic</option>
+        <option value="xamarin" {% if 'xamarin' in job_requirements.skills %}selected{% endif %}>Xamarin</option>
+    </optgroup>
+
+    <!-- Game Development -->
+    <optgroup label="Game Development">
+        <option value="unity" {% if 'unity' in job_requirements.skills %}selected{% endif %}>Unity</option>
+        <option value="unreal_engine" {% if 'unreal_engine' in job_requirements.skills %}selected{% endif %}>Unreal Engine</option>
+        <option value="godot" {% if 'godot' in job_requirements.skills %}selected{% endif %}>Godot</option>
+        <option value="game_development" {% if 'game_development' in job_requirements.skills %}selected{% endif %}>Game Development</option>
+    </optgroup>
+
+    <!-- Design & UX/UI -->
+    <optgroup label="Design & UX/UI">
+        <option value="figma" {% if 'figma' in job_requirements.skills %}selected{% endif %}>Figma</option>
+        <option value="adobe_xd" {% if 'adobe_xd' in job_requirements.skills %}selected{% endif %}>Adobe XD</option>
+        <option value="sketch" {% if 'sketch' in job_requirements.skills %}selected{% endif %}>Sketch</option>
+        <option value="photoshop" {% if 'photoshop' in job_requirements.skills %}selected{% endif %}>Photoshop</option>
+        <option value="illustrator" {% if 'illustrator' in job_requirements.skills %}selected{% endif %}>Illustrator</option>
+        <option value="ui_ux" {% if 'ui_ux' in job_requirements.skills %}selected{% endif %}>UI/UX Design</option>
+        <option value="wireframing" {% if 'wireframing' in job_requirements.skills %}selected{% endif %}>Wireframing</option>
+        <option value="prototyping" {% if 'prototyping' in job_requirements.skills %}selected{% endif %}>Prototyping</option>
+    </optgroup>
+
+    <!-- Soft Skills -->
+    <optgroup label="Soft Skills">
+        <option value="communication" {% if 'communication' in job_requirements.skills %}selected{% endif %}>Communication</option>
+        <option value="teamwork" {% if 'teamwork' in job_requirements.skills %}selected{% endif %}>Teamwork</option>
+        <option value="problem_solving" {% if 'problem_solving' in job_requirements.skills %}selected{% endif %}>Problem Solving</option>
+        <option value="time_management" {% if 'time_management' in job_requirements.skills %}selected{% endif %}>Time Management</option>
+        <option value="adaptability" {% if 'adaptability' in job_requirements.skills %}selected{% endif %}>Adaptability</option>
+        <option value="leadership" {% if 'leadership' in job_requirements.skills %}selected{% endif %}>Leadership</option>
+        <option value="creativity" {% if 'creativity' in job_requirements.skills %}selected{% endif %}>Creativity</option>
+        <option value="critical_thinking" {% if 'critical_thinking' in job_requirements.skills %}selected{% endif %}>Critical Thinking</option>
+        <option value="decision_making" {% if 'decision_making' in job_requirements.skills %}selected{% endif %}>Decision Making</option>
+        <option value="negotiation" {% if 'negotiation' in job_requirements.skills %}selected{% endif %}>Negotiation</option>
+    </optgroup>
+
+    <!-- Cybersecurity -->
+    <optgroup label="Cybersecurity">
+        <option value="cybersecurity" {% if 'cybersecurity' in job_requirements.skills %}selected{% endif %}>Cybersecurity</option>
+        <option value="network_security" {% if 'network_security' in job_requirements.skills %}selected{% endif %}>Network Security</option>
+        <option value="ethical_hacking" {% if 'ethical_hacking' in job_requirements.skills %}selected{% endif %}>Ethical Hacking</option>
+        <option value="penetration_testing" {% if 'penetration_testing' in job_requirements.skills %}selected{% endif %}>Penetration Testing</option>
+        <option value="information_security" {% if 'information_security' in job_requirements.skills %}selected{% endif %}>Information Security</option>
+    </optgroup>
+
+    <!-- QA & Testing -->
+    <optgroup label="QA & Testing">
+        <option value="manual_testing" {% if 'manual_testing' in job_requirements.skills %}selected{% endif %}>Manual Testing</option>
+        <option value="automation_testing" {% if 'automation_testing' in job_requirements.skills %}selected{% endif %}>Automation Testing</option>
+        <option value="selenium" {% if 'selenium' in job_requirements.skills %}selected{% endif %}>Selenium</option>
+        <option value="junit" {% if 'junit' in job_requirements.skills %}selected{% endif %}>JUnit</option>
+        <option value="testng" {% if 'testng' in job_requirements.skills %}selected{% endif %}>TestNG</option>
+        <option value="postman" {% if 'postman' in job_requirements.skills %}selected{% endif %}>Postman</option>
+    </optgroup>
+
+    <!-- Miscellaneous -->
+    <optgroup label="Miscellaneous">
+        <option value="blockchain" {% if 'blockchain' in job_requirements.skills %}selected{% endif %}>Blockchain</option>
+        <option value="iot" {% if 'iot' in job_requirements.skills %}selected{% endif %}>IoT</option>
+        <option value="robotics" {% if 'robotics' in job_requirements.skills %}selected{% endif %}>Robotics</option>
+        <option value="embedded_systems" {% if 'embedded_systems' in job_requirements.skills %}selected{% endif %}>Embedded Systems</option>
+        <option value="agile" {% if 'agile' in job_requirements.skills %}selected{% endif %}>Agile Methodology</option>
+        <option value="scrum" {% if 'scrum' in job_requirements.skills %}selected{% endif %}>Scrum</option>
+        <option value="git" {% if 'git' in job_requirements.skills %}selected{% endif %}>Git</option>
+        <option value="github" {% if 'github' in job_requirements.skills %}selected{% endif %}>GitHub</option>
+        <option value="bitbucket" {% if 'bitbucket' in job_requirements.skills %}selected{% endif %}>Bitbucket</option>
+        <option value="jira" {% if 'jira' in job_requirements.skills %}selected{% endif %}>Jira</option>
+        <option value="trello" {% if 'trello' in job_requirements.skills %}selected{% endif %}>Trello</option>
+        <option value="linux" {% if 'linux' in job_requirements.skills %}selected{% endif %}>Linux</option>
+        <option value="bash_scripting" {% if 'bash_scripting' in job_requirements.skills %}selected{% endif %}>Bash Scripting</option>
+        <option value="powershell" {% if 'powershell' in job_requirements.skills %}selected{% endif %}>PowerShell</option>
+        <option value="excel" {% if 'excel' in job_requirements.skills %}selected{% endif %}>Excel</option>
+        <option value="power_bi" {% if 'power_bi' in job_requirements.skills %}selected{% endif %}>Power BI</option>
+        <option value="tableau" {% if 'tableau' in job_requirements.skills %}selected{% endif %}>Tableau</option>
+        <option value="sap" {% if 'sap' in job_requirements.skills %}selected{% endif %}>SAP</option>
+        <option value="erp" {% if 'erp' in job_requirements.skills %}selected{% endif %}>ERP</option>
+    </optgroup>
+</select>
                         </div>
                         
                         <div class="form-group experience-slider">
