@@ -444,11 +444,11 @@ def delete_user(request, type, id):
 def get_employee_details(request, employee_id):
     try:
         employee = Employee.objects.get(id=employee_id)
+        full_name = employee.full_name or employee.username
         data = {
             'username': employee.username,
             'email': employee.email,
-            'first_name': employee.first_name,
-            'last_name': employee.last_name,
+            'full_name': full_name,
             'phone': employee.phone,
             'location': employee.location,
             'job_title': employee.job_title,

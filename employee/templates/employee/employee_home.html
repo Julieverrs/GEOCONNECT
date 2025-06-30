@@ -3,6 +3,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/employee_home.css' %}">
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
       crossorigin=""/>
@@ -133,62 +134,19 @@
                             <i class="fas fa-search me-2"></i>Get Recommendations
                         </button>
                         <a href="#jobs" class="btn btn-outline-light btn-lg action-button scroll-btn">
-                            <i class="fas fa-briefcase me-2"></i>View Jobs
-                        </a>
+    <i class="fas fa-briefcase me-2"></i>View Jobs
+</a>
+
+<a href="#" class="btn btn-outline-light btn-lg action-button" data-bs-toggle="modal" data-bs-target="#jobMapModal">
+    <i class="fas fa-map-marker-alt me-2"></i>View Job Map
+</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="stats-container">
-        <div class="container">
-            <div class="dashboard-stats">
-                <div class="row">
-                    <div class="col-md-6 col-lg-3 mb-4">
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-file-alt"></i>
-                            </div>
-                            <h3>Applications</h3>
-                            <p class="stat-number">12</p>
-                            <p class="stat-label">Total Applications</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3 mb-4">
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
-                            <h3>Interviews</h3>
-                            <p class="stat-number">3</p>
-                            <p class="stat-label">Scheduled</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3 mb-4">
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-bookmark"></i>
-                            </div>
-                            <h3>Saved Jobs</h3>
-                            <p class="stat-number">8</p>
-                            <p class="stat-label">Bookmarked</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3 mb-4">
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-eye"></i>
-                            </div>
-                            <h3>Profile Views</h3>
-                            <p class="stat-number">45</p>
-                            <p class="stat-label">Last 30 days</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+   
     
     <div class="scroll-indicator">
         <a href="#jobs" class="scroll-down">
@@ -908,6 +866,30 @@
     </div>
 </div>
 
+<!-- Leaflet Map Modal -->
+<div class="modal fade" id="jobMapModal" tabindex="-1" aria-labelledby="jobMapModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg border-0">
+      <div class="modal-header bg-primary text-white rounded-top">
+        <h5 class="modal-title" id="jobMapModalLabel">
+          <i class="fas fa-map-marker-alt me-2"></i>Job Locations Map
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <!-- Leaflet Map Container -->
+        <div id="jobMap" style="height: 600px; width: 100%; border-radius: 0 0 1rem 1rem;"></div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <small class="text-muted">Powered by OpenStreetMap</small>
+        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 <style>
 /* Enhanced Profile Modal Styles */
 .enhanced-profile-modal {
@@ -1230,6 +1212,12 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
+#jobMap {
+    min-height: 500px;
+    height: 600px;
+    width: 100%;
+    z-index: 1;
+}
 
 /* Responsive adjustments */
 @media (max-width: 576px) {
@@ -1442,6 +1430,50 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const jobMapModal = document.getElementById('jobMapModal');
+    let mapInitialized = false;
+
+    // Sample job data from Django (you'll replace this with real data later)
+    const jobLocations = [
+        {% for job in jobs %}
+            {
+                title: "{{ job.title }}",
+                company: "{{ job.employer.company_name }}",
+                location: "{{ job.location }}",
+                lat: {{ job.latitude|default:"null" }},
+                lng: {{ job.longitude|default:"null" }}
+            },
+        {% endfor %}
+    ];
+
+    jobMapModal.addEventListener('shown.bs.modal', function () {
+        if (!mapInitialized) {
+            // Initialize map after modal is visible
+            const map = L.map('jobMap').setView([12.8797, 121.7740], 5); // Philippines center
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add markers for each job
+            jobLocations.forEach(job => {
+                if (job.lat && job.lng) {
+                    const marker = L.marker([job.lat, job.lng]).addTo(map);
+                    marker.bindPopup(`
+                        <strong>${job.title}</strong><br>
+                        <small>${job.company} • ${job.location}</small>
+                    `);
+                }
+            });
+
+            map.invalidateSize();
+            mapInitialized = true;
+        }
+    });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded and parsed');
     
@@ -3124,191 +3156,7 @@ document.addEventListener('DOMContentLoaded', function() {
         crossorigin=""></script>
 
 <script>
-// Job Map Functionality
-document.addEventListener('DOMContentLoaded', function() {
-    // Global variable to store map instance
-    let jobMapInstance = null;
-    
-    // Initialize map when modal is shown
-    const jobMapModal = document.getElementById('jobMapModal');
-    if (jobMapModal) {
-        // Create a Bootstrap modal instance
-        const modalInstance = new bootstrap.Modal(jobMapModal);
-        
-        // Add event listener for when the modal is shown
-        jobMapModal.addEventListener('shown.bs.modal', function () {
-            // Use a longer delay to ensure the modal is fully rendered
-            setTimeout(initializeJobMap, 500);
-        });
-        
-        // Add event listener for when the modal is hidden
-        jobMapModal.addEventListener('hidden.bs.modal', function () {
-            // Clean up the map instance when the modal is closed
-            if (jobMapInstance) {
-                jobMapInstance.remove();
-                jobMapInstance = null;
-            }
-        });
-    }
-    
-    // Initialize the map
-    function initializeJobMap() {
-        console.log('Initializing job map...');
-        
-        // Get the map container
-        const mapContainer = document.getElementById('jobMap');
-        
-        // Check if the map container exists
-        if (!mapContainer) {
-            console.error('Map container not found!');
-            return;
-        }
-        
-        // Ensure the container has dimensions
-        mapContainer.style.height = '500px';
-        mapContainer.style.width = '100%';
-        
-        // Create a placeholder element and replace the original container
-        // This helps avoid issues with Leaflet initialization
-        const mapId = 'jobMap-' + Date.now();
-        const newMapContainer = document.createElement('div');
-        newMapContainer.id = mapId;
-        newMapContainer.style.height = '500px';
-        newMapContainer.style.width = '100%';
-        
-        // Replace the original container with the new one
-        mapContainer.innerHTML = '';
-        mapContainer.appendChild(newMapContainer);
-        
-        // Create the map with the new container
-        try {
-            // Create map
-            jobMapInstance = L.map(mapId).setView([13.4125, 121.1817], 7);
-            
-            // Add OpenStreetMap tile layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(jobMapInstance);
-            
-            // Force a resize event to ensure the map renders correctly
-            setTimeout(function() {
-                jobMapInstance.invalidateSize(true);
-            }, 200);
-            
-            // Get all job cards to extract location data
-            const jobCards = document.querySelectorAll('.job-card');
-            const markers = [];
-            const bounds = L.latLngBounds();
-            
-            // Function to get coordinates from location name
-            function getCoordinates(locationName) {
-                // This is a simplified geocoding function
-                // In a real application, you would use a proper geocoding service
-                
-                // For demo purposes, we'll use a simple mapping of common locations
-                const locationMap = {
-                    'Calapan City': [13.4125, 121.1817],
-                    'Puerto Galera': [13.5000, 120.9542],
-                    'Naujan': [13.3167, 121.3000],
-                    'Bansud': [12.8333, 121.3667],
-                    'Bongabong': [12.7167, 121.3667],
-                    'Bulalacao': [12.3333, 121.3500],
-                    'Gloria': [12.9833, 121.4667],
-                    'Mansalay': [12.5167, 121.4333],
-                    'Pinamalayan': [13.0000, 121.5167],
-                    'Pola': [13.1433, 121.2414],
-                    'Roxas': [12.5833, 121.5000],
-                    'San Teodoro': [13.4333, 121.0167],
-                    'Socorro': [13.0583, 121.4083],
-                    'Victoria': [13.1500, 121.3333],
-                    'Oriental Mindoro': [13.0565, 121.4069],
-                    'Manila': [14.5995, 120.9842],
-                    'Quezon City': [14.6760, 121.0437],
-                    'Makati': [14.5547, 121.0244],
-                    'Taguig': [14.5176, 121.0509],
-                    'Pasig': [14.5764, 121.0851],
-                    'Remote': [13.0565, 121.4069], // Default to Oriental Mindoro for Remote jobs
-                    'Hybrid': [13.0565, 121.4069]  // Default to Oriental Mindoro for Hybrid jobs
-                };
-                
-                // Check if we have coordinates for this location
-                for (const [key, coords] of Object.entries(locationMap)) {
-                    if (locationName.includes(key)) {
-                        return coords;
-                    }
-                }
-                
-                // Default coordinates (Oriental Mindoro) if location not found
-                return [13.0565, 121.4069];
-            }
-            
-            // Process each job card and add markers
-            jobCards.forEach(function(card) {
-                try {
-                    const title = card.querySelector('.job-title').textContent;
-                    const company = card.querySelector('.company-name').textContent.trim();
-                    const locationElement = card.querySelector('.job-detail-item:first-child span');
-                    
-                    if (locationElement) {
-                        const location = locationElement.textContent.trim();
-                        const jobType = card.querySelector('.badge.bg-primary').textContent;
-                        const workSetup = card.querySelector('.badge.bg-info').textContent;
-                        
-                        // Get coordinates for the location
-                        const coords = getCoordinates(location);
-                        
-                        if (coords) {
-                            // Create marker
-                            const marker = L.marker(coords).addTo(jobMapInstance);
-                            
-                            // Create popup content
-                            const popupContent = `
-                                <div class="map-popup">
-                                    <h5>${title}</h5>
-                                    <p><strong>${company}</strong></p>
-                                    <p><i class="fas fa-map-marker-alt"></i> ${location}</p>
-                                    <div class="popup-badges">
-                                        <span class="badge bg-primary">${jobType}</span>
-                                        <span class="badge bg-info">${workSetup}</span>
-                                    </div>
-                                </div>
-                            `;
-                            
-                            // Add popup to marker
-                            marker.bindPopup(popupContent);
-                            
-                            // Add to bounds for auto-zoom
-                            bounds.extend(coords);
-                            markers.push(marker);
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error processing job for map:', error);
-                }
-            });
-            
-            // Fit map to bounds if we have markers
-            if (markers.length > 0) {
-                jobMapInstance.fitBounds(bounds, { padding: [50, 50] });
-            }
-            
-        } catch (error) {
-            console.error('Error initializing map:', error);
-        }
-    }
-    
-    // Add click event listener to the map button
-    const mapButton = document.getElementById('mapJobs');
-    if (mapButton) {
-        mapButton.addEventListener('click', function() {
-            // Clean up any existing map instance
-            if (jobMapInstance) {
-                jobMapInstance.remove();
-                jobMapInstance = null;
-            }
-        });
-    }
-});
+
 </script>
 
 <style>

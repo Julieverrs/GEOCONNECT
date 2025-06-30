@@ -1056,9 +1056,9 @@ async function viewEmployeeDetails(employeeId) {
                 <div class="detail-group" style="margin-bottom: 0.75rem;">
                     <label>Full Name</label>
                     <p class="detail-value" style="padding: 0.4rem 0.6rem;">
-                        <i class="fas fa-id-card mr-2" style="color: var(--employee-primary-light);"></i>
-                        ${data.first_name} ${data.last_name}
-                    </p>
+    <i class="fas fa-id-card mr-2" style="color: var(--employee-primary-light);"></i>
+    ${data.full_name}
+</p>
                 </div>
                 <div class="detail-group" style="margin-bottom: 0.75rem;">
                     <label>Email</label>
@@ -1156,7 +1156,7 @@ async function approveEmployee(employeeId) {
         if (approvedTableBody) {
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
-                <td>${data.employee.first_name} ${data.employee.last_name}</td>
+                <td>${data.employee.full_name || data.employee.username}</td>
                 <td>${data.employee.job_title}</td>
                 <td>${new Date().toLocaleDateString()}</td>
                 <td>
