@@ -293,22 +293,46 @@
 </div>
     <!-- Job Map Modal -->
 <div class="modal fade" id="jobMapModal" tabindex="-1" aria-labelledby="jobMapModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="jobMapModalLabel">Job Locations Map</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
+            <div class="modal-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <h5 class="modal-title mb-0" id="jobMapModalLabel">
+        <i class="fas fa-map-marker-alt me-2"></i>Job Locations Map
+    </h5>
+
+    <!-- Location Search + Radius Filter + Reset -->
+    <div class="d-flex align-items-center gap-2 w-100 mt-2 mt-md-0" style="max-width: 400px;">
+        <input type="text" id="locationSearchInput" class="form-control form-control-sm" placeholder="Enter city, region, or country..." />
+        
+        <select id="radiusFilter" class="form-select form-select-sm" style="width: auto;">
+            <option value="10">Within 10 km</option>
+            <option value="50" selected>Within 50 km</option>
+            <option value="100">Within 100 km</option>
+        </select>
+
+        <!-- Reset Button -->
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="resetMapBtn" title="Reset map view">
+            <i class="fas fa-undo me-1"></i>Reset
+        </button>
+
+        <button type="button" class="btn btn-primary btn-sm" id="searchLocationBtn">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+</div>
+
             <div class="modal-body">
-                <div id="jobMap" style="height: 500px; width: 100%; min-height: 500px; position: relative;"></div>
+                <!-- Leaflet Map Container -->
+                <div id="jobMap" style="height: 600px; width: 100%;"></div>
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <small class="text-muted">Powered by OpenStreetMap</small>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
-</section>
 
 <!-- Contact Section -->
 <section id="contact" class="section contact-us-section">
@@ -866,29 +890,6 @@
     </div>
 </div>
 
-<!-- Leaflet Map Modal -->
-<div class="modal fade" id="jobMapModal" tabindex="-1" aria-labelledby="jobMapModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content rounded-4 shadow-lg border-0">
-      <div class="modal-header bg-primary text-white rounded-top">
-        <h5 class="modal-title" id="jobMapModalLabel">
-          <i class="fas fa-map-marker-alt me-2"></i>Job Locations Map
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body p-0">
-        <!-- Leaflet Map Container -->
-        <div id="jobMap" style="height: 600px; width: 100%; border-radius: 0 0 1rem 1rem;"></div>
-      </div>
-      <div class="modal-footer justify-content-between">
-        <small class="text-muted">Powered by OpenStreetMap</small>
-        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
 
 <style>
 /* Enhanced Profile Modal Styles */
@@ -1434,43 +1435,112 @@ document.addEventListener('DOMContentLoaded', function () {
     const jobMapModal = document.getElementById('jobMapModal');
     let mapInitialized = false;
 
-    // Sample job data from Django (you'll replace this with real data later)
-    const jobLocations = [
-        {% for job in jobs %}
-            {
-                title: "{{ job.title }}",
-                company: "{{ job.employer.company_name }}",
-                location: "{{ job.location }}",
-                lat: {{ job.latitude|default:"null" }},
-                lng: {{ job.longitude|default:"null" }}
-            },
-        {% endfor %}
-    ];
-
+    // Initialize map when modal opens
     jobMapModal.addEventListener('shown.bs.modal', function () {
         if (!mapInitialized) {
-            // Initialize map after modal is visible
-            const map = L.map('jobMap').setView([12.8797, 121.7740], 5); // Philippines center
-
-            // Add OpenStreetMap tiles
+            const map = L.map('jobMap').setView([12.8797, 121.7740], 5); // Default to Philippines
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
 
-            // Add markers for each job
-            jobLocations.forEach(job => {
+            window.jobMap = map;
+            window.jobMarkers = [];
+
+            // Load all job markers from template
+            const jobData = [
+                {% for job in jobs %}
+                    {
+                        title: "{{ job.title }}",
+                        company: "{{ job.employer.company_name }}",
+                        location: "{{ job.location }}",
+                        lat: {{ job.latitude|default:"null" }},
+                        lng: {{ job.longitude|default:"null" }}
+                    },
+                {% endfor %}
+            ];
+
+            jobData.forEach(job => {
                 if (job.lat && job.lng) {
                     const marker = L.marker([job.lat, job.lng]).addTo(map);
-                    marker.bindPopup(`
-                        <strong>${job.title}</strong><br>
-                        <small>${job.company} • ${job.location}</small>
-                    `);
+                    marker.bindPopup(`<strong>${job.title}</strong><br><small>${job.company} • ${job.location}</small>`);
+                    window.jobMarkers.push(marker);
                 }
             });
 
             map.invalidateSize();
             mapInitialized = true;
         }
+    });
+
+    // Handle location search
+    document.getElementById('searchLocationBtn')?.addEventListener('click', function () {
+        const query = document.getElementById('locationSearchInput').value.trim();
+        if (!query) return alert("Please enter a location to search");
+
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    const result = data[0];
+                    const lat = parseFloat(result.lat);
+                    const lon = parseFloat(result.lon);
+
+                    const map = window.jobMap;
+                    map.setView([lat, lon], 13);
+
+                    // Remove previous circle
+                    if (window.userLocationCircle) {
+                        window.userLocationCircle.removeFrom(map);
+                    }
+
+                    const radius = parseInt(document.getElementById('radiusFilter').value) * 1000;
+                    window.userLocationCircle = L.circle([lat, lon], {
+                        radius: radius,
+                        color: "#3388ff",
+                        fill: true,
+                        fillOpacity: 0.15
+                    }).addTo(map);
+
+                    map.fitBounds(window.userLocationCircle.getBounds());
+                } else {
+                    alert("No results found for this location.");
+                }
+            })
+            .catch(() => {
+                alert("Error searching for location. Please try again.");
+            });
+    });
+
+    // Handle radius change
+    document.getElementById('radiusFilter')?.addEventListener('change', function () {
+        const map = window.jobMap;
+        if (window.userLocationCircle) {
+            const center = window.userLocationCircle.getLatLng();
+            const radius = parseInt(this.value) * 1000;
+            window.userLocationCircle.setRadius(radius);
+            map.fitBounds(window.userLocationCircle.getBounds());
+        }
+    });
+
+    // Handle reset button click
+    document.getElementById('resetMapBtn')?.addEventListener('click', function () {
+        const map = window.jobMap;
+        const input = document.getElementById('locationSearchInput');
+
+        // Clear search input
+        input.value = '';
+
+        // Reset map view to default
+        map.setView([12.8797, 121.7740], 5); // Philippines center
+
+        // Remove circle if exists
+        if (window.userLocationCircle) {
+            window.userLocationCircle.removeFrom(map);
+            window.userLocationCircle = null;
+        }
+
+        // Show all job markers again (if you're hiding some based on radius)
+        window.jobMarkers.forEach(marker => marker.addTo(map));
     });
 });
 
