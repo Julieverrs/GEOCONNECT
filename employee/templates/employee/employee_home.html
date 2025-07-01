@@ -3,6 +3,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/employee_home.css' %}">
+<link rel="stylesheet" href="{% static 'css/map_styles.css' %}">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
@@ -198,7 +199,7 @@
         <div class="row jobs-container">
             {% with total_jobs=jobs.count %}
             {% for job in jobs %}
-            <div class="col-md-6 col-lg-4 mb-4">
+            <div class="col-md-6 col-lg-4 mb-4" data-job-id="{{ job.id }}">
                 <!-- Job Card Structure - Update the structure to improve visibility -->
 <div class="job-card">
     <!-- Company Logo/Badge -->
@@ -295,30 +296,65 @@
 <div class="modal fade" id="jobMapModal" tabindex="-1" aria-labelledby="jobMapModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <h5 class="modal-title mb-0" id="jobMapModalLabel">
-        <i class="fas fa-map-marker-alt me-2"></i>Job Locations Map
-    </h5>
+            <!-- Modal Header -->
+<div class="modal-header d-flex align-items-center justify-content-between flex-wrap gap-3 p-3 ps-4 pe-4 border-bottom-0 bg-gradient-primary">
+    <div class="d-flex align-items-center gap-2">
+        <div class="me-2" style="font-size: 1.25rem;">
+            <i class="fas fa-map-marker-alt text-white"></i>
+        </div>
+        <h5 class="modal-title mb-0 text-white" id="jobMapModalLabel">
+            Job Locations Map
+        </h5>
+    </div>
 
-    <!-- Location Search + Radius Filter + Reset -->
-    <div class="d-flex align-items-center gap-2 w-100 mt-2 mt-md-0" style="max-width: 400px;">
-        <input type="text" id="locationSearchInput" class="form-control form-control-sm" placeholder="Enter city, region, or country..." />
-        
-        <select id="radiusFilter" class="form-select form-select-sm" style="width: auto;">
-            <option value="10">Within 10 km</option>
-            <option value="50" selected>Within 50 km</option>
-            <option value="100">Within 100 km</option>
+    <!-- Location Search + Radius Filter -->
+    <div class="d-flex align-items-center gap-2 w-100 mt-2 mt-md-0" style="max-width: 480px; flex: 1 1 100%;">
+        <!-- Location Search Input -->
+        <div class="position-relative flex-grow-1" style="min-width: 160px;">
+            <input type="text"
+                   id="locationSearchInput"
+                   class="form-control form-control-sm ps-4"
+                   placeholder="Search location..."
+                   aria-label="Search location" />
+            <i class="fas fa-map-marker-alt position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"
+               style="pointer-events: none;"></i>
+        </div>
+
+        <!-- Radius Filter Dropdown -->
+        <select id="radiusFilter" class="form-select form-select-sm" style="min-width: 120px;">
+            <option value="0.5">500 meters</option>
+            <option value="0.8">800 meters</option>
+            <option value="1">1 km</option>
+            <option value="2">2 km</option>
+            <option value="3">3 km</option>
+            <option value="5" selected>5 km</option>
         </select>
 
         <!-- Reset Button -->
-        <button type="button" class="btn btn-outline-secondary btn-sm" id="resetMapBtn" title="Reset map view">
-            <i class="fas fa-undo me-1"></i>Reset
+        <button type="button"
+                class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                id="resetMapBtn"
+                title="Reset map view"
+                style="width: 38px; height: 38px;">
+            <i class="fas fa-undo fs-6"></i>
         </button>
 
-        <button type="button" class="btn btn-primary btn-sm" id="searchLocationBtn">
-            <i class="fas fa-search"></i>
+        <!-- Search Button -->
+        <button type="button"
+                class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                id="searchLocationBtn"
+                title="Search location"
+                style="width: 38px; height: 38px;">
+            <i class="fas fa-search fs-6 text-primary"></i>
         </button>
     </div>
+
+    
+
+<!-- Hint Text -->
+<small class="job-map-hint text-center mt-2 mb-3 d-block">
+    Type a location, adjust radius, then click search.
+</small>
 </div>
 
             <div class="modal-body">
@@ -892,6 +928,7 @@
 
 
 <style>
+    
 /* Enhanced Profile Modal Styles */
 .enhanced-profile-modal {
   max-width: 600px;
@@ -1430,7 +1467,32 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+
 <script>
+
+   function scrollToJobCard(jobId) {
+    const jobCard = document.querySelector(`[data-job-id="${jobId}"]`);
+    if (!jobCard) {
+        console.warn(`Job card with ID ${jobId} not found.`);
+        alert("Job not found on this page.");
+        return;
+    }
+
+    // Close modal
+    const mapModal = bootstrap.Modal.getInstance(document.getElementById('jobMapModal'));
+    if (mapModal) mapModal.hide();
+
+    // Scroll to job card
+    jobCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Highlight temporarily
+    jobCard.style.transition = 'background-color 0.5s ease';
+    jobCard.style.backgroundColor = '#e0f7ff';
+    setTimeout(() => {
+        jobCard.style.backgroundColor = '';
+    }, 2000);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const jobMapModal = document.getElementById('jobMapModal');
     let mapInitialized = false;
@@ -1448,24 +1510,54 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Load all job markers from template
             const jobData = [
-                {% for job in jobs %}
-                    {
-                        title: "{{ job.title }}",
-                        company: "{{ job.employer.company_name }}",
-                        location: "{{ job.location }}",
-                        lat: {{ job.latitude|default:"null" }},
-                        lng: {{ job.longitude|default:"null" }}
-                    },
-                {% endfor %}
-            ];
+        {% for job in jobs %}
+            {
+                id: "{{ job.id }}",
+                title: "{{ job.title }}",
+                company: "{{ job.employer.company_name }}",
+                location: "{{ job.location }}",
+                job_type: "{{ job.job_type }}",
+                work_setup: "{{ job.work_setup }}",
+                salary_range: "{{ job.salary_range }}",
+                experience_level: "{{ job.experience_level }}",
+                posted_date: "{{ job.created_at|date:'Y-m-d' }}",
+                lat: {{ job.latitude|default:"null" }},
+                lng: {{ job.longitude|default:"null" }}
+            },
+        {% endfor %}
+    ];
 
-            jobData.forEach(job => {
-                if (job.lat && job.lng) {
-                    const marker = L.marker([job.lat, job.lng]).addTo(map);
-                    marker.bindPopup(`<strong>${job.title}</strong><br><small>${job.company} • ${job.location}</small>`);
-                    window.jobMarkers.push(marker);
-                }
-            });
+            const jobMarkers = [];
+jobData.forEach(job => {
+    if (job.lat && job.lng) {
+        const marker = L.marker([job.lat, job.lng]).addTo(map);
+        marker.bindPopup(`
+            <div class="map-popup">
+                <h5 class="mb-1">${job.title}</h5>
+                <p class="mb-2 text-muted small">${job.company}</p>
+                <div class="popup-badges mb-2">
+                    <span class="badge bg-primary">${job.job_type}</span>
+                    <span class="badge bg-info">${job.work_setup}</span>
+                    <span class="badge bg-success">${job.salary_range}</span>
+                </div>
+                <div class="popup-details mt-2">
+                    <p class="mb-1"><i class="fas fa-map-marker-alt me-1"></i><strong>Location:</strong> ${job.location}</p>
+                    <p class="mb-1"><i class="fas fa-briefcase me-1"></i><strong>Experience:</strong> ${job.experience_level || 'Any'}
+                    <p class="mb-0"><i class="far fa-calendar-alt me-1"></i><strong>Posted:</strong> ${new Date(job.posted_date).toLocaleDateString() || 'N/A'}
+                </div>
+                <div class="mt-3 d-flex justify-content-end">
+                    <button class="btn btn-sm btn-primary check-job-btn" onclick="scrollToJobCard('${job.id}')">
+                        <i class="fas fa-arrow-right me-1"></i> Check Job
+                    </button>
+                </div>
+            </div>
+        `, {
+            maxWidth: 300,
+            className: 'map-popup'
+        });
+        window.jobMarkers.push(marker);
+    }
+});
 
             map.invalidateSize();
             mapInitialized = true;
@@ -1474,53 +1566,57 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Handle location search
     document.getElementById('searchLocationBtn')?.addEventListener('click', function () {
-        const query = document.getElementById('locationSearchInput').value.trim();
-        if (!query) return alert("Please enter a location to search");
+    const query = document.getElementById('locationSearchInput').value.trim();
+    if (!query) return alert("Please enter a location to search");
 
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data && data.length > 0) {
-                    const result = data[0];
-                    const lat = parseFloat(result.lat);
-                    const lon = parseFloat(result.lon);
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                const result = data[0];
+                const lat = parseFloat(result.lat);
+                const lon = parseFloat(result.lon);
 
-                    const map = window.jobMap;
-                    map.setView([lat, lon], 13);
+                const map = window.jobMap;
+                map.setView([lat, lon], 14); // Higher zoom level for closer view
 
-                    // Remove previous circle
-                    if (window.userLocationCircle) {
-                        window.userLocationCircle.removeFrom(map);
-                    }
-
-                    const radius = parseInt(document.getElementById('radiusFilter').value) * 1000;
-                    window.userLocationCircle = L.circle([lat, lon], {
-                        radius: radius,
-                        color: "#3388ff",
-                        fill: true,
-                        fillOpacity: 0.15
-                    }).addTo(map);
-
-                    map.fitBounds(window.userLocationCircle.getBounds());
-                } else {
-                    alert("No results found for this location.");
+                // Remove previous circle
+                if (window.userLocationCircle) {
+                    window.userLocationCircle.removeFrom(map);
                 }
-            })
-            .catch(() => {
-                alert("Error searching for location. Please try again.");
-            });
-    });
 
-    // Handle radius change
-    document.getElementById('radiusFilter')?.addEventListener('change', function () {
-        const map = window.jobMap;
-        if (window.userLocationCircle) {
-            const center = window.userLocationCircle.getLatLng();
-            const radius = parseInt(this.value) * 1000;
-            window.userLocationCircle.setRadius(radius);
-            map.fitBounds(window.userLocationCircle.getBounds());
-        }
-    });
+                const radiusKm = parseFloat(document.getElementById('radiusFilter').value);
+                const radiusMeters = radiusKm * 1000;
+
+                window.userLocationCircle = L.circle([lat, lon], {
+                    radius: radiusMeters,
+                    color: "#3b82f6",
+                    fillColor: "#3b82f6",
+                    fillOpacity: 0.15
+                }).addTo(map);
+
+                map.fitBounds(window.userLocationCircle.getBounds());
+            } else {
+                alert("No results found for this location.");
+            }
+        })
+        .catch(() => {
+            alert("Error searching for location. Please try again.");
+        });
+});
+
+// Handle radius change
+document.getElementById('radiusFilter')?.addEventListener('change', function () {
+    const map = window.jobMap;
+    if (window.userLocationCircle) {
+        const center = window.userLocationCircle.getLatLng();
+        const radiusKm = parseFloat(this.value);
+        const radiusMeters = radiusKm * 1000;
+
+        window.userLocationCircle.setRadius(radiusMeters);
+        map.fitBounds(window.userLocationCircle.getBounds());
+    }
+});
 
     // Handle reset button click
     document.getElementById('resetMapBtn')?.addEventListener('click', function () {
@@ -1732,6 +1828,11 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
+    #radiusFilter {
+    min-width: 120px;
+    font-size: 0.85rem;
+}
+    
 /* Ensure modals are visible and not blocked by other elements */
 .modal {
     z-index: 1050 !important;
@@ -3229,45 +3330,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </script>
 
-<style>
-/* Map popup styles */
-.map-popup {
-    padding: 5px;
-}
-
-.map-popup h5 {
-    margin-bottom: 5px;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.map-popup p {
-    margin-bottom: 5px;
-    font-size: 14px;
-}
-
-.popup-badges {
-    margin-top: 8px;
-}
-
-.popup-badges .badge {
-    margin-right: 5px;
-    font-size: 11px;
-}
-
-/* Make sure the map container is visible */
-#jobMap {
-    z-index: 1;
-    background-color: #f8f9fa;
-    border-radius: 4px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Ensure Leaflet controls are above Bootstrap components */
-.leaflet-control {
-    z-index: 1000 !important;
-}
-</style>
 
 <script>
 // Function to fetch and mark applied jobs

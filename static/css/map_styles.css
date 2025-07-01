@@ -1,0 +1,243 @@
+/* map_styles.css - Enhanced Version with More Visual Appeal */
+/* Gradient utility */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #3949ab, #1e88e5);
+}
+
+/* Enhanced Modal Header */
+#jobMapModal .modal-header {
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+#jobMapModal .modal-header h5 {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* Hover effect for buttons inside modal header */
+#jobMapModal .btn:hover {
+    transform: scale(1.05);
+}
+/* Modal Header - Gradient */
+#jobMapModal .modal-header {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+#jobMapModal .modal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+/* Location Search Input - With Floating Label & Focus Glow */
+.position-relative {
+    position: relative;
+    width: 100%;
+    max-width: 250px;
+}
+
+.position-relative input {
+    padding-left: 2.5rem !important;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    height: 38px;
+    font-size: 0.9rem;
+}
+
+.position-relative i {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    transition: all 0.3s ease;
+}
+
+/* Floating label effect */
+.position-relative input:focus + i,
+.position-relative input:not(:placeholder-shown) + i {
+    transform: translateY(-50%) scale(0.9);
+    left: 0.5rem;
+    opacity: 0.8;
+    font-size: 0.8rem;
+}
+
+/* Radius Filter Dropdown */
+#radiusFilter {
+    min-width: 120px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    height: 38px;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    transition: border-color 0.3s ease;
+}
+
+#radiusFilter:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+/* Reset and Search Buttons - Rounded with Glow */
+#resetMapBtn,
+#searchLocationBtn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid #d1d5db;
+    background-color: #f9fafb;
+    color: #6b7280;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+#resetMapBtn:hover,
+#searchLocationBtn:hover {
+    transform: scale(1.1);
+    background-color: #eff6ff;
+    border-color: #6366f1;
+    color: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* Search Bar Container - Better Padding & Responsive Fit */
+.job-map-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+/* Leaflet Map Container - Enhanced */
+#jobMap {
+    height: 600px;
+    width: 100%;
+    z-index: 1;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Leaflet Popup Design */
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.leaflet-popup-tip-container {
+    display: none;
+}
+
+/* Leaflet Control Buttons (Zoom etc.) */
+.leaflet-bar {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+    background-color: #ffffff !important;
+    color: #374151;
+    line-height: 2.5em !important;
+    width: 38px;
+    height: 38px;
+    text-align: center;
+    border-radius: 0 !important;
+    transition: all 0.2s ease;
+}
+
+.leaflet-bar a:hover {
+    background-color: #eff6ff !important;
+    color: #2563eb;
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.2);
+}
+
+/* Tooltip-style Hints */
+.job-map-hint {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+#radiusFilter {
+    min-width: 120px;
+    font-size: 0.85rem;
+}
+
+/* Improved Popup Design */
+.map-popup {
+    padding: 10px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.map-popup h5 {
+    margin-bottom: 5px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.map-popup p {
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.popup-badges .badge {
+    font-size: 11px;
+    margin-right: 5px;
+}
+
+.map-popup .popup-details i {
+    width: 18px;
+    color: #6b7280;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    #jobMapModal .modal-body #jobMap {
+        height: 400px;
+    }
+
+    .job-map-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #radiusFilter,
+    .position-relative input {
+        width: 100%;
+    }
+
+    .job-map-hint {
+        font-size: 0.75rem;
+    }
+}
