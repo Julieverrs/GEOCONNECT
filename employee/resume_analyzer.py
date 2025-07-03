@@ -6,6 +6,8 @@ from PyPDF2 import PdfReader
 from docx import Document
 from collections import Counter
 from django.conf import settings
+from difflib import SequenceMatcher
+from collections import defaultdict
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -60,50 +62,363 @@ class ResumeAnalyzer:
         
         # Define skill categories
         self.skill_categories = {
-            'programming_languages': [
-                'python', 'java', 'javascript', 'c++', 'c#', 'ruby', 'php', 'swift', 'kotlin', 
-                'typescript', 'go', 'rust', 'scala', 'perl', 'r', 'matlab', 'dart'
-            ],
-            'web_development': [
-                'html', 'css', 'react', 'angular', 'vue', 'node.js', 'express', 'django', 'flask',
-                'laravel', 'asp.net', 'spring', 'bootstrap', 'jquery', 'sass', 'less', 'webpack',
-                'gatsby', 'next.js', 'nuxt.js', 'svelte', 'ember', 'api development'
-            ],
-            'databases': [
-                'sql', 'mysql', 'postgresql', 'mongodb', 'sqlite', 'oracle', 'redis', 'cassandra',
-                'dynamodb', 'firebase', 'mariadb', 'neo4j', 'couchdb', 'elasticsearch', 'database management'
-            ],
-            'devops': [
-                'docker', 'kubernetes', 'jenkins', 'aws', 'azure', 'gcp', 'terraform', 'ansible',
-                'ci/cd', 'git', 'github', 'gitlab', 'bitbucket', 'linux', 'unix', 'bash', 'shell'
-            ],
-            'data_science': [
-                'machine learning', 'deep learning', 'ai', 'artificial intelligence', 'data analysis',
-                'pandas', 'numpy', 'scipy', 'scikit-learn', 'tensorflow', 'pytorch', 'keras',
-                'tableau', 'power bi', 'data visualization', 'statistics', 'nlp', 'computer vision'
-            ],
-            'mobile_development': [
-                'android', 'ios', 'swift', 'kotlin', 'react native', 'flutter', 'xamarin',
-                'objective-c', 'mobile app development', 'ionic', 'cordova'
-            ],
-            'soft_skills': [
-                'communication', 'teamwork', 'leadership', 'problem solving', 'critical thinking',
-                'time management', 'adaptability', 'creativity', 'project management', 'agile',
-                'scrum', 'kanban', 'presentation', 'negotiation', 'conflict resolution'
-            ],
-            'networking': [
-                'networking', 'cisco', 'ccna', 'routing', 'switching', 'firewall', 'vpn', 
-                'tcp/ip', 'dns', 'dhcp', 'cybersecurity', 'network security'
-            ],
-            'it_support': [
-                'it support', 'troubleshooting', 'hardware', 'software', 'windows', 'macos',
-                'system administration', 'active directory', 'help desk', 'technical support'
-            ],
-            'cloud_computing': [
-                'cloud computing', 'aws', 'azure', 'gcp', 'google cloud', 'cloud architecture',
-                'serverless', 'iaas', 'paas', 'saas'
-            ]
-        }
+    'programming_languages': [
+        'python', 'java', 'javascript', 'c++', 'c#', 'ruby', 'php', 'swift', 'kotlin',
+        'typescript', 'go', 'rust', 'scala', 'perl', 'r', 'matlab', 'dart', 'sql',
+        'bash', 'powershell', 'objective-c', 'assembly', 'shell scripting', 'groovy'
+    ],
+    
+    'web_development': [
+        'html', 'css', 'react', 'angular', 'vue', 'node.js', 'express', 'django', 'flask',
+        'laravel', 'asp.net', 'spring', 'bootstrap', 'jquery', 'sass', 'less', 'webpack',
+        'gatsby', 'next.js', 'nuxt.js', 'svelte', 'ember', 'api development', 'restful api',
+        'graphql', 'web security', 'progressive web apps', 'single page application'
+    ],
+
+    'databases': [
+        'sql', 'mysql', 'postgresql', 'mongodb', 'sqlite', 'oracle', 'redis', 'cassandra',
+        'dynamodb', 'firebase', 'mariadb', 'neo4j', 'couchdb', 'elasticsearch',
+        'database management', 'nosql', 'relational databases', 'query optimization'
+    ],
+
+    'devops': [
+        'docker', 'kubernetes', 'jenkins', 'aws', 'azure', 'gcp', 'terraform', 'ansible',
+        'ci/cd', 'git', 'github', 'gitlab', 'bitbucket', 'linux', 'unix', 'bash', 'shell',
+        'jenkins', 'circleci', 'travis ci', 'infrastructure as code', 'cloud deployment',
+        'containerization', 'monitoring tools', 'logging', 'helm', 'argo cd', 'prometheus', 'grafana'
+    ],
+
+    'data_science': [
+        'machine learning', 'deep learning', 'ai', 'artificial intelligence', 'data analysis',
+        'pandas', 'numpy', 'scipy', 'scikit-learn', 'tensorflow', 'pytorch', 'keras',
+        'tableau', 'power bi', 'data visualization', 'statistics', 'nlp', 'computer vision',
+        'big data', 'spark', 'hadoop', 'data engineering', 'etl', 'predictive modeling',
+        'data mining', 'a/b testing', 'data storytelling', 'clustering', 'regression'
+    ],
+
+    'mobile_development': [
+        'android', 'ios', 'swift', 'kotlin', 'react native', 'flutter', 'xamarin',
+        'objective-c', 'mobile app development', 'ionic', 'cordova', 'native script',
+        'mobile ui/ux', 'cross-platform', 'mobile testing', 'firebase integration'
+    ],
+
+    'soft_skills': [
+        'communication', 'teamwork', 'leadership', 'problem solving', 'critical thinking',
+        'time management', 'adaptability', 'creativity', 'project management', 'agile',
+        'scrum', 'kanban', 'presentation', 'negotiation', 'conflict resolution',
+        'emotional intelligence', 'collaboration', 'interpersonal communication',
+        'decision making', 'customer service', 'multitasking', 'attention to detail'
+    ],
+
+    'networking': [
+        'networking', 'cisco', 'ccna', 'routing', 'switching', 'firewall', 'vpn',
+        'tcp/ip', 'dns', 'dhcp', 'cybersecurity', 'network security', 'lan/wan',
+        'sd-wan', 'wireless networking', 'vlan', 'wan optimization', 'network monitoring',
+        'load balancing', 'network design', 'network automation', 'snmp', 'ospf', 'bgp'
+    ],
+
+    'it_support': [
+        'it support', 'troubleshooting', 'hardware', 'software', 'windows', 'macos',
+        'system administration', 'active directory', 'help desk', 'technical support',
+        'remote support', 'ticketing system', 'desktop support', 'user training',
+        'patch management', 'asset management', 'incident management', 'service desk',
+        'end-user support', 'imac support', 'printers', 'antivirus', 'ms office troubleshooting'
+    ],
+
+    'cloud_computing': [
+        'cloud computing', 'aws', 'azure', 'gcp', 'google cloud', 'cloud architecture',
+        'serverless', 'iaas', 'paas', 'saas', 'cloud migration', 'cloud security',
+        'multi-cloud', 'vmware', 'openstack', 'cloud storage', 'disaster recovery',
+        'cost optimization', 'cloud automation', 'virtualization', 'containers', 'iac'
+    ],
+
+    'education_teaching': [
+        'lesson planning', 'classroom management', 
+        'student engagement', 'assessment evaluation',
+        'inclusive education', 'modular teaching',
+        'reading program', 'digital classroom',
+        'google classroom', 'child protection',
+        'online safety', 'student support', 'curriculum development',
+        'educational technology', 'special needs', 'pedagogy', 'teaching methods',
+        'e-learning', 'blended learning', 'distance learning', 'tutoring', 'mentoring'
+    ],
+
+    'project_management': [
+        'task execution', 'planning', 'strategic planning',
+        'resource allocation', 'budgeting', 'risk management',
+        'stakeholder management', 'change management',
+        'waterfall', 'scrum master', 'product owner', 'release planning',
+        'agile coaching', 'kanban board', 'gantt charts', 'time tracking',
+        'deliverables', 'milestones', 'project lifecycle', 'requirements gathering'
+    ],
+
+    'marketing': [
+        'marketing', 'branding', 'social media marketing', 'market analysis',
+        'digital marketing', 'advertising', 'seo', 'sem', 'content marketing',
+        'email marketing', 'affiliate marketing', 'influencer marketing',
+        'campaign management', 'lead generation', 'conversion rate optimization',
+        'audience targeting', 'analytics', 'crm', 'brand awareness',
+        'performance marketing', 'growth hacking', 'copywriting', 'utm parameters'
+    ],
+
+    'sales': [
+        'sales', 'client relations', 'customer service', 'negotiation',
+        'lead generation', 'closing deals', 'cold calling', 'sales strategy',
+        'account management', 'inside sales', 'field sales', 'b2b sales',
+        'b2c sales', 'sales forecasting', 'pipeline management', 'salesforce',
+        'hubspot', 'upselling', 'cross-selling', 'deal negotiation', 'rfps'
+    ],
+
+    'finance': [
+        'financial reporting', 'budgeting', 'accounting', 'bookkeeping',
+        'tax preparation', 'financial planning', 'investment banking',
+        'stock market', 'portfolio management', 'financial modeling',
+        'risk assessment', 'audit', 'compliance', 'balance sheet',
+        'income statement', 'cash flow', 'variance analysis', 'forecasting',
+        'financial dashboards', 'erp systems', 'accounts receivable', 'accounts payable'
+    ],
+
+    'operations': [
+        'operations management', 'logistics', 'vendor coordination', 'supply chain',
+        'inventory management', 'procurement', 'warehouse operations', 'order fulfillment',
+        'process improvement', 'quality control', 'six sigma', 'lean methodology',
+        'business process', 'workflow management', 'business continuity', 'risk management',
+        'resource planning', 'performance metrics', 'key performance indicators'
+    ],
+
+    'data_analysis': [
+        'consumer behavior', 'survey design', 'research', 'data collection',
+        'data cleaning', 'data preprocessing', 'statistical analysis', 'excel',
+        'spss', 'stata', 'power query', 'power pivot', 'tableau dashboard',
+        'data warehousing', 'data governance', 'dashboards', 'reporting',
+        'data modeling', 'business analytics', 'predictive analytics', 'descriptive analytics'
+    ],
+
+    'design_ux_ui': [
+        'ui design', 'ux design', 'figma', 'sketch', 'adobe xd', 'photoshop',
+        'illustrator', 'after effects', 'prototyping', 'user research',
+        'interaction design', 'information architecture', 'wireframing',
+        'user flows', 'responsive design', 'graphic design', 'motion graphics',
+        'branding design', 'product design', 'visual design', 'design systems'
+    ],
+
+    'qa_testing': [
+        'manual testing', 'automation testing', 'selenium', 'testng', 'junit',
+        'postman', 'soapui', 'cypress', 'playwright', 'test cases',
+        'defect tracking', 'bug reporting', 'test plans', 'exploratory testing',
+        'regression testing', 'integration testing', 'performance testing',
+        'penetration testing', 'test automation frameworks', 'ci/cd pipelines',
+        'test-driven development', 'acceptance criteria', 'test coverage'
+    ],
+
+    'game_development': [
+        'unity', 'unreal engine', 'godot', 'game development',
+        'game engines', '3d modeling', 'unity c#', 'game design',
+        'game physics', 'animation', 'shader programming', 'level design',
+        'game testing', 'game publishing', 'augmented reality', 'vr development'
+    ],
+
+    'cybersecurity': [
+        'information security', 'ethical hacking', 'penetration testing',
+        'network security', 'application security', 'threat modeling', 'siem',
+        'ids/ips', 'endpoint security', 'zero trust', 'soc analyst', 'compliance',
+        'pci dss', 'iso 27001', 'cryptography', 'access control',
+        'vulnerability assessment', 'malware analysis', 'digital forensics'
+    ],
+
+    'blockchain': [
+        'blockchain', 'ethereum', 'smart contracts', 'solidity',
+        'decentralized applications', 'distributed ledger', 'crypto',
+        'bitcoin', 'blockchain architecture', 'consensus mechanisms',
+        'hyperledger', 'web3', 'tokenomics', 'blockchain security',
+        'smart contract development', 'dapps', 'nft development',
+        'blockchain consulting', 'blockchain integration'
+    ],
+
+    'robotics': [
+        'robotics', 'robotic process automation', 'rpa', 'embedded systems',
+        'microcontrollers', 'raspberry pi', 'arduino', 'sensor integration',
+        'robotic arms', 'autonomous systems', 'robot navigation',
+        'control systems', 'mechanical design', 'robotic vision',
+        'path planning', 'kinematics', 'robot operating system',
+        'ROS', 'motion control', 'robot simulation', 'SLAM', 'actuators'
+    ],
+
+    'iot': [
+        'internet of things', 'iot', 'edge computing', 'device management',
+        'sensor networks', 'mqtt', 'coap', 'loRa', 'zigbee', 'embedded development',
+        'firmware', 'rtos', 'device drivers', 'hardware prototyping',
+        'microcontroller programming', 'network protocols', 'cloud integration',
+        'data streaming', 'real-time analytics', 'home automation',
+        'industrial iot', 'smart devices', 'wearable tech'
+    ],
+
+    'human_resources': [
+        'recruitment', 'onboarding', 'talent acquisition', 'employee relations',
+        'compensation and benefits', 'hr analytics', 'performance management',
+        'training and development', 'succession planning', 'workforce planning',
+        'diversity and inclusion', 'payroll processing', 'leave management',
+        'labor law compliance', 'job analysis', 'job description creation',
+        'employee engagement', 'exit interviews', 'background checks'
+    ],
+
+    'healthcare': [
+        'patient care', 'clinical operations', 'medical records', 'nursing',
+        'health informatics', 'health data', 'ehr', 'electronic health records',
+        'telemedicine', 'medical billing', 'insurance claims', 'health policy',
+        'public health', 'patient satisfaction', 'healthcare management',
+        'medical coding', 'diagnosis', 'treatment planning', 'emergency care',
+        'pharmacology', 'case management', 'health education'
+    ],
+
+    'engineering': [
+        'civil engineering', 'structural engineering', 'mechanical engineering',
+        'electrical engineering', 'chemical engineering', 'automotive engineering',
+        'aerospace engineering', 'biomedical engineering', 'environmental engineering',
+        'project engineering', 'maintenance', 'materials science', 'manufacturing',
+        'thermodynamics', 'fluid dynamics', 'mechatronics', 'cad', 'solidworks',
+        'autocad', 'revit', 'ansys', 'catia', 'pro/e', 'creo', 'matlab', 'simulink'
+    ],
+
+    'customer_service': [
+        'customer service', 'call center', 'help desk', 'live chat', 'email support',
+        'ticketing system', 'first contact resolution', 'response time', 'csat',
+        'net promoter score', 'feedback collection', 'escalation handling',
+        'customer retention', 'customer outreach', 'phone support', 'support escalation',
+        'knowledge base', 'customer onboarding', 'customer success', 'customer experience'
+    ],
+
+    'legal': [
+        'legal research', 'contract drafting', 'litigation', 'compliance',
+        'corporate law', 'intellectual property', 'ip rights', 'copyright',
+        'trademark', 'patents', 'legal documentation', 'court procedures',
+        'legal advising', 'regulatory compliance', 'contract review', 'due diligence',
+        'legal risk', 'legal writing', 'document review', 'legal analysis'
+    ],
+
+    'design': [
+        'graphic design', 'logo design', 'brand identity', 'packaging design',
+        'illustration', 'photo editing', 'layout design', 'typography',
+        'color theory', 'brand guidelines', 'adobe suite', 'canva', 'coreldraw',
+        'adobe illustrator', 'adobe photoshop', 'adobe indesign', 'sketch',
+        'figma', 'adobe xd', 'user interface design', 'user experience design',
+        'creative direction', 'visual storytelling', 'brand assets', 'mockups'
+    ],
+
+    'entrepreneurship': [
+        'startup', 'business plan', 'pitch deck', 'fundraising', 'venture capital',
+        'angel investors', 'business development', 'product development',
+        'market research', 'customer acquisition', 'revenue growth',
+        'scaling', 'lean startup', 'go-to-market strategy', 'business model canvas',
+        'profitability', 'market validation', 'business strategy', 'business operations',
+        'founder', 'co-founder', 'investor relations', 'pitching', 'startup incubation'
+    ],
+
+    'arts_media': [
+        'graphic design', 'photography', 'filmmaking', 'video editing', 'audio editing',
+        'scriptwriting', 'storyboarding', 'animation', 'voice over', 'editing',
+        'journalism', 'content writing', 'copywriting', 'technical writing',
+        'social media content', 'content strategy', 'creative writing', 'film production',
+        'media relations', 'press releases', 'media outreach', 'public speaking'
+    ],
+
+    'construction': [
+        'project estimation', 'site supervision', 'contractor management',
+        'construction planning', 'material procurement', 'quality assurance',
+        'safety compliance', 'building codes', 'blueprint reading',
+        'project scheduling', 'cost estimation', 'project delivery',
+        'contract management', 'construction software', 'autocad', 'revit', 'ms project',
+        'risk mitigation', 'site inspection', 'permits', 'licensing'
+    ],
+
+    'automotive': [
+        'vehicle diagnostics', 'engine repair', 'auto body work', 'painting',
+        'tire changing', 'brake maintenance', 'oil change', 'engine tuning',
+        'car detailing', 'fleet management', 'automotive repair', 'vehicle inspection',
+        'carpet cleaning', 'glass tinting', 'sound systems', 'custom car builds',
+        'motorcycle repair', 'truck maintenance', 'automotive sales', 'parts replacement',
+        'automotive customer service', 'service advisor', 'technician', 'mechanic'
+    ],
+
+    'retail_sales': [
+        'point of sale', 'pos', 'merchandising', 'store layout', 'inventory management',
+        'customer interaction', 'sales targets', 'customer loyalty', 'product knowledge',
+        'sales pitch', 'checkout operations', 'cash handling', 'stock replenishment',
+        'loss prevention', 'customer complaints', 'store management', 'retail operations',
+        'customer engagement', 'product demonstration', 'up-selling', 'cross-selling'
+    ],
+
+    'hospitality': [
+        'hotel management', 'guest services', 'front office', 'housekeeping',
+        'food and beverage', 'restaurant management', 'event planning',
+        'reservation systems', 'concierge', 'check-in check-out', 'tourism',
+        'travel planning', 'customer satisfaction', 'service excellence',
+        'reservation systems', 'event coordination', 'food safety',
+        'guest relations', 'hotel booking', 'receptionist', 'bell services',
+        'housekeeping management', 'front desk', 'concierge services'
+    ],
+
+    'freelancing': [
+        'freelancing', 'remote work', 'freelance projects', 'client acquisition',
+        'proposal writing', 'bid management', 'freelance platforms', 'upwork',
+        'fiverr', 'toptal', 'freelancer.com', 'remote collaboration',
+        'time tracking', 'invoice management', 'client communication', 'project delivery',
+        'freelance portfolio', 'pricing strategies', 'contract negotiation'
+    ],
+
+    'data_engineering': [
+        'data pipeline', 'etl', 'data modeling', 'data architecture',
+        'spark', 'hadoop', 'airflow', 'kafka', 'hive', 'pig',
+        'data lakes', 'data warehouses', 'stream processing', 'batch processing',
+        'schema design', 'data ingestion', 'data transformation',
+        'data quality', 'data governance', 'metadata management',
+        'data cataloging', 'data integration', 'data orchestration'
+    ],
+
+    'architecture': [
+        'architectural design', 'bim', 'revit', 'autocad', '3d modeling',
+        'space planning', 'construction documentation', 'site analysis',
+        'sustainability', 'green building', 'client meetings', 'design development',
+        'project management', 'design presentation', 'rendering', 'sketching',
+        'model making', 'construction administration', 'specifications',
+        'bill of quantities', 'cost estimation', 'project coordination'
+    ],
+
+    'transport_logistics': [
+        'route optimization', 'supply chain', 'last mile delivery', 'warehousing',
+        'inventory management', 'freight', 'courier', 'shipping', 'logistics planning',
+        'distribution', 'reverse logistics', 'procurement', 'supplier management',
+        'fleet management', 'delivery routes', 'dispatching', 'transportation management',
+        'cargo', 'import/export', 'supply chain analytics', 'warehousing operations'
+    ],
+
+    'banking_finance': [
+        'credit analysis', 'loan processing', 'branch operations', 'customer relationship',
+        'financial advisory', 'wealth management', 'mortgage', 'forex', 'equities',
+        'fixed income', 'derivatives', 'risk analysis', 'compliance', 'anti-money laundering',
+        'fraud detection', 'transaction processing', 'banking operations', 'loan origination',
+        'underwriting', 'customer service', 'branch management', 'bank reconciliation'
+    ],
+
+    'aviation': [
+        'flight operations', 'air traffic control', 'ground handling', 'aircraft maintenance',
+        'flight planning', 'navigation', 'crew coordination', 'passenger safety',
+        'airport operations', 'baggage handling', 'cargo loading', 'flight dispatch',
+        'aerodrome', 'flight regulations', 'avionics', 'flight simulators',
+        'pilot training', 'aviation safety', 'fuel management', 'flight logs'
+    ],
+
+    'non_tech': [
+        'project management', 'business analysis', 'product management',
+        'operations management', 'human resources', 'marketing', 'sales',
+        'customer service', 'financial analysis', 'legal', 'administrative support',
+        'office management', 'data entry', 'documentation', 'translation',
+        'transcription', 'language translation', 'english', 'tagalog', 'spanish',
+        'mandarin', 'japanese', 'german', 'french', 'arabic', 'portuguese',
+        'italian', 'korean', 'japanese', 'translation tools', 'interpreting'
+    ]
+}
+        
         
         # Flatten the skills list for detection
         self.all_skills = []
@@ -179,6 +494,9 @@ class ResumeAnalyzer:
         filtered_tokens = [token for token in tokens if token.isalpha() and token not in self.stopwords]
         
         return filtered_tokens, text
+    def string_similarity(self, a, b):
+        """Calculate similarity ratio between two strings (0 to 1)"""
+        return SequenceMatcher(None, a.lower(), b.lower()).ratio()
     
     def extract_skills(self, tokens, text):
         """Extract skills from the preprocessed text with improved detection"""
@@ -191,31 +509,36 @@ class ResumeAnalyzer:
                 skills.append(token)
         
         # Check for multi-word skills in the original text
-        for skill in self.all_skills:
-            if ' ' in skill:
-                # Use word boundaries to avoid partial matches
-                import re
-                pattern = r'\b' + re.escape(skill.lower()) + r'\b'
-                if re.search(pattern, text_lower) and skill not in skills:
-                    skills.append(skill)
+        for category, category_skills in self.skill_categories.items():
+            for phrase in category_skills:
+                if ' ' in phrase:
+                    pattern = r'\b' + re.escape(phrase) + r'\b'
+                    if re.search(pattern, text_lower) and phrase not in skills:
+                        skills.append(phrase)
         
         # Check for common skill variations and patterns
         skill_patterns = {
-            r'\b(?:programming|coding|development)\s+(?:in\s+)?(\w+)\b': 'programming_languages',
-            r'\b(\w+)\s+(?:programming|development|coding)\b': 'programming_languages',
-            r'\b(?:experience\s+(?:with|in)|proficient\s+(?:in|with)|skilled\s+(?:in|with))\s+(\w+)\b': 'general',
-            r'\b(\w+)\s+(?:framework|library|database|tool)\b': 'technical',
-            r'\b(?:web\s+development|frontend|backend|full\s*stack)\b': 'web_development',
-            r'\b(?:machine\s+learning|artificial\s+intelligence|data\s+science)\b': 'data_science',
-            r'\b(?:cloud\s+computing|aws|azure|gcp)\b': 'cloud_computing',
-            r'\b(?:database|sql|nosql|mongodb|mysql|postgresql)\b': 'databases'
+            r'\b(?:experience\s+(?:with|in)|proficient\s+(?:in|with)|skilled\s+(?:in|with))\s+(\w+[\s\w]*)': 'general',
+            r'\b(\w+[\s\w]*)\s+(?:skills?|expertise|knowledge|experience|background|familiarity)\b': 'general',
+            r'\b(?:market\s+analysis|consumer\s+behavior|customer\s+satisfaction|product\s+launch|business\s+plan|vendor\s+coordination|strategic\s+planning|operations\s+management)\b': 'marketing',
+            r'\b(?:financial\s+reporting|budgeting|bookkeeping|expense\s+tracking|cost\s+management)\b': 'finance',
+            r'\b(?:team\s+leadership|supervising\s+staff|improving\s+productivity|coaching|performance\s+improvement)\b': 'soft_skills',
+            r'\b(?:operations\s+assistant|daily\s+business\s+operations|store\s+activities|office\s+management)\b': 'operations',
+            r'\b(?:certified\s+marketing\s+professional|google\s+project\s+management|cmp|project\s+management\s+fundamentals)\b': 'certifications'
         }
         
-        for pattern, category in skill_patterns.items():
+        for pattern, _ in skill_patterns.items():
             matches = re.finditer(pattern, text_lower, re.IGNORECASE)
             for match in matches:
-                if match.group(0) not in skills:
+                matched_skill = match.group(1).strip() if len(match.groups()) >= 1 else match.group(0).strip()
+                if matched_skill and matched_skill not in skills:
                     skills.append(match.group(0))
+                    
+        for skill in list(skills):
+            for base_skill in self.all_skills:
+                similarity = self.string_similarity(skill, base_skill)
+                if similarity > 0.7 and base_skill not in skills:
+                    skills.append(base_skill)
         
         # Remove duplicates while preserving order
         unique_skills = []
@@ -223,21 +546,26 @@ class ResumeAnalyzer:
             if skill not in unique_skills:
                 unique_skills.append(skill)
         
-        # Categorize skills
-        categorized_skills = {}
-        for category, category_skills in self.skill_categories.items():
-            categorized_skills[category] = []
-            for skill in unique_skills:
+        categorized_skills = defaultdict(list)
+        for skill in unique_skills:
+            matched_category = None
+            for category, category_skills in self.skill_categories.items():
                 if skill in category_skills:
                     categorized_skills[category].append(skill)
-                else:
-                    # Check for similar skills
-                    for cat_skill in category_skills:
-                        if self._are_similar_skills(skill, cat_skill):
-                            categorized_skills[category].append(skill)
-                            break
-        
-        return unique_skills, categorized_skills
+                    matched_category = category
+                    break
+           
+        if not matched_category:
+            for category, category_skills in self.skill_categories.items():
+                for cat_skill in category_skills:
+                    if self._are_similar_skills(skill, cat_skill):
+                        categorized_skills[category.append(cat_skill)]
+                        matched_category = category
+                        break
+                if matched_category:
+                    break
+                
+        return unique_skills, dict(categorized_skills)
     
     def extract_education(self, text):
         """Extract education information"""
@@ -867,3 +1195,4 @@ class ResumeAnalyzer:
                 return True
         
         return False
+        

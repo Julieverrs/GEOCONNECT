@@ -743,7 +743,7 @@ def application_status(request):
     # Get only hired and rejected applications for this employee
     applications = JobApplication.objects.filter(
         employee=employee,
-        status__in=['hired', 'rejected']
+        status__in=['hired', 'rejected','pending']
     ).select_related('job', 'job__employer').order_by('-application_date')
 
     # Count applications by status (only hired and rejected)
