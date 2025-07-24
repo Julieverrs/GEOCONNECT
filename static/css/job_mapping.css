@@ -1,0 +1,1073 @@
+/* Job Mapping Enhanced Styles */
+:root {
+  --map-primary: #1a237e;
+  --map-secondary: #283593;
+  --map-accent: #3949ab;
+  --map-success: #4caf50;
+  --map-warning: #ff9800;
+  --map-danger: #f44336;
+  --map-light: #e8eaf6;
+  --map-dark: #0d47a1;
+  --map-text: #333;
+  --map-text-light: #666;
+  --map-border: #e0e0e0;
+  --map-shadow: rgba(0, 0, 0, 0.1);
+  --map-shadow-dark: rgba(0, 0, 0, 0.2);
+  --map-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced Job Map Modal - Ultra Wide */
+#jobMapModal .modal-dialog {
+  max-width: 98vw;
+  width: 98vw;
+  margin: 0.5rem auto;
+  height: 95vh;
+}
+
+#jobMapModal .modal-dialog.modal-fullscreen-lg-down {
+  max-width: 100vw;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+}
+
+#jobMapModal .modal-content {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#jobMapModal .modal-dialog.modal-fullscreen-lg-down .modal-content {
+  border-radius: 0;
+  height: 100vh;
+}
+
+#jobMapModal .modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--map-primary), var(--map-secondary), var(--map-accent));
+  z-index: 1;
+}
+
+/* Enhanced Modal Header */
+#jobMapModal .modal-header {
+  background: linear-gradient(135deg, var(--map-primary) 0%, var(--map-secondary) 100%);
+  color: white;
+  border-bottom: none;
+  padding: 1rem 2rem;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+#jobMapModal .modal-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+  opacity: 0.3;
+}
+
+#jobMapModal .modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+#jobMapModal .modal-title i {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  animation: mapIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes mapIconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Enhanced Search Controls - Compact Layout */
+.job-map-search-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+}
+
+/* Optimize header for better space usage */
+#jobMapModal .modal-header {
+  background: linear-gradient(135deg, var(--map-primary) 0%, var(--map-secondary) 100%);
+  color: white;
+  border-bottom: none;
+  padding: 1rem 2rem;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.location-search-container {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+#locationSearchInput {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--map-text);
+  transition: var(--map-transition);
+  backdrop-filter: blur(10px);
+}
+
+#locationSearchInput:focus {
+  background: white;
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+#locationSearchInput::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+}
+
+.location-search-container i {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--map-accent);
+  font-size: 1rem;
+  pointer-events: none;
+  transition: var(--map-transition);
+}
+
+#locationSearchInput:focus + i {
+  color: var(--map-primary);
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* Enhanced Radius Filter */
+#radiusFilter {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--map-text);
+  min-width: 140px;
+  transition: var(--map-transition);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+#radiusFilter:focus {
+  background: white;
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+#radiusFilter option {
+  background: white;
+  color: var(--map-text);
+  font-weight: 500;
+}
+
+/* Enhanced Action Buttons */
+.map-action-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--map-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: var(--map-transition);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s;
+}
+
+.map-action-btn:hover::before {
+  left: 100%;
+}
+
+.map-action-btn:hover {
+  background: white;
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.map-action-btn:active {
+  transform: translateY(0);
+}
+
+#searchLocationBtn {
+  background: linear-gradient(135deg, var(--map-success) 0%, #66bb6a 100%);
+  color: white;
+  border-color: var(--map-success);
+}
+
+#searchLocationBtn:hover {
+  background: linear-gradient(135deg, #388e3c 0%, var(--map-success) 100%);
+  border-color: #388e3c;
+}
+
+#resetMapBtn {
+  background: linear-gradient(135deg, var(--map-warning) 0%, #ffb74d 100%);
+  color: white;
+  border-color: var(--map-warning);
+}
+
+#resetMapBtn:hover {
+  background: linear-gradient(135deg, #f57c00 0%, var(--map-warning) 100%);
+  border-color: #f57c00;
+}
+
+/* Enhanced Hint Text */
+.job-map-hint {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+  font-weight: 400;
+  text-align: center;
+  margin: 1rem 0 0;
+  position: relative;
+  z-index: 1;
+  animation: hintFadeIn 0.5s ease-out;
+}
+
+@keyframes hintFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced Map Container - Full Height */
+#jobMapModal .modal-body {
+  flex: 1;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#jobMap {
+  height: 100%;
+  min-height: 500px;
+  width: 100%;
+  border-radius: 0;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+  flex: 1;
+}
+
+#jobMap::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="mapGrid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(0,0,0,0.05)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23mapGrid)"/></svg>');
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Enhanced Map Popup - Light Mode */
+.map-popup {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  max-width: 340px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e8eaf6;
+  background: #ffffff;
+  animation: popupSlideIn 0.4s ease-out;
+  backdrop-filter: blur(10px);
+}
+
+@keyframes popupSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.map-popup .leaflet-popup-content-wrapper {
+  background: transparent;
+  border-radius: 20px;
+  box-shadow: none;
+  padding: 0;
+}
+
+.map-popup .leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.map-popup .leaflet-popup-tip {
+  background: #ffffff;
+  border: 1px solid #e8eaf6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Enhanced Popup Content - Light Mode */
+.map-popup h5 {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #1a237e;
+  margin: 0;
+  padding: 1.25rem 1.5rem 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.map-popup .text-muted {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #666666;
+  margin: 0;
+  padding: 0 1.5rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.popup-badges {
+  padding: 1.25rem 1.5rem 1rem;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.popup-badges .badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  border-radius: 12px;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.popup-badges .badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.popup-badges .bg-primary {
+  background: linear-gradient(135deg, #3949ab 0%, #5c6bc0 100%) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(57, 73, 171, 0.3);
+}
+
+.popup-badges .bg-info {
+  background: linear-gradient(135deg, #00acc1 0%, #26c6da 100%) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(0, 172, 193, 0.3);
+}
+
+.popup-badges .bg-success {
+  background: linear-gradient(135deg, #388e3c 0%, #4caf50 100%) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(56, 142, 60, 0.3);
+}
+
+.popup-details {
+  padding: 1rem 1.5rem 1.25rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 0 0 20px 20px;
+}
+
+.popup-details p {
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: #555555;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+}
+
+.popup-details p:last-child {
+  margin-bottom: 0;
+}
+
+.popup-details i {
+  color: #3949ab;
+  width: 18px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.popup-details strong {
+  color: #1a237e;
+  font-weight: 600;
+  min-width: 80px;
+}
+
+/* Enhanced Check Job Button - Light Mode */
+.check-job-btn {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  border: none;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 1.5rem 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+}
+
+.check-job-btn:hover {
+  background: linear-gradient(135deg, #43a047 0%, #4caf50 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4);
+  color: white;
+}
+
+.check-job-btn:active {
+  transform: translateY(0);
+}
+
+/* Enhanced Modal Footer - Compact */
+#jobMapModal .modal-footer {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-top: 1px solid var(--map-border);
+  padding: 0.75rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+#jobMapModal .modal-footer small {
+  color: var(--map-text-light);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+#jobMapModal .modal-footer .btn {
+  background: linear-gradient(135deg, var(--map-primary) 0%, var(--map-secondary) 100%);
+  border: none;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 25px;
+  transition: var(--map-transition);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#jobMapModal .modal-footer .btn:hover {
+  background: linear-gradient(135deg, var(--map-dark) 0%, var(--map-primary) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(26, 35, 126, 0.3);
+  color: white;
+}
+
+/* Enhanced Map Controls */
+.leaflet-control-zoom {
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+  border: none !important;
+}
+
+.leaflet-control-zoom a {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: var(--map-accent) !important;
+  border: none !important;
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  transition: var(--map-transition) !important;
+  backdrop-filter: blur(10px);
+}
+
+.leaflet-control-zoom a:hover {
+  background: white !important;
+  color: var(--map-primary) !important;
+  transform: scale(1.1);
+}
+
+.leaflet-control-zoom a:first-child {
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.leaflet-control-zoom a:last-child {
+  border-radius: 0 0 12px 12px !important;
+}
+
+/* Enhanced Map Attribution */
+.leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: var(--map-text-light) !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 0.75rem !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--map-accent) !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+}
+
+.leaflet-control-attribution a:hover {
+  color: var(--map-primary) !important;
+  text-decoration: underline !important;
+}
+
+/* Enhanced Map Markers */
+.leaflet-marker-icon {
+  transition: var(--map-transition);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.leaflet-marker-icon:hover {
+  transform: scale(1.2);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+}
+
+/* Enhanced Circle for Location Search */
+.leaflet-interactive {
+  stroke: var(--map-accent) !important;
+  stroke-width: 3 !important;
+  fill: var(--map-accent) !important;
+  fill-opacity: 0.2 !important;
+  animation: circlePulse 2s ease-in-out infinite;
+}
+
+@keyframes circlePulse {
+  0%, 100% {
+    stroke-width: 3;
+    stroke-opacity: 1;
+  }
+  50% {
+    stroke-width: 5;
+    stroke-opacity: 0.7;
+  }
+}
+
+/* Loading States */
+.map-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: loadingFadeIn 0.3s ease-out;
+}
+
+@keyframes loadingFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.map-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--map-light);
+  border-top: 4px solid var(--map-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.map-loading-text {
+  color: var(--map-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Enhanced Notifications */
+.map-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 1rem 1.5rem;
+  z-index: 9999;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 350px;
+  border-left: 4px solid #3949ab;
+  backdrop-filter: blur(10px);
+}
+
+.map-notification.show {
+  transform: translateX(0);
+}
+
+.map-notification-success {
+  border-left-color: #4caf50;
+}
+
+.map-notification-error {
+  border-left-color: #f44336;
+}
+
+.map-notification-warning {
+  border-left-color: #ff9800;
+}
+
+.map-notification-info {
+  border-left-color: #2196f3;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.notification-content i {
+  font-size: 1.2rem;
+  color: #3949ab;
+}
+
+.map-notification-success .notification-content i {
+  color: #4caf50;
+}
+
+.map-notification-error .notification-content i {
+  color: #f44336;
+}
+
+.map-notification-warning .notification-content i {
+  color: #ff9800;
+}
+
+.map-notification-info .notification-content i {
+  color: #2196f3;
+}
+
+.notification-content span {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+/* Responsive Design - Ultra Wide */
+@media (max-width: 1200px) {
+  #jobMapModal .modal-dialog {
+    max-width: 100vw;
+    width: 100vw;
+    margin: 0;
+    height: 100vh;
+  }
+  
+  #jobMapModal .modal-content {
+    border-radius: 0;
+    height: 100vh;
+  }
+  
+  .job-map-search-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .location-search-container {
+    min-width: auto;
+  }
+  
+  #radiusFilter {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  #jobMapModal .modal-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  #jobMapModal .modal-title {
+    font-size: 1.1rem;
+  }
+  
+  .job-map-search-controls {
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  #locationSearchInput,
+  #radiusFilter {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .map-action-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 0.85rem;
+  }
+  
+  #jobMap {
+    min-height: 400px;
+  }
+  
+  #jobMapModal .modal-footer {
+    padding: 0.5rem 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 576px) {
+  #jobMapModal .modal-dialog {
+    max-width: 100vw;
+    margin: 0;
+    height: 100vh;
+  }
+  
+  #jobMapModal .modal-content {
+    border-radius: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #jobMapModal .modal-body {
+    flex: 1;
+    padding: 0;
+  }
+  
+  #jobMap {
+    height: 100%;
+    border-radius: 0;
+  }
+  
+  .map-popup {
+    max-width: 280px;
+  }
+  
+  .map-popup h5 {
+    font-size: 1rem;
+    padding: 0.75rem 1rem 0.5rem;
+  }
+  
+  .popup-badges {
+    padding: 0.75rem 1rem 0.25rem;
+  }
+  
+  .popup-badges .badge {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+  }
+  
+  .popup-details {
+    padding: 0.25rem 1rem 0.75rem;
+  }
+  
+  .popup-details p {
+    font-size: 0.8rem;
+  }
+  
+  .check-job-btn {
+    margin: 0 1rem 0.75rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .map-notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    transform: translateY(-100%);
+  }
+  
+  .map-notification.show {
+    transform: translateY(0);
+  }
+}
+
+/* Light Mode - Default and Forced */
+#jobMapModal .modal-content {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  color: var(--map-text);
+}
+
+#locationSearchInput,
+#radiusFilter,
+.map-action-btn {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--map-text);
+}
+
+#locationSearchInput:focus,
+#radiusFilter:focus {
+  background: white;
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+#locationSearchInput::placeholder {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+#jobMapModal .modal-footer {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-top-color: var(--map-border);
+}
+
+#jobMapModal .modal-footer small {
+  color: var(--map-text-light);
+}
+
+/* Override any dark mode preferences */
+@media (prefers-color-scheme: dark) {
+  #jobMapModal .modal-content {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+    color: var(--map-text) !important;
+  }
+  
+  #locationSearchInput,
+  #radiusFilter,
+  .map-action-btn {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: var(--map-text) !important;
+  }
+  
+  #locationSearchInput:focus,
+  #radiusFilter:focus {
+    background: white !important;
+    border-color: rgba(255, 255, 255, 0.8) !important;
+  }
+  
+  #locationSearchInput::placeholder {
+    color: rgba(0, 0, 0, 0.6) !important;
+  }
+  
+  #jobMapModal .modal-footer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border-top-color: var(--map-border) !important;
+  }
+  
+  #jobMapModal .modal-footer small {
+    color: var(--map-text-light) !important;
+  }
+}
+
+/* Accessibility Improvements */
+.map-action-btn:focus,
+#locationSearchInput:focus,
+#radiusFilter:focus {
+  outline: 2px solid var(--map-accent);
+  outline-offset: 2px;
+}
+
+.map-action-btn:focus-visible,
+#locationSearchInput:focus-visible,
+#radiusFilter:focus-visible {
+  outline: 2px solid var(--map-accent);
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  #jobMapModal .modal-header {
+    background: var(--map-primary);
+  }
+  
+  .map-action-btn {
+    border-width: 3px;
+  }
+  
+  .leaflet-control-zoom a {
+    border: 2px solid var(--map-accent) !important;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .map-action-btn::before {
+    display: none;
+  }
+} 
+
+/* Map Notification Styles */
+.map-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  max-width: 350px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  padding: 1rem 1.25rem;
+  z-index: 10000;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  border-left: 4px solid var(--map-primary);
+}
+
+.map-notification.show {
+  transform: translateX(0);
+}
+
+.map-notification.success {
+  border-left-color: var(--map-success);
+}
+
+.map-notification.error {
+  border-left-color: var(--map-danger);
+}
+
+.map-notification.info {
+  border-left-color: var(--map-accent);
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.notification-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.map-notification.success .notification-icon {
+  color: var(--map-success);
+}
+
+.map-notification.error .notification-icon {
+  color: var(--map-danger);
+}
+
+.map-notification.info .notification-icon {
+  color: var(--map-accent);
+}
+
+.notification-message {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--map-text);
+  line-height: 1.4;
+}
+
+/* Search Location Marker */
+.search-location-marker {
+  background: none;
+  border: none;
+}
+
+.search-location-marker i {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  animation: searchPulse 2s ease-in-out infinite;
+}
+
+@keyframes searchPulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+} 

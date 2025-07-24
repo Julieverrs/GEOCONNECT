@@ -22,6 +22,7 @@ from .forms import EmployerPasswordResetForm, EmployerSetPasswordForm
 from .tokens import employer_password_reset_token
 from datetime import datetime # Import datetime for interview_date
 from django.views.decorators.http import require_http_methods
+from employee.models import Employee, Notification
 
 # Add these imports at the top of the file
 from django.views.decorators.http import require_POST
@@ -564,6 +565,15 @@ def create_job(request):
                 experience_level=data['experience'],
                 requirements=data['requirements']
             )
+
+            # Send notification to all active and approved employees
+            employees = Employee.objects.filter(is_active=True, is_approved=True)
+            notif_message = f"New job posted: {job.title} at {employer.company_name}. Check it out!"
+            notifications = [
+                Notification(employee=emp, message=notif_message, job=job)
+                for emp in employees
+            ]
+            Notification.objects.bulk_create(notifications)
             
             return JsonResponse({
                 'success': True,

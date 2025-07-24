@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib import messages
 from .forms import EmployeeSignupForm, EmployeeLoginForm, PasswordResetForm, SetPasswordForm
-from .models import Employee
+from .models import Employee, Notification, SavedJob  # Add SavedJob import
 from employer.models import Job, Employer, JobApplication  # Add JobApplication import
 # Update imports
 from django.core.mail import send_mail
@@ -125,11 +125,34 @@ def employee_home(request):
     
     # Get active jobs from employers
     jobs = Job.objects.filter(status='active').select_related('employer').order_by('-created_at')
+
+    # Serialize jobs for JavaScript
+    jobs_list = []
+    for job in jobs:
+        jobs_list.append({
+            'id': job.id,
+            'title': job.title,
+            'company': job.employer.company_name if job.employer else '',
+            'location': job.location,
+            'job_type': job.job_type,
+            'work_setup': job.work_setup,
+            'salary_range': job.salary_range,
+            'experience_level': job.experience_level,
+            'posted_date': job.created_at.strftime('%Y-%m-%d'),
+            'lat': job.latitude if hasattr(job, 'latitude') and job.latitude is not None else None,
+            'lng': job.longitude if hasattr(job, 'longitude') and job.longitude is not None else None,
+        })
+    jobs_json = json.dumps(jobs_list)
+    
+    # Count unread notifications for the employee
+    notification_count = Notification.objects.filter(employee=employee, is_read=False).count()
     
     context = {
         'employee': employee,
         'username': employee_username,
         'jobs': jobs,
+        'jobs_json': jobs_json,
+        'notification_count': notification_count,
     }
     return render(request, 'employee/employee_home.html', context)
 
@@ -914,3 +937,391 @@ def get_job_preferences(request):
             'success': False,
             'error': str(e)
         }, status=500)
+
+@employee_login_required
+def job_mapping(request):
+    employee_username = request.session.get('employee_username')
+    
+    # Get the employee object
+    employee = Employee.objects.filter(username=employee_username).first()
+    if not employee:
+        messages.error(request, "User not found.")
+        return redirect('employee_login')
+    
+    # Get active jobs from employers
+    jobs = Job.objects.filter(status='active').select_related('employer').order_by('-created_at')
+    
+    context = {
+        'employee': employee,
+        'username': employee_username,
+        'jobs': jobs,
+    }
+    return render(request, 'employee/job_mapping.html', context)
+
+@employee_login_required
+def resume_builder(request):
+    employee_username = request.session.get('employee_username')
+    employee = Employee.objects.filter(username=employee_username).first()
+    
+    if not employee:
+        messages.error(request, "User not found.")
+        return redirect('employee_login')
+    
+    context = {
+        'employee': employee,
+        'username': employee_username,
+    }
+    return render(request, 'employee/resume_builder.html', context)
+
+@employee_login_required
+@require_http_methods(["POST"])
+def generate_resume_pdf(request):
+    try:
+        print("PDF generation request received")
+        print("Request method:", request.method)
+        print("Request headers:", dict(request.headers))
+        
+        data = json.loads(request.body)
+        print("Received data:", data)
+        
+        # Extract resume data
+        personal_info = data.get('personal_info', {})
+        experience = data.get('experience', [])
+        education = data.get('education', [])
+        skills = data.get('skills', [])
+        projects = data.get('projects', [])
+        certifications = data.get('certifications', [])
+        
+        print("Personal info:", personal_info)
+        
+        try:
+            # Generate PDF using reportlab
+            from reportlab.lib.pagesizes import letter
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.units import inch
+            from reportlab.lib import colors
+            from io import BytesIO
+            import os
+            
+            print("ReportLab imports successful")
+            
+            # Create PDF buffer with smaller margins for more content
+            buffer = BytesIO()
+            doc = SimpleDocTemplate(buffer, pagesize=letter, 
+                                  leftMargin=0.5*inch, rightMargin=0.5*inch,
+                                  topMargin=0.5*inch, bottomMargin=0.5*inch)
+            story = []
+            
+            # Get styles - more compact for single page
+            styles = getSampleStyleSheet()
+            title_style = ParagraphStyle(
+                'CustomTitle',
+                parent=styles['Heading1'],
+                fontSize=20,
+                spaceAfter=8,
+                textColor=colors.HexColor('#1a237e'),
+                alignment=1  # Center alignment
+            )
+            heading_style = ParagraphStyle(
+                'CustomHeading',
+                parent=styles['Heading2'],
+                fontSize=12,
+                spaceAfter=6,
+                spaceBefore=8,
+                textColor=colors.HexColor('#3949ab'),
+                fontName='Helvetica-Bold'
+            )
+            normal_style = ParagraphStyle(
+                'CustomNormal',
+                parent=styles['Normal'],
+                fontSize=9,
+                spaceAfter=3,
+                leading=11
+            )
+            contact_style = ParagraphStyle(
+                'ContactStyle',
+                parent=styles['Normal'],
+                fontSize=9,
+                spaceAfter=8,
+                alignment=1,  # Center alignment
+                textColor=colors.HexColor('#666666')
+            )
+            item_title_style = ParagraphStyle(
+                'ItemTitle',
+                parent=styles['Normal'],
+                fontSize=10,
+                fontName='Helvetica-Bold',
+                spaceAfter=2
+            )
+            item_subtitle_style = ParagraphStyle(
+                'ItemSubtitle',
+                parent=styles['Normal'],
+                fontSize=9,
+                fontName='Helvetica-Oblique',
+                textColor=colors.HexColor('#666666'),
+                spaceAfter=3
+            )
+            item_description_style = ParagraphStyle(
+                'ItemDescription',
+                parent=styles['Normal'],
+                fontSize=8,
+                spaceAfter=6,
+                leading=10
+            )
+            
+            # Add title
+            story.append(Paragraph(f"{personal_info.get('full_name', 'Resume')}", title_style))
+            
+            # Add contact info in a compact format
+            contact_info = []
+            if personal_info.get('email'):
+                contact_info.append(personal_info['email'])
+            if personal_info.get('phone'):
+                contact_info.append(personal_info['phone'])
+            if personal_info.get('location'):
+                contact_info.append(personal_info['location'])
+            if personal_info.get('linkedin'):
+                contact_info.append(personal_info['linkedin'])
+            
+            if contact_info:
+                story.append(Paragraph(" • ".join(contact_info), contact_style))
+            
+            story.append(Spacer(1, 8))
+            
+            # Add summary (shorter version)
+            if personal_info.get('summary'):
+                story.append(Paragraph("PROFESSIONAL SUMMARY", heading_style))
+                # Truncate summary if too long
+                summary = personal_info['summary']
+                if len(summary) > 200:
+                    summary = summary[:200] + "..."
+                story.append(Paragraph(summary, normal_style))
+            
+            # Add experience (limit to 2-3 most recent)
+            if experience:
+                story.append(Paragraph("PROFESSIONAL EXPERIENCE", heading_style))
+                for i, exp in enumerate(experience[:3]):  # Limit to 3 experiences
+                    exp_text = f"<b>{exp.get('title', '')}</b>"
+                    story.append(Paragraph(exp_text, item_title_style))
+                    
+                    subtitle = f"{exp.get('company', '')}"
+                    if exp.get('duration'):
+                        subtitle += f" | {exp.get('duration', '')}"
+                    story.append(Paragraph(subtitle, item_subtitle_style))
+                    
+                    # Truncate description if too long
+                    description = exp.get('description', '')
+                    if len(description) > 150:
+                        description = description[:150] + "..."
+                    if description:
+                        story.append(Paragraph(description, item_description_style))
+            
+            # Add education (limit to 2 most recent)
+            if education:
+                story.append(Paragraph("EDUCATION", heading_style))
+                for i, edu in enumerate(education[:2]):  # Limit to 2 education entries
+                    edu_text = f"<b>{edu.get('degree', '')}</b>"
+                    story.append(Paragraph(edu_text, item_title_style))
+                    
+                    subtitle = f"{edu.get('institution', '')}"
+                    if edu.get('year'):
+                        subtitle += f" | {edu.get('year', '')}"
+                    story.append(Paragraph(subtitle, item_subtitle_style))
+                    
+                    if edu.get('gpa'):
+                        story.append(Paragraph(f"GPA: {edu['gpa']}", item_description_style))
+            
+            # Add skills (compact format)
+            if skills:
+                story.append(Paragraph("SKILLS", heading_style))
+                skills_text = " • ".join([skill.get('name', '') for skill in skills[:10]])  # Limit to 10 skills
+                story.append(Paragraph(skills_text, normal_style))
+            
+            # Add projects (limit to 2 most important)
+            if projects:
+                story.append(Paragraph("PROJECTS", heading_style))
+                for i, project in enumerate(projects[:2]):  # Limit to 2 projects
+                    proj_text = f"<b>{project.get('title', '')}</b>"
+                    story.append(Paragraph(proj_text, item_title_style))
+                    
+                    if project.get('technologies'):
+                        story.append(Paragraph(project['technologies'], item_subtitle_style))
+                    
+                    # Truncate description if too long
+                    description = project.get('description', '')
+                    if len(description) > 120:
+                        description = description[:120] + "..."
+                    if description:
+                        story.append(Paragraph(description, item_description_style))
+            
+            # Add certifications (limit to 3 most recent)
+            if certifications:
+                story.append(Paragraph("CERTIFICATIONS", heading_style))
+                for i, cert in enumerate(certifications[:3]):  # Limit to 3 certifications
+                    cert_text = f"<b>{cert.get('name', '')}</b>"
+                    story.append(Paragraph(cert_text, item_title_style))
+                    
+                    subtitle = f"{cert.get('issuer', '')}"
+                    if cert.get('year'):
+                        subtitle += f" | {cert.get('year', '')}"
+                    story.append(Paragraph(subtitle, item_subtitle_style))
+            
+            print("Building PDF...")
+            # Build PDF
+            doc.build(story)
+            buffer.seek(0)
+            
+            print("PDF built successfully, size:", len(buffer.getvalue()))
+            
+            # Return PDF as response
+            from django.http import HttpResponse
+            response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{personal_info.get("full_name", "resume")}_resume.pdf"'
+            return response
+            
+        except ImportError as e:
+            print("Import error:", str(e))
+            return JsonResponse({'error': f'PDF library not available: {str(e)}'}, status=500)
+        except Exception as e:
+            print("PDF generation error:", str(e))
+            return JsonResponse({'error': f'PDF generation failed: {str(e)}'}, status=500)
+        
+    except json.JSONDecodeError as e:
+        print("JSON decode error:", str(e))
+        return JsonResponse({'error': f'Invalid JSON data: {str(e)}'}, status=400)
+    except Exception as e:
+        print("General error:", str(e))
+        return JsonResponse({'error': str(e)}, status=500)
+
+@employee_login_required
+def test_pdf(request):
+    """Simple test endpoint to verify PDF generation works"""
+    try:
+        from reportlab.lib.pagesizes import letter
+        from reportlab.platypus import SimpleDocTemplate, Paragraph
+        from reportlab.lib.styles import getSampleStyleSheet
+        from io import BytesIO
+        
+        # Create a simple test PDF
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        story = []
+        
+        styles = getSampleStyleSheet()
+        story.append(Paragraph("Test PDF Generation", styles['Heading1']))
+        story.append(Paragraph("This is a test PDF to verify that ReportLab is working correctly.", styles['Normal']))
+        
+        doc.build(story)
+        buffer.seek(0)
+        
+        from django.http import HttpResponse
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="test.pdf"'
+        return response
+        
+    except Exception as e:
+        return JsonResponse({'error': f'Test PDF failed: {str(e)}'}, status=500)
+
+def employee_notifications(request):
+    employee_id = request.session.get('employee_id')
+    filter_type = request.GET.get('filter', 'all')
+    search_query = request.GET.get('search', '').strip()
+    
+    if employee_id:
+        notifications_qs = Notification.objects.filter(employee_id=employee_id)
+    else:
+        notifications_qs = Notification.objects.all()
+    
+    if search_query:
+        notifications_qs = notifications_qs.filter(message__icontains=search_query)
+    
+    notifications_qs = notifications_qs.order_by('-created_at')
+    
+    if filter_type == 'unread':
+        unread_notifications = notifications_qs.filter(is_read=False)
+        read_notifications = Notification.objects.none()
+    elif filter_type == 'read':
+        unread_notifications = Notification.objects.none()
+        read_notifications = notifications_qs.filter(is_read=True)
+    else:
+        unread_notifications = notifications_qs.filter(is_read=False)
+        read_notifications = notifications_qs.filter(is_read=True)
+    
+    return render(request, 'employee/notifications.html', {
+        'unread_notifications': unread_notifications,
+        'read_notifications': read_notifications,
+        'filter_type': filter_type,
+        'search_query': search_query,
+    })
+
+@require_POST
+@csrf_exempt
+def mark_notification_read(request):
+    from django.http import JsonResponse
+    notif_id = request.POST.get('id')
+    mark_read = request.POST.get('read') == 'true'
+    employee_id = request.session.get('employee_id')
+    try:
+        notif = Notification.objects.get(id=notif_id, employee_id=employee_id)
+        notif.is_read = mark_read
+        notif.save()
+        return JsonResponse({'success': True, 'is_read': notif.is_read})
+    except Notification.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Notification not found.'}, status=404)
+
+@require_POST
+@csrf_exempt
+def delete_notification(request):
+    from django.http import JsonResponse
+    notif_id = request.POST.get('id')
+    employee_id = request.session.get('employee_id')
+    try:
+        notif = Notification.objects.get(id=notif_id, employee_id=employee_id)
+        notif.delete()
+        return JsonResponse({'success': True})
+    except Notification.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Notification not found.'}, status=404)
+
+@employee_login_required
+@require_http_methods(["POST"])
+def save_job(request):
+    """Save a job for the current employee."""
+    try:
+        employee = Employee.objects.get(username=request.session.get('employee_username'))
+        job_id = request.POST.get('job_id')
+        if not job_id:
+            return JsonResponse({'success': False, 'error': 'Job ID is required.'}, status=400)
+        from employer.models import Job
+        job = Job.objects.get(id=job_id)
+        SavedJob.objects.get_or_create(employee=employee, job=job)
+        return JsonResponse({'success': True, 'message': 'Job saved.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@employee_login_required
+@require_http_methods(["POST"])
+def unsave_job(request):
+    """Unsave a job for the current employee."""
+    try:
+        employee = Employee.objects.get(username=request.session.get('employee_username'))
+        job_id = request.POST.get('job_id')
+        if not job_id:
+            return JsonResponse({'success': False, 'error': 'Job ID is required.'}, status=400)
+        from employer.models import Job
+        job = Job.objects.get(id=job_id)
+        SavedJob.objects.filter(employee=employee, job=job).delete()
+        return JsonResponse({'success': True, 'message': 'Job unsaved.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@employee_login_required
+@require_http_methods(["GET"])
+def get_saved_jobs(request):
+    """Return a list of job IDs that the current user has saved."""
+    try:
+        employee = Employee.objects.get(username=request.session.get('employee_username'))
+        saved_job_ids = SavedJob.objects.filter(employee=employee).values_list('job_id', flat=True)
+        return JsonResponse({'success': True, 'saved_jobs': list(saved_job_ids)})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

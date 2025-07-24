@@ -118,3 +118,25 @@ class JobPreferences(models.Model):
     
     def __str__(self):
         return f"{self.employee.username}'s Job Preferences"
+
+class Notification(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='notifications')
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    job = models.ForeignKey(Job, on_delete=models.SET_NULL, null=True, blank=True, related_name='notifications')
+
+    def __str__(self):
+        return f"Notification for {self.employee.username}: {self.message[:30]}..."
+
+class SavedJob(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='saved_jobs')
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='saved_by_employees')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('employee', 'job')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.employee.username} saved {self.job.title}"

@@ -287,4 +287,135 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("jobCompanySpan").textContent = company
     document.getElementById("jobTitleDetail").textContent = jobTitle
   }
+
+  // --- Saved Jobs Feature ---
+  let savedJobs = new Set();
+  let showOnlySaved = false;
+
+  // Fetch saved jobs for the current user
+  function fetchSavedJobs() {
+    fetch('/employee/get-saved-jobs/')
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          savedJobs = new Set(data.saved_jobs.map(id => id.toString()));
+          updateSavedJobButtons();
+        }
+      });
+  }
+
+  // Update all save buttons based on savedJobs set
+  function updateSavedJobButtons() {
+    document.querySelectorAll('.save-job-btn').forEach(btn => {
+      const jobId = btn.getAttribute('data-job-id');
+      if (savedJobs.has(jobId)) {
+        btn.classList.remove('btn-outline-danger');
+        btn.classList.add('btn-danger');
+        btn.title = 'Unsave job';
+        btn.querySelector('i').classList.remove('far');
+        btn.querySelector('i').classList.add('fas');
+      } else {
+        btn.classList.add('btn-outline-danger');
+        btn.classList.remove('btn-danger');
+        btn.title = 'Save job';
+        btn.querySelector('i').classList.add('far');
+        btn.querySelector('i').classList.remove('fas');
+      }
+    });
+  }
+
+  // Save/Unsave job button click handler
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.save-job-btn')) {
+      const btn = e.target.closest('.save-job-btn');
+      const jobId = btn.getAttribute('data-job-id');
+      if (savedJobs.has(jobId)) {
+        // Unsave
+        fetch('/employee/unsave-job/', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'job_id=' + encodeURIComponent(jobId),
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            savedJobs.delete(jobId);
+            updateSavedJobButtons();
+            if (showOnlySaved) filterJobsBySaved();
+            showToast('Job removed from saved.', 'success');
+          } else {
+            showToast(data.error || 'Failed to unsave job.', 'error');
+          }
+        });
+      } else {
+        // Save
+        fetch('/employee/save-job/', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'job_id=' + encodeURIComponent(jobId),
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            savedJobs.add(jobId);
+            updateSavedJobButtons();
+            showToast('Job saved!', 'success');
+          } else {
+            showToast(data.error || 'Failed to save job.', 'error');
+          }
+        });
+      }
+    }
+  });
+
+  // Saved Jobs filter button logic
+  const savedJobsFilterBtn = document.getElementById('savedJobsFilter');
+  if (savedJobsFilterBtn) {
+    savedJobsFilterBtn.addEventListener('click', function() {
+      showOnlySaved = !showOnlySaved;
+      if (showOnlySaved) {
+        savedJobsFilterBtn.classList.add('btn-danger');
+        savedJobsFilterBtn.classList.remove('btn-outline-secondary');
+        filterJobsBySaved();
+      } else {
+        savedJobsFilterBtn.classList.remove('btn-danger');
+        savedJobsFilterBtn.classList.add('btn-outline-secondary');
+        showAllJobs();
+      }
+    });
+  }
+
+  function filterJobsBySaved() {
+    document.querySelectorAll('.job-card').forEach(card => {
+      const jobId = card.closest('[data-job-id]').getAttribute('data-job-id');
+      if (!savedJobs.has(jobId)) {
+        card.closest('.col-md-6, .col-lg-4').style.display = 'none';
+      } else {
+        card.closest('.col-md-6, .col-lg-4').style.display = 'block';
+      }
+    });
+  }
+
+  function showAllJobs() {
+    document.querySelectorAll('.job-card').forEach(card => {
+      card.closest('.col-md-6, .col-lg-4').style.display = 'block';
+    });
+  }
+
+  // Re-run filter after jobs are filtered by search/category/location
+  // (Assume filterJobs is called elsewhere)
+  const origFilterJobs = window.filterJobs;
+  window.filterJobs = function() {
+    if (typeof origFilterJobs === 'function') origFilterJobs();
+    if (showOnlySaved) filterJobsBySaved();
+  };
+
+  // Fetch saved jobs on page load
+  fetchSavedJobs();
 })

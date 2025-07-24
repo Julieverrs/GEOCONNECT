@@ -19,4 +19,17 @@ urlpatterns = [
     path('application-status/', views.application_status, name='application_status'),
     path('job-preferences/', views.job_preferences, name='job_preferences'),
     path('get-job-preferences/', views.get_job_preferences, name='get_job_preferences'),
+    path('job-mapping/', views.job_mapping, name='job_mapping'),
+    path('resume-builder/', views.resume_builder, name='resume_builder'),
+    path('generate-resume-pdf/', views.generate_resume_pdf, name='generate_resume_pdf'),
+    path('test-pdf/', views.test_pdf, name='test_pdf'),
+    path('notifications/', views.employee_notifications, name='employee_notifications'),
+    path('notification/mark-read/', views.mark_notification_read, name='mark_notification_read'),
+    path('notification/delete/', views.delete_notification, name='delete_notification'),
+]
+
+urlpatterns += [
+    path('save-job/', views.save_job, name='save_job'),
+    path('unsave-job/', views.unsave_job, name='unsave_job'),
+    path('get-saved-jobs/', views.get_saved_jobs, name='get_saved_jobs'),
 ]
