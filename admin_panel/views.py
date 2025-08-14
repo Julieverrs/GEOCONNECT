@@ -10,6 +10,7 @@ from django.utils import timezone
 import json
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db import models
 
 # Update these imports to use the correct model locations
 from employer.models import Employer  # Changed from .models
@@ -45,12 +46,52 @@ def admin_login(request):
 @user_passes_test(is_admin)
 def admin_dashboard(request):
     try:
-        employees = Employee.objects.all().order_by('-date_joined')
-        employers = Employer.objects.all().order_by('-date_joined')
+        search_query = request.GET.get('search', '')
+        status_filter = request.GET.get('status', 'all')
+        
+        employees = Employee.objects.all()
+        employers = Employer.objects.all()
+        
+        # Apply search filter
+        if search_query:
+            employees = employees.filter(
+                models.Q(username__icontains=search_query) |
+                models.Q(email__icontains=search_query) |
+                models.Q(first_name__icontains=search_query) |
+                models.Q(last_name__icontains=search_query)
+            )
+            employers = employers.filter(
+                models.Q(username__icontains=search_query) |
+                models.Q(email__icontains=search_query) |
+                models.Q(company_name__icontains=search_query)
+            )
+        
+        # Apply status filter
+        if status_filter == 'active':
+            employees = employees.filter(is_active=True)
+            employers = employers.filter(is_active=True)
+        elif status_filter == 'inactive':
+            employees = employees.filter(is_active=False)
+            employers = employers.filter(is_active=False)
+        elif status_filter == 'pending':
+            employees = employees.filter(is_approved__isnull=True)
+            employers = employers.filter(is_approved__isnull=True)
+        elif status_filter == 'approved':
+            employees = employees.filter(is_approved=True)
+            employers = employers.filter(is_approved=True)
+        elif status_filter == 'rejected':
+            employees = employees.filter(is_approved=False, rejection_reason__isnull=False)
+            employers = employers.filter(is_approved=False, rejection_reason__isnull=False)
+        
+        # Order by date joined
+        employees = employees.order_by('-date_joined')
+        employers = employers.order_by('-date_joined')
         
         context = {
             'employees': employees,
             'employers': employers,
+            'search_query': search_query,
+            'status_filter': status_filter,
         }
         return render(request, 'admin_panel/dashboard.html', context)
     except Exception as e:
@@ -660,3 +701,535 @@ def employee_approval_dashboard(request):
     }
     
     return render(request, 'admin_panel/employee_approval_dashboard.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def user_monitoring_dashboard(request):
+    """Dashboard for monitoring all users and their activities"""
+    try:
+        # Get all users with their counts
+        total_employees = Employee.objects.count()
+        total_employers = Employer.objects.count()
+        active_employees = Employee.objects.filter(is_active=True).count()
+        active_employers = Employer.objects.filter(is_active=True).count()
+        pending_employees = Employee.objects.filter(is_approved__isnull=True).count()
+        pending_employers = Employer.objects.filter(is_approved__isnull=True).count()
+        
+        # Get recent activities
+        recent_employees = Employee.objects.all().order_by('-date_joined')[:10]
+        recent_employers = Employer.objects.all().order_by('-date_joined')[:10]
+        
+        # Get job statistics
+        from employer.models import Job
+        total_jobs = Job.objects.count()
+        active_jobs = Job.objects.filter(status__iexact='active').count()
+        
+        # Get application statistics
+        from employer.models import JobApplication
+        total_applications = JobApplication.objects.count()
+        
+        context = {
+            'total_employees': total_employees,
+            'total_employers': total_employers,
+            'active_employees': active_employees,
+            'active_employers': active_employers,
+            'pending_employees': pending_employees,
+            'pending_employers': pending_employers,
+            'recent_employees': recent_employees,
+            'recent_employers': recent_employers,
+            'total_jobs': total_jobs,
+            'active_jobs': active_jobs,
+            'total_applications': total_applications,
+        }
+        return render(request, 'admin_panel/user_monitoring.html', context)
+    except Exception as e:
+        messages.error(request, f'Error loading monitoring dashboard: {str(e)}')
+        return render(request, 'admin_panel/user_monitoring.html', {})
+
+
+
+@login_required
+@user_passes_test(is_admin)
+def jobs_monitoring(request):
+    """Monitor all jobs posted by employers"""
+    try:
+        # Import at the top level to avoid import issues
+        from employer.models import Job
+        from django.db import models
+        
+        search_query = request.GET.get('search', '')
+        status_filter = request.GET.get('status', 'all')
+        job_type_filter = request.GET.get('job_type', 'all')
+        work_setup_filter = request.GET.get('work_setup', 'all')
+        experience_level_filter = request.GET.get('experience_level', 'all')
+        employer_filter = request.GET.get('employer', '')
+        
+        # Start with base query - first get all jobs without select_related to debug
+        all_jobs = Job.objects.all()
+        print(f"DEBUG: All jobs count: {all_jobs.count()}")
+        
+        # Check if there are any jobs without employers
+        jobs_without_employers = all_jobs.filter(employer__isnull=True)
+        print(f"DEBUG: Jobs without employers: {jobs_without_employers.count()}")
+        
+        # Now get jobs with select_related
+        jobs = all_jobs.select_related('employer')
+        
+        # Apply search filter
+        if search_query:
+            jobs = jobs.filter(
+                models.Q(title__icontains=search_query) |
+                models.Q(description__icontains=search_query) |
+                models.Q(location__icontains=search_query) |
+                models.Q(employer__company_name__icontains=search_query)
+            )
+        
+        # Apply status filter
+        if status_filter != 'all':
+            if status_filter == 'active':
+                jobs = jobs.filter(status__iexact='active')
+            elif status_filter == 'closed':
+                jobs = jobs.filter(status__iexact='closed')
+        
+        # Apply job type filter
+        if job_type_filter != 'all':
+            jobs = jobs.filter(job_type=job_type_filter)
+        
+        # Apply work setup filter
+        if work_setup_filter != 'all':
+            jobs = jobs.filter(work_setup=work_setup_filter)
+        
+        # Apply experience level filter
+        if experience_level_filter != 'all':
+            jobs = jobs.filter(experience_level=experience_level_filter)
+        
+        # Apply employer filter
+        if employer_filter:
+            jobs = jobs.filter(employer__company_name__icontains=employer_filter)
+        
+        # Annotate with applications count using the correct related name
+        from django.db.models import Count, Value
+        from django.db.models.functions import Coalesce
+        
+        # Use the correct related_name from JobApplication model
+        try:
+            jobs = jobs.annotate(
+                applications_count=Coalesce(Count('jobapplication'), Value(0))
+            ).order_by('-created_at')
+            print(f"DEBUG: After annotation, jobs count: {jobs.count()}")
+        except Exception as e:
+            print(f"DEBUG: Error in annotation: {e}")
+            # Fallback to basic query without annotation
+            jobs = jobs.order_by('-created_at')
+            print(f"DEBUG: Fallback jobs count: {jobs.count()}")
+        
+        # Get statistics
+        total_jobs = Job.objects.count()
+        active_jobs = Job.objects.filter(status__iexact='active').count()
+        closed_jobs = Job.objects.filter(status__iexact='closed').count()
+        
+        # Debug information
+        print(f"DEBUG: Total jobs found: {jobs.count()}")
+        print(f"DEBUG: Jobs data: {list(jobs.values('id', 'title', 'status', 'employer__company_name'))}")
+        print(f"DEBUG: Raw Job.objects.all() count: {Job.objects.all().count()}")
+        print(f"DEBUG: Raw Job.objects.filter(status__iexact='active').count(): {Job.objects.filter(status__iexact='active').count()}")
+        
+        # Convert to list to ensure it's evaluated
+        jobs_list = list(jobs)
+        print(f"DEBUG: Final jobs list length: {len(jobs_list)}")
+        
+        context = {
+            'jobs': jobs_list,
+            'search_query': search_query,
+            'status_filter': status_filter,
+            'job_type_filter': job_type_filter,
+            'work_setup_filter': work_setup_filter,
+            'experience_level_filter': experience_level_filter,
+            'employer_filter': employer_filter,
+            'total_jobs': total_jobs,
+            'active_jobs': active_jobs,
+            'closed_jobs': closed_jobs,
+        }
+        
+        return render(request, 'admin_panel/jobs_monitoring.html', context)
+    except Exception as e:
+        print(f"DEBUG: Error in jobs_monitoring: {str(e)}")
+        messages.error(request, f'Error loading jobs monitoring: {str(e)}')
+        return render(request, 'admin_panel/jobs_monitoring.html', {
+            'jobs': [],
+            'total_jobs': 0,
+            'active_jobs': 0,
+            'closed_jobs': 0,
+            'search_query': '',
+            'status_filter': 'all',
+            'job_type_filter': 'all',
+            'work_setup_filter': 'all',
+            'experience_level_filter': 'all',
+            'employer_filter': ''
+        })
+
+@login_required
+@user_passes_test(is_admin)
+def get_job_details(request, job_id):
+    """Get detailed information about a specific job"""
+    try:
+        from employer.models import Job
+        from django.db.models import Count, Value
+        from django.db.models.functions import Coalesce
+        
+        job = Job.objects.select_related('employer').annotate(
+            applications_count=Coalesce(Count('jobapplication'), Value(0))
+        ).get(id=job_id)
+        
+        # Serialize job data
+        job_data = {
+            'id': job.id,
+            'title': job.title,
+            'location': job.location,
+            'job_type': job.job_type,
+            'work_setup': job.work_setup,
+            'description': job.description,
+            'salary_range': job.salary_range,
+            'experience_level': job.experience_level,
+            'status': job.status,
+            'created_at': job.created_at.isoformat(),
+            'updated_at': job.updated_at.isoformat(),
+            'applications_count': job.applications_count,
+            'requirements': job.requirements,
+            'employer': {
+                'id': job.employer.id,
+                'username': job.employer.username,
+                'email': job.employer.email,
+                'company_name': job.employer.company_name,
+                'company_description': job.employer.company_description,
+                'company_website': job.employer.company_website,
+                'company_location': job.employer.company_location,
+                'industry': job.employer.industry,
+            }
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'job': job_data
+        })
+        
+    except Job.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Job not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@login_required
+@user_passes_test(is_admin)
+def get_application_details(request, application_id):
+    """Get detailed information about a specific job application"""
+    try:
+        from employer.models import JobApplication
+        
+        application = JobApplication.objects.select_related(
+            'employee', 'job', 'job__employer'
+        ).get(id=application_id)
+        
+        # Serialize application data
+        application_data = {
+            'id': application.id,
+            'employee_name': f"{application.employee.first_name} {application.employee.last_name}".strip() or application.employee.username,
+            'employee_email': application.employee.email,
+            'employee_username': application.employee.username,
+            'job_title': application.job.title,
+            'job_location': application.job.location,
+            'job_type': application.job.job_type,
+            'work_setup': application.job.work_setup,
+            'experience_level': application.job.experience_level,
+            'employer_company': application.job.employer.company_name or application.job.employer.username,
+            'employer_email': application.job.employer.email,
+            'status': application.status,
+            'status_display': application.status.title(),
+            'applied_date': application.application_date.strftime('%B %d, %Y') if application.application_date else 'N/A',
+            'cover_letter': getattr(application, 'cover_letter', None),
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'application': application_data
+        })
+        
+    except JobApplication.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Application not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@login_required
+@user_passes_test(is_admin)
+def applications_monitoring(request):
+    """Monitor all job applications"""
+    try:
+        from employee.models import JobApplication as EmployeeJobApplication
+        from employer.models import JobApplication as EmployerJobApplication
+        
+        search_query = request.GET.get('search', '')
+        status_filter = request.GET.get('status', 'all')
+        job_filter = request.GET.get('job', '')
+        
+        # Get applications from the employer JobApplication model (which is the main one)
+        from employer.models import JobApplication
+        
+        applications = JobApplication.objects.select_related('employee', 'job', 'job__employer').all()
+        
+        # Apply search filter
+        if search_query:
+            applications = applications.filter(
+                models.Q(employee__username__icontains=search_query) |
+                models.Q(employee__email__icontains=search_query) |
+                models.Q(job__title__icontains=search_query) |
+                models.Q(job__employer__company_name__icontains=search_query)
+            )
+        
+        # Apply status filter
+        if status_filter != 'all':
+            applications = applications.filter(status=status_filter)
+        
+        # Apply job filter
+        if job_filter:
+            applications = applications.filter(job__title__icontains=job_filter)
+        
+        # Order by application date
+        applications = applications.order_by('-application_date')
+        
+        # Get statistics
+        total_applications = applications.count()
+        pending_applications = applications.filter(status='pending').count()
+        accepted_applications = applications.filter(status='hired').count()
+        rejected_applications = applications.filter(status='rejected').count()
+        
+        context = {
+            'applications': applications,
+            'search_query': search_query,
+            'status_filter': status_filter,
+            'job_filter': job_filter,
+            'total_applications': total_applications,
+            'pending_applications': pending_applications,
+            'accepted_applications': accepted_applications,
+            'rejected_applications': rejected_applications,
+        }
+        return render(request, 'admin_panel/applications_monitoring.html', context)
+    except Exception as e:
+        messages.error(request, f'Error loading applications monitoring: {str(e)}')
+        return render(request, 'admin_panel/applications_monitoring.html', {})
+
+@login_required
+@user_passes_test(is_admin)
+def system_reports(request):
+    """Generate system reports for administrative analysis"""
+    try:
+        from django.db.models import Count, Q
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Get date range for reports
+        end_date = timezone.now()
+        start_date = end_date - timedelta(days=30)  # Last 30 days
+        
+        # User registration statistics
+        new_employees = Employee.objects.filter(date_joined__gte=start_date).count()
+        new_employers = Employer.objects.filter(date_joined__gte=start_date).count()
+        
+        # Approval statistics
+        pending_employees = Employee.objects.filter(is_approved__isnull=True).count()
+        pending_employers = Employer.objects.filter(is_approved__isnull=True).count()
+        approved_employees = Employee.objects.filter(is_approved=True).count()
+        approved_employers = Employer.objects.filter(is_approved=True).count()
+        rejected_employees = Employee.objects.filter(is_approved=False, rejection_reason__isnull=False).count()
+        rejected_employers = Employer.objects.filter(is_approved=False, rejection_reason__isnull=False).count()
+        
+        # Job statistics
+        from employer.models import Job
+        total_jobs = Job.objects.count()
+        active_jobs = Job.objects.filter(status__iexact='active').count()
+        jobs_this_month = Job.objects.filter(created_at__gte=start_date).count()
+        
+        # Application statistics
+        from employer.models import JobApplication
+        
+        total_applications = JobApplication.objects.count()
+        applications_this_month = JobApplication.objects.filter(application_date__gte=start_date).count()
+        
+        # Status breakdown
+        application_statuses = JobApplication.objects.values('status').annotate(count=Count('status'))
+        
+        # Top employers by job count
+        top_employers = Employer.objects.annotate(job_count=Count('jobs')).order_by('-job_count')[:10]
+        
+        # Top employees by application count
+        top_employees = Employee.objects.annotate(application_count=Count('employee_applications')).order_by('-application_count')[:10]
+        
+        context = {
+            'start_date': start_date,
+            'end_date': end_date,
+            'new_employees': new_employees,
+            'new_employers': new_employers,
+            'pending_employees': pending_employees,
+            'pending_employers': pending_employers,
+            'approved_employees': approved_employees,
+            'approved_employers': approved_employers,
+            'rejected_employees': rejected_employees,
+            'rejected_employers': rejected_employers,
+            'total_jobs': total_jobs,
+            'active_jobs': active_jobs,
+            'jobs_this_month': jobs_this_month,
+            'total_applications': total_applications,
+            'applications_this_month': applications_this_month,
+            'application_statuses': application_statuses,
+            'top_employers': top_employers,
+            'top_employees': top_employees,
+        }
+        return render(request, 'admin_panel/system_reports.html', context)
+    except Exception as e:
+        messages.error(request, f'Error generating reports: {str(e)}')
+        return render(request, 'admin_panel/system_reports.html', {})
+
+@login_required
+@user_passes_test(is_admin)
+def export_report(request):
+    """Export report data as CSV"""
+    try:
+        import csv
+        from django.http import HttpResponse
+        from django.utils import timezone
+        
+        report_type = request.GET.get('type', 'users')
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{report_type}_report_{timezone.now().strftime("%Y%m%d")}.csv"'
+        
+        writer = csv.writer(response)
+        
+        if report_type == 'users':
+            writer.writerow(['Username', 'Email', 'Type', 'Status', 'Date Joined', 'Approval Status'])
+            
+            for employee in Employee.objects.all():
+                status = 'Active' if employee.is_active else 'Inactive'
+                approval_status = 'Approved' if employee.is_approved else 'Rejected' if employee.rejection_reason else 'Pending'
+                writer.writerow([
+                    employee.username,
+                    employee.email,
+                    'Employee',
+                    status,
+                    employee.date_joined.strftime('%Y-%m-%d'),
+                    approval_status
+                ])
+            
+            for employer in Employer.objects.all():
+                status = 'Active' if employer.is_active else 'Inactive'
+                approval_status = 'Approved' if employer.is_approved else 'Rejected' if employer.rejection_reason else 'Pending'
+                writer.writerow([
+                    employer.username,
+                    employer.email,
+                    'Employer',
+                    status,
+                    employer.date_joined.strftime('%Y-%m-%d'),
+                    approval_status
+                ])
+        
+        elif report_type == 'jobs':
+            from employer.models import Job
+            writer.writerow(['Job Title', 'Employer', 'Location', 'Status', 'Created Date', 'Applications'])
+            
+            for job in Job.objects.select_related('employer').annotate(
+                applications_count=Coalesce(Count('jobapplication'), Value(0))
+            ).all():
+                writer.writerow([
+                    job.title,
+                    job.employer.company_name,
+                    job.location,
+                    job.status,
+                    job.created_at.strftime('%Y-%m-%d'),
+                    job.applications_count
+                ])
+        
+        elif report_type == 'applications':
+            from employer.models import JobApplication
+            
+            writer.writerow(['Employee', 'Job Title', 'Employer', 'Status', 'Application Date'])
+            
+            for app in JobApplication.objects.select_related('employee', 'job', 'job__employer').all():
+                writer.writerow([
+                    app.employee.username,
+                    app.job.title,
+                    app.job.employer.company_name,
+                    app.status,
+                    app.application_date.strftime('%Y-%m-%d')
+                ])
+        
+        return response
+    except Exception as e:
+        messages.error(request, f'Error exporting report: {str(e)}')
+        return redirect('admin_panel:system_reports')
+
+def test_jobs_data(request):
+    """Test view to check if jobs data is accessible without authentication"""
+    try:
+        from employer.models import Job
+        from django.db.models import Count, Value
+        from django.db.models.functions import Coalesce
+        from django.http import HttpResponse
+        
+        # Get basic job counts
+        total_jobs = Job.objects.count()
+        active_jobs = Job.objects.filter(status__iexact='active').count()
+        closed_jobs = Job.objects.filter(status__iexact='closed').count()
+        
+        # Get sample jobs
+        sample_jobs = Job.objects.select_related('employer').all()[:5]
+        
+        # Test the complex query
+        jobs_with_apps = Job.objects.select_related('employer').annotate(
+            applications_count=Coalesce(Count('jobapplication'), Value(0))
+        ).order_by('-created_at')
+        
+        # Test the exact query from jobs_monitoring
+        test_jobs = Job.objects.select_related('employer').all()
+        test_jobs = test_jobs.annotate(
+            applications_count=Coalesce(Count('jobapplication'), Value(0))
+        ).order_by('-created_at')
+        
+        # Debug output
+        debug_info = f"""
+        <h2>Jobs Debug Information</h2>
+        <p><strong>Total Jobs:</strong> {total_jobs}</p>
+        <p><strong>Active Jobs:</strong> {active_jobs}</p>
+        <p><strong>Closed Jobs:</strong> {closed_jobs}</p>
+        <p><strong>Sample Jobs Count:</strong> {len(sample_jobs)}</p>
+        <p><strong>Jobs with Apps Count:</strong> {jobs_with_apps.count()}</p>
+        <p><strong>Test Jobs Count (from jobs_monitoring query):</strong> {test_jobs.count()}</p>
+        
+        <h3>Sample Jobs:</h3>
+        <ul>
+        """
+        
+        for job in sample_jobs:
+            debug_info += f"<li>ID: {job.id}, Title: {job.title}, Status: {job.status}, Employer: {job.employer.company_name if job.employer.company_name else job.employer.username}</li>"
+        
+        debug_info += "</ul>"
+        
+        debug_info += "<h3>Test Jobs (from jobs_monitoring query):</h3><ul>"
+        
+        for job in test_jobs[:5]:
+            debug_info += f"<li>ID: {job.id}, Title: {job.title}, Status: {job.status}, Applications: {job.applications_count}</li>"
+        
+        debug_info += "</ul>"
+        
+        return HttpResponse(debug_info, content_type="text/html")
+        
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", content_type="text/plain")

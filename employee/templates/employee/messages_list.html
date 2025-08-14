@@ -1,0 +1,104 @@
+{% extends 'employee/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/messages_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+    <div class="messages-header">
+        <div class="header-content">
+            <h1><i class="fas fa-comments"></i> Messages</h1>
+            <p>Communicate with employers about your job applications</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'employee_home' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+
+    <div class="messages-content">
+        {% if conversations %}
+            <div class="conversations-list">
+                {% for conversation in conversations %}
+                <div class="conversation-item" onclick="window.location.href='{% url 'conversation_detail' conversation.id %}'">
+                    <div class="conversation-avatar">
+                        <div class="avatar-circle">
+                            <span>{{ conversation.employer.company_name|first|upper }}</span>
+                        </div>
+                        {% if conversation.unread_count > 0 %}
+                        <div class="unread-badge">{{ conversation.unread_count }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="conversation-details">
+                        <div class="conversation-header">
+                            <h3>{{ conversation.employer.company_name }}</h3>
+                            <span class="conversation-time">{{ conversation.updated_at|timesince }} ago</span>
+                        </div>
+                        
+                        <div class="conversation-preview">
+                            <p class="job-title">
+                                <i class="fas fa-briefcase"></i>
+                                {{ conversation.job.title }}
+                            </p>
+                            {% if conversation.last_message %}
+                            <p class="last-message">
+                                {% if conversation.last_message.sender_type == 'employee' %}
+                                    <i class="fas fa-user text-primary"></i> <strong>You:</strong>
+                                {% else %}
+                                    <i class="fas fa-building text-primary"></i> <strong>{{ conversation.employer.company_name }}:</strong>
+                                {% endif %}
+                                {{ conversation.last_message.content|truncatechars:50 }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="conversation-actions">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h3>No Messages Yet</h3>
+                <p>You'll see messages from employers here once you apply to jobs and they start conversations with you.</p>
+                <a href="{% url 'employee_home' %}" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Browse Jobs
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh unread counts every 30 seconds
+    setInterval(function() {
+        fetch('{% url "get_unread_count" %}')
+            .then(response => response.json())
+            .then(data => {
+                // Update the notification badge in the header if needed
+                const notificationBadge = document.querySelector('.notification-bell .badge');
+                if (notificationBadge) {
+                    if (data.unread_count > 0) {
+                        notificationBadge.textContent = data.unread_count;
+                        notificationBadge.style.display = 'block';
+                    } else {
+                        notificationBadge.style.display = 'none';
+                    }
+                }
+            });
+    }, 30000);
+});
+</script>
+{% endblock %} 

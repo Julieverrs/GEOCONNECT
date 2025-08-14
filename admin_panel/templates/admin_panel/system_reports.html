@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}System Reports - PESO Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_panel.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="admin-dashboard container-fluid">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2>Admin Panel</h2>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <span>Users</span>
+            </a>
+            <a href="{% url 'admin_panel:user_monitoring' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span>User Monitoring</span>
+            </a>
+            <a href="{% url 'admin_panel:jobs_monitoring' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <span>Jobs Monitoring</span>
+            </a>
+            <a href="{% url 'admin_panel:applications_monitoring' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <span>Applications</span>
+            </a>
+            <a href="{% url 'admin_panel:system_reports' %}" class="nav-item active">
+                <div class="nav-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <span>Reports</span>
+                <div class="nav-indicator"></div>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="{% url 'admin_panel:approvals' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <span>Employer Approval</span>
+            </a>
+            <a href="{% url 'admin_panel:employee_approvals' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <span>Employee Approval</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="{% url 'admin_panel:logout' %}" class="nav-item logout-item">
+                <div class="nav-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <span>Logout</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>System Reports</h1>
+                    <p>Comprehensive system analytics and reports</p>
+                </div>
+                <div class="header-actions">
+                    <div class="current-time">
+                        <i class="fas fa-clock"></i>
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Buttons -->
+        <div class="tabs-section">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Export Reports</h3>
+                </div>
+                <div class="export-buttons">
+                    <a href="{% url 'admin_panel:export_report' %}?type=users" class="export-button">
+                        <i class="fas fa-users"></i>
+                        Export User Data
+                    </a>
+                    <a href="{% url 'admin_panel:export_report' %}?type=jobs" class="export-button">
+                        <i class="fas fa-briefcase"></i>
+                        Export Job Data
+                    </a>
+                    <a href="{% url 'admin_panel:export_report' %}?type=applications" class="export-button">
+                        <i class="fas fa-file-alt"></i>
+                        Export Application Data
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Registration Statistics -->
+        <div class="tabs-section">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>User Registration Statistics</h3>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Total Employees</h3>
+                                <div class="stat-number">{{ total_employees }}</div>
+                                <div class="stat-trend">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>Registered employees</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Total Employers</h3>
+                                <div class="stat-number">{{ total_employers }}</div>
+                                <div class="stat-trend">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>Registered employers</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Approved Users</h3>
+                                <div class="stat-number">{{ approved_users }}</div>
+                                <div class="stat-trend">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Active accounts</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Pending Approval</h3>
+                                <div class="stat-number">{{ pending_users }}</div>
+                                <div class="stat-trend">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Awaiting review</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Statistics -->
+        <div class="tabs-section">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Job Statistics</h3>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-icon">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Total Jobs</h3>
+                                <div class="stat-number">{{ total_jobs }}</div>
+                                <div class="stat-trend">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>Posted positions</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Active Jobs</h3>
+                                <div class="stat-number">{{ active_jobs }}</div>
+                                <div class="stat-trend">
+                                    <i class="fas fa-check"></i>
+                                    <span>Available positions</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-icon">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Closed Jobs</h3>
+                                <div class="stat-number">{{ closed_jobs }}</div>
+                                <div class="stat-trend">
+                                    <i class="fas fa-times"></i>
+                                    <span>Filled positions</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Total Applications</h3>
+                                <div class="stat-number">{{ total_applications }}</div>
+                                <div class="stat-trend">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>Submitted applications</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Employers and Employees -->
+        <div class="tabs-section">
+            <div class="stats-grid">
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Top Employers</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Employer</th>
+                                    <th>Jobs Posted</th>
+                                    <th>Applications Received</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for employer in top_employers %}
+                                <tr>
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="user-avatar employer-avatar">
+                                                {{ employer.company_name|make_list|first|upper }}
+                                            </div>
+                                            <div class="user-info">
+                                                <span class="user-name">{{ employer.company_name }}</span>
+                                                <span class="user-type">Employer</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="number-cell">{{ employer.jobs_count }}</td>
+                                    <td class="number-cell">{{ employer.applications_count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="empty-cell">
+                                        <div class="empty-state">
+                                            <div class="empty-icon">
+                                                <i class="fas fa-building"></i>
+                                            </div>
+                                            <h3>No employer data</h3>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Top Employees</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Applications Submitted</th>
+                                    <th>Jobs Applied</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for employee in top_employees %}
+                                <tr>
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="user-avatar employee-avatar">
+                                                {{ employee.username|make_list|first|upper }}
+                                            </div>
+                                            <div class="user-info">
+                                                <span class="user-name">{{ employee.username }}</span>
+                                                <span class="user-type">Employee</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="number-cell">{{ employee.applications_count }}</td>
+                                    <td class="number-cell">{{ employee.jobs_applied }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="empty-cell">
+                                        <div class="empty-state">
+                                            <div class="empty-icon">
+                                                <i class="fas fa-user-tie"></i>
+                                            </div>
+                                            <h3>No employee data</h3>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="{% static 'js/admin-dashboard.js' %}"></script>
+
+<script>
+// Function to update the current time display
+function updateCurrentTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', {
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    const dateString = now.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    const timeElement = document.getElementById('current-time');
+    if (timeElement) {
+        timeElement.innerHTML = `<div class="time-display">${timeString}</div><div class="date-display">${dateString}</div>`;
+    }
+}
+
+// Update time every second
+setInterval(updateCurrentTime, 1000);
+
+// Initialize time display when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateCurrentTime();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,22 @@
+[
+  {
+    "model": "employer.job",
+    "pk": 51,
+    "fields": {
+      "employer": 21,
+      "title": "Cashier",
+      "location": "Masipit, Calapan City",
+      "latitude": 13.3885877,
+      "longitude": 121.1583553,
+      "job_type": "Full-time",
+      "work_setup": "On-site",
+      "description": "hevq eqhe qfh qefqf qef qgf qhqe fqhf qehf qh f qf ehf qhf hqoeogoqfvef egfq ufefoqutfv",
+      "salary_range": "70000",
+      "experience_level": "Mid Level",
+      "status": "active",
+      "created_at": "2025-07-29T09:25:45.365Z",
+      "updated_at": "2025-08-11T08:07:28.350Z",
+      "requirements": "Secret"
+    }
+  }
+]

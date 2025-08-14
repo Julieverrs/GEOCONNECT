@@ -26,6 +26,7 @@ class Employee(models.Model):
     skills = models.TextField(blank=True, null=True)
     years_of_experience = models.PositiveIntegerField(default=0)
     education = models.TextField(blank=True, null=True)
+    work_experience = models.TextField(blank=True, null=True)
     certifications = models.TextField(blank=True, null=True)
     preferred_job_type = models.CharField(max_length=50, blank=True, null=True)
     expected_salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -140,3 +141,76 @@ class SavedJob(models.Model):
 
     def __str__(self):
         return f"{self.employee.username} saved {self.job.title}"
+
+
+class EmployeeFeedback(models.Model):
+    """
+    Model to store employee feedback and ratings for employers/jobs
+    """
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='feedbacks')
+    job = models.ForeignKey('employer.Job', on_delete=models.CASCADE)
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('employee', 'job')
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.employee.username} - {self.job.title} - {self.rating} stars"
+
+# Messaging System Models
+class Conversation(models.Model):
+    """Represents a conversation between an employer and employee"""
+    job = models.ForeignKey('employer.Job', on_delete=models.CASCADE, related_name='conversations')
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='conversations')
+    employer = models.ForeignKey('employer.Employer', on_delete=models.CASCADE, related_name='conversations')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        unique_together = ('job', 'employee', 'employer')
+        ordering = ['-updated_at']
+    
+    def __str__(self):
+        return f"Conversation: {self.employee.username} - {self.employer.company_name} - {self.job.title}"
+    
+    @property
+    def last_message(self):
+        return self.messages.order_by('-created_at').first()
+    
+    @property
+    def unread_count_employee(self):
+        return self.messages.filter(is_read=False, sender_type='employer').count()
+    
+    @property
+    def unread_count_employer(self):
+        return self.messages.filter(is_read=False, sender_type='employee').count()
+
+class Message(models.Model):
+    """Individual messages within a conversation"""
+    SENDER_CHOICES = [
+        ('employee', 'Employee'),
+        ('employer', 'Employer'),
+    ]
+    
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    sender_type = models.CharField(max_length=10, choices=SENDER_CHOICES)
+    content = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['created_at']
+    
+    def __str__(self):
+        return f"Message from {self.sender_type} at {self.created_at}"
+    
+    @property
+    def sender_name(self):
+        if self.sender_type == 'employee':
+            return self.conversation.employee.username
+        else:
+            return self.conversation.employer.company_name

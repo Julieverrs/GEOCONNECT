@@ -26,10 +26,25 @@ urlpatterns = [
     path('notifications/', views.employee_notifications, name='employee_notifications'),
     path('notification/mark-read/', views.mark_notification_read, name='mark_notification_read'),
     path('notification/delete/', views.delete_notification, name='delete_notification'),
+    path('profile-settings/', views.profile_settings_view, name='employee_profile_settings'),
+    path('job-details/<int:job_id>/', views.job_details, name='job_details'),
 ]
 
 urlpatterns += [
     path('save-job/', views.save_job, name='save_job'),
     path('unsave-job/', views.unsave_job, name='unsave_job'),
     path('get-saved-jobs/', views.get_saved_jobs, name='get_saved_jobs'),
+    path('save-job/<int:job_id>/', views.save_job, name='save_job_with_id'),
+    path('unsave-job/<int:job_id>/', views.unsave_job, name='unsave_job_with_id'),
+    path('check-saved-job/<int:job_id>/', views.check_saved_job, name='check_saved_job'),
+    # Feedback and Rating System URLs
+    path('submit-feedback/', views.submit_feedback, name='submit_feedback'),
+    path('get-reviews/<int:job_id>/', views.get_reviews, name='get_reviews'),
+    path('get-job-feedback-stats/<int:job_id>/', views.get_job_feedback_stats, name='get_job_feedback_stats'),
+    # Messaging System URLs
+    path('messages/', views.messages_list, name='messages_list'),
+    path('messages/<int:conversation_id>/', views.conversation_detail, name='conversation_detail'),
+    path('messages/<int:conversation_id>/send/', views.send_message, name='send_message'),
+    path('messages/unread-count/', views.get_unread_count, name='get_unread_count'),
+    path('messages/<int:conversation_id>/mark-read/', views.mark_messages_read, name='mark_messages_read'),
 ]

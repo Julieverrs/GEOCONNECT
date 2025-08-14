@@ -764,6 +764,14 @@ function updateEmptyStates() {
         emptyState.remove();
     }
 }
+// --- Place decodeJSString function here so it's available globally ---
+function decodeJSString(str) {
+    if (!str) return '';
+    return str.replace(/\\u([\dA-Fa-f]{4})/g, function(match, grp) {
+        return String.fromCharCode(parseInt(grp, 16));
+    }).replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+}
+// --- End decodeJSString ---
 document.querySelectorAll('.mark-read-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const notifId = this.getAttribute('data-id');
@@ -839,19 +847,20 @@ document.querySelectorAll('.notification-item.card').forEach(card => {
         // Highlight selected
         document.querySelectorAll('.notification-item.card.selected').forEach(sel => sel.classList.remove('selected'));
         this.classList.add('selected');
-        const msg = this.getAttribute('data-message');
+        // Use decodeJSString for all relevant fields
+        const msg = decodeJSString(this.getAttribute('data-message'));
         const date = this.getAttribute('data-date');
-        const jobTitle = this.getAttribute('data-job-title');
-        const jobCompany = this.getAttribute('data-job-company');
-        const jobLocation = this.getAttribute('data-job-location');
-        const jobDescription = this.getAttribute('data-job-description');
-        const jobSalary = this.getAttribute('data-job-salary');
-        const jobType = this.getAttribute('data-job-type');
-        const jobWorksetup = this.getAttribute('data-job-worksetup');
-        const jobExperience = this.getAttribute('data-job-experience');
-        const jobRequirements = this.getAttribute('data-job-requirements');
-        const jobStatus = this.getAttribute('data-job-status');
-        const jobCreated = this.getAttribute('data-job-created');
+        const jobTitle = decodeJSString(this.getAttribute('data-job-title'));
+        const jobCompany = decodeJSString(this.getAttribute('data-job-company'));
+        const jobLocation = decodeJSString(this.getAttribute('data-job-location'));
+        const jobDescription = decodeJSString(this.getAttribute('data-job-description'));
+        const jobSalary = decodeJSString(this.getAttribute('data-job-salary'));
+        const jobType = decodeJSString(this.getAttribute('data-job-type'));
+        const jobWorksetup = decodeJSString(this.getAttribute('data-job-worksetup'));
+        const jobExperience = decodeJSString(this.getAttribute('data-job-experience'));
+        const jobRequirements = decodeJSString(this.getAttribute('data-job-requirements'));
+        const jobStatus = decodeJSString(this.getAttribute('data-job-status'));
+        const jobCreated = decodeJSString(this.getAttribute('data-job-created'));
         let html = `<div class='notification-details-card'>`;
         html += `<div class='details-title'><i class='fas fa-bell'></i> Notification</div>`;
         html += `<div class='details-date'><i class='fas fa-calendar-alt'></i> ${date}</div>`;

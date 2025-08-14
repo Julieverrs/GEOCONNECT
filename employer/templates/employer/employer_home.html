@@ -4,6 +4,598 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/employer_home.css' %}">
 <style>
+/* Additional critical responsive fixes */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
+/* Ensure all sections are responsive */
+.section, .contact-us-section, .about-us-section {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Critical mobile responsive fixes */
+@media (max-width: 768px) {
+  /* Force single column layout on mobile */
+  .welcome-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 20px 10px !important;
+    gap: 20px !important;
+  }
+  
+  .welcome-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-right: 0 !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .welcome-visualization {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+  }
+  
+  /* Force single column for jobs grid */
+  .jobs-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+  
+  /* Ensure all form elements are full width */
+  .form-group,
+  .form-row .form-group {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Force stacked layout for create job button */
+  .create-job-container {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+  
+  .create-job-button {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  /* Style for the header controls */
+  .header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    gap: 1rem;
+  }
+  
+  /* Style for the search container */
+  .search-container {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    z-index: 1;
+  }
+  
+  /* Notification System Styles */
+  .notification-container {
+    margin: 15px;
+    padding: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .notification-message {
+    padding: 15px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    text-align: center;
+    animation: slideIn 0.3s ease;
+  }
+  
+  .notification-message.success {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: white;
+    border-left: 4px solid #2e7d32;
+  }
+  
+  .notification-message.error {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+    border-left: 4px solid #c62828;
+  }
+  
+  .notification-message.info {
+    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+    color: white;
+    border-left: 4px solid #1565c0;
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    transition: border-color 0.3s ease;
+    height: 48px;
+    box-sizing: border-box;
+  }
+  
+  .search-input:focus {
+    outline: none;
+    border-color: #1a237e;
+    box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+  }
+  
+  /* Style for the filter container */
+  .filter-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .status-filter {
+    height: 48px;
+    padding: 0 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+    min-width: 140px;
+  }
+  
+  .status-filter:focus {
+    outline: none;
+    border-color: #1a237e;
+    box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+  }
+  
+  .status-filter:hover {
+    border-color: #1a237e;
+  }
+  
+  /* Style for the create job container */
+  .create-job-container {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  /* Ensure all elements have the same height */
+  .create-job-button {
+    height: 48px;
+    box-sizing: border-box;
+  }
+  
+  /* Mobile responsive styles for search */
+  @media (max-width: 768px) {
+    .header-controls {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 15px !important;
+    }
+    
+    .search-container {
+      max-width: none !important;
+    }
+    
+    .search-input {
+      width: 100% !important;
+    }
+    
+    .filter-container {
+      align-items: stretch !important;
+    }
+    
+    .status-filter {
+      width: 100% !important;
+      min-width: auto !important;
+    }
+    
+    .create-job-container {
+      justify-content: center !important;
+    }
+  }
+  
+  /* Extra small screens */
+  @media (max-width: 480px) {
+    .header-controls {
+      gap: 12px !important;
+    }
+    
+    .search-input,
+    .create-job-button {
+      height: 44px !important;
+    }
+  }
+  
+  /* Modal Styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+  }
+  
+  .modal-content {
+    background-color: white;
+    margin: 0;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+    animation: modalSlideIn 0.3s ease-out;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 10001;
+  }
+  
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+  }
+  
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  
+  .close {
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    transition: opacity 0.3s ease;
+  }
+  
+  .close:hover {
+    opacity: 0.7;
+  }
+  
+  .modal-body {
+    padding: 24px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+  }
+  
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #1a237e;
+    box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+  }
+  
+  .form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 100px;
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(26, 35, 126, 0.3);
+  }
+  
+  .btn-secondary {
+    background: #f5f5f5;
+    color: #666;
+    border: 1px solid #ddd;
+  }
+  
+  .btn-secondary:hover {
+    background: #e8e8e8;
+    color: #333;
+  }
+  
+  /* View Modal Specific Styles */
+  .job-details {
+    padding: 0;
+  }
+  
+  .job-details h4 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a237e;
+    margin: 0 0 16px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e8eaf6;
+  }
+  
+  .job-status {
+    margin-bottom: 24px;
+  }
+  
+  .job-status .status-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .job-status .status-badge.active {
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    color: white;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  }
+  
+  .job-status .status-badge.closed {
+    background: linear-gradient(135deg, #f44336, #ef5350);
+    color: white;
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+  }
+  
+  .job-description,
+  .job-meta,
+  .job-applications {
+    margin-bottom: 24px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #1a237e;
+  }
+  
+  .job-description h5,
+  .job-applications h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1a237e;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  .job-description h5::before {
+    content: "📝";
+    margin-right: 8px;
+    font-size: 1.2rem;
+  }
+  
+  .job-applications h5::before {
+    content: "👥";
+    margin-right: 8px;
+    font-size: 1.2rem;
+  }
+  
+  .job-description p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #424242;
+    margin: 0;
+  }
+  
+  .job-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+    border-left: 4px solid #2196f3;
+  }
+  
+  .job-meta .job-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .job-meta .job-type svg {
+    color: #2196f3;
+    flex-shrink: 0;
+  }
+  
+  .job-applications p {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a237e;
+    margin: 0;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 8px;
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Mobile responsive for modals */
+  @media (max-width: 768px) {
+    .modal-content {
+      margin: 0;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 95%;
+      max-height: 90vh;
+    }
+    
+    .modal-header {
+      padding: 16px 20px;
+    }
+    
+    .modal-header h3 {
+      font-size: 1.3rem;
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .form-actions {
+      flex-direction: column;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+      width: 100%;
+    }
+    
+    .job-meta {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    
+    .job-details h4 {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screen optimizations */
+  .welcome-section {
+    padding: 15px 5px !important;
+  }
+  
+  .welcome-content h1 {
+    font-size: 1.6rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .welcome-content p {
+    font-size: 0.9rem !important;
+  }
+  
+  .jobs-section {
+    padding: 15px 5px !important;
+  }
+  
+  .section-header h2 {
+    font-size: 1.5rem !important;
+  }
+  
+  .job-card {
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  
+  .contact-us-section,
+  .about-us-section {
+    padding: 15px 5px !important;
+  }
+}
+
 /* Contact form response styles */
 .alert {
     padding: 12px 16px;
@@ -62,6 +654,12 @@
         </div>
         
         <div class="header-actions">
+            <!-- Messages Icon with Badge -->
+            <a href="{% url 'employer_messages_list' %}" class="message-icon position-relative me-2" id="messageIcon" style="display: flex; align-items: center; text-decoration: none; background: #fff; border-radius: 50%; box-shadow: 0 2px 8px rgba(57,73,171,0.10); width: 48px; height: 48px; justify-content: center; margin-right: 10px;">
+                <i class="fas fa-comments" style="color: #667eea; font-size: 1.7rem;"></i>
+                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" id="messageBadge" style="font-size: 0.85rem; min-width: 22px; box-shadow: 0 2px 6px rgba(0,0,0,0.12); display: none;">0</span>
+            </a>
+            
             <!-- View Applications button -->
             <a href="{% url 'view_applications' %}" class="view-applications-button">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -130,29 +728,29 @@
         <div class="jobs-section">
             <div class="section-header">
                 <h2>Your Job Postings</h2>
-                <div class="section-actions">
-                    <button id="createJobBtn" class="create-job-button">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        Create New Job
-                    </button>
-                    <div class="search-bar">
+                <div class="header-controls">
+                    <div class="search-container">
                         <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
                             <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                        <input type="text" id="searchInput" class="search-input" placeholder="Search jobs...">
+                        <input type="text" id="jobSearchInput" class="search-input" placeholder="Search jobs by title, description, or location...">
                     </div>
-                    <select id="statusFilter" class="filter-select">
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="closed">Closed</option>
-                    </select>
-                    <select id="sortBy" class="filter-select">
-                        <option value="newest">Newest First</option>
-                        <option value="oldest">Oldest First</option>
-                        <option value="title">Title A-Z</option>
-                    </select>
+                    <div class="filter-container">
+                        <select id="statusFilter" class="status-filter">
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    <div class="create-job-container">
+                        <button id="createJobBtn" class="create-job-button" onclick="openCreateJobModal()">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Create New Job
+                        </button>
+
+                    </div>
                 </div>
             </div>
 
@@ -220,7 +818,6 @@
             </div>
         </div>
     </section>
-
     <!-- Contact Us Section -->
 <section id="contact-us" class="contact-us-section">
   <div class="contact-us-content">
@@ -367,13 +964,19 @@
 </section>
 
     <!-- Update the Create Job Modal form -->
-<div id="createJobModal" class="modal">
+<div id="createJobModal" class="modal" style="display: none;">
     <div class="modal-content">
         <div class="modal-header">
             <h2>Create New Job</h2>
-            <button class="close-modal">&times;</button>
+            <button class="close-modal" onclick="closeCreateJobModal()">&times;</button>
         </div>
-        <form class="job-form">
+        
+        <!-- Notification container -->
+        <div id="notificationContainer" class="notification-container" style="display: none;">
+            <div id="notificationMessage" class="notification-message"></div>
+        </div>
+        
+        <form class="job-form" onsubmit="return false;">
             {% csrf_token %}
             <div class="form-group">
                 <label for="jobTitle">Job Title</label>
@@ -443,8 +1046,8 @@
                 </div>
             </div>
             <div class="form-actions">
-                <button type="button" id="cancelJob" class="button-secondary">Cancel</button>
-                <button type="submit" class="button-primary">Create Job</button>
+                <button type="button" id="cancelJob" class="button-secondary" onclick="closeCreateJobModal()">Cancel</button>
+                <button type="button" class="button-primary" onclick="handleFormSubmit()">Create Job</button>
             </div>
         </form>
     </div>
@@ -461,7 +1064,7 @@
                 </div>
                 <p class="job-subtitle"><span id="viewJobLocation">Location</span> • <span id="viewJobType">Job Type</span></p>
             </div>
-            <button class="close-modal view-close-btn">&times;</button>
+            <button class="close-modal view-close-btn" onclick="closeViewJobModal()">&times;</button>
         </div>
         
         <div class="view-modal-body">
@@ -537,8 +1140,8 @@
         
         <div class="view-modal-footer">
             <div class="modal-actions">
-                <button class="close-view-modal">Close</button>
-                <button class="edit-from-view" onclick="editJob(document.querySelector('#viewJobModal').dataset.jobId)">
+                <button class="close-view-modal" onclick="closeViewJobModal()">Close</button>
+                <button class="edit-from-view" onclick="editJobFromView()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -566,11 +1169,11 @@
                     <p>Update your job posting details</p>
                 </div>
             </div>
-            <button class="close-modal enhanced-close-btn">&times;</button>
+            <button class="close-modal enhanced-close-btn" onclick="closeEditJobModal()">&times;</button>
         </div>
         
         <div class="modal-body edit-modal-body">
-            <form id="editJobForm" class="enhanced-job-form">
+            <form id="editJobForm" class="enhanced-job-form" onsubmit="return false;">
                 <input type="hidden" id="editJobId">
                 
                 <!-- Job Details Section -->
@@ -753,14 +1356,14 @@
         </div>
         
         <div class="enhanced-modal-footer">
-            <button type="button" class="enhanced-btn enhanced-btn-secondary close-edit-modal">
+            <button type="button" class="enhanced-btn enhanced-btn-secondary close-edit-modal" onclick="closeEditJobModal()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
                 Cancel
             </button>
-            <button type="submit" form="editJobForm" class="enhanced-btn enhanced-btn-primary">
+            <button type="button" onclick="handleEditJobSubmit()" class="enhanced-btn enhanced-btn-primary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20,6 9,17 4,12"></polyline>
                 </svg>
@@ -1030,7 +1633,6 @@
 
 <!-- Toast Container -->
 <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
-<div id="toastContainer" class="toast-container"></div>
 
 <!-- Hidden Messages Container -->
 {% if messages %}
@@ -1046,6 +1648,185 @@
 {% block extra_js %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script>
+// Global functions - available immediately
+
+
+// Global modal functions
+window.openCreateJobModal = function() {
+    const createModal = document.getElementById('createJobModal');
+    if (createModal) {
+        createModal.style.display = 'block';
+        createModal.style.zIndex = '10001';
+        console.log('Create job modal opened');
+        
+        // Set up form submission when modal opens
+        setupFormSubmission();
+    } else {
+        console.error('Create job modal not found!');
+    }
+};
+
+// Global form submission setup
+window.setupFormSubmission = function() {
+    console.log('Setting up form submission...');
+    const createJobForm = document.querySelector('.job-form');
+    if (createJobForm) {
+        console.log('Form found, adding submit listener...');
+        
+        // Remove any existing listeners
+        createJobForm.removeEventListener('submit', window.handleFormSubmit);
+        
+        // Add new submit listener
+        createJobForm.addEventListener('submit', window.handleFormSubmit);
+        console.log('Form submit listener added successfully!');
+    } else {
+        console.error('Form not found for submission setup!');
+    }
+};
+
+
+
+// Global form submission handler
+window.handleFormSubmit = function(e) {
+    // Prevent default form submission if event exists
+    if (e) {
+        e.preventDefault();
+    }
+    console.log('🚀 FORM SUBMISSION INTERCEPTED!');
+    
+    // Get form data
+    const formData = {
+        jobTitle: document.getElementById('jobTitle').value.trim(),
+        jobType: document.getElementById('jobType').value,
+        workSetup: document.getElementById('workSetup').value,
+        location: document.getElementById('location').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        requirements: document.getElementById('requirements').value.trim(),
+        salary: document.getElementById('salary').value.trim() || 'Not specified',
+        experience: document.getElementById('experience').value,
+        latitude: document.getElementById('jobLatitude').value || null,
+        longitude: document.getElementById('jobLongitude').value || null
+    };
+    
+    console.log('📝 Form data collected:', formData);
+    
+    // Validate required fields
+    if (!formData.jobTitle || !formData.jobType || !formData.workSetup || 
+        !formData.location || !formData.description || !formData.requirements || 
+        !formData.experience) {
+        console.error('❌ Validation failed - missing required fields');
+        if (typeof showNotification === 'function') {
+            showNotification('Please fill in all required fields.', 'error');
+        } else {
+            alert('Please fill in all required fields.');
+        }
+        return;
+    }
+    
+    console.log('✅ Validation passed, sending to backend...');
+    
+    // Show loading notification
+    if (typeof showNotification === 'function') {
+        showNotification('Creating job... Please wait.', 'info');
+    }
+    
+    // Disable submit button
+    const submitBtn = document.querySelector('.job-form button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating...';
+    }
+    
+    // Send to backend
+    console.log('📤 Sending POST request to /employer/create-job/');
+    console.log('🔑 CSRF Token:', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    fetch('/employer/create-job/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => {
+        console.log('📥 Response status:', response.status);
+        console.log('📥 Response headers:', response.headers);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📥 Response data:', data);
+        if (data.success && data.job && data.job.id) {
+            console.log('🎉 Job created successfully:', data.job);
+            
+            if (typeof showNotification === 'function') {
+                showNotification(`Job "${data.job.title}" created successfully!`, 'success');
+            } else {
+                alert(`Job "${data.job.title}" created successfully!`);
+            }
+            
+            // Close modal and refresh
+            const createModal = document.getElementById('createJobModal');
+            if (createModal) {
+                createModal.style.display = 'none';
+            }
+            
+            // Reset form
+            document.querySelector('.job-form').reset();
+            
+            // Refresh page to show new job
+            window.location.reload();
+        } else {
+            console.error('❌ Job creation failed:', data.error || 'Unknown error');
+            if (typeof showNotification === 'function') {
+                showNotification('Error creating job: ' + (data.error || 'Unknown error occurred'), 'error');
+            } else {
+                alert('Error creating job: ' + (data.error || 'Unknown error occurred'));
+            }
+        }
+    })
+    .catch(error => {
+        console.error('❌ Fetch error:', error);
+        if (typeof showNotification === 'function') {
+            showNotification('Error creating job. Please try again.', 'error');
+        } else {
+            alert('Error creating job. Please try again.');
+        }
+    })
+    .finally(() => {
+        // Re-enable submit button
+        const submitBtn = document.querySelector('.job-form button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Job';
+        }
+    });
+};
+
+window.closeCreateJobModal = function() {
+    const createModal = document.getElementById('createJobModal');
+    if (createModal) {
+        createModal.style.display = 'none';
+        console.log('Create job modal closed');
+    }
+};
+
+window.closeViewJobModal = function() {
+    const viewModal = document.getElementById('viewJobModal');
+    if (viewModal) {
+        viewModal.style.display = 'none';
+        console.log('View job modal closed');
+    }
+};
+
+window.closeEditJobModal = function() {
+    const editModal = document.getElementById('editJobModal');
+    if (editModal) {
+        editModal.style.display = 'none';
+        console.log('Edit job modal closed');
+    }
+};
+
     document.addEventListener('DOMContentLoaded', function() {
         console.log("Checking for messages");
         const djangoMessages = document.querySelectorAll('.django-message');
@@ -1060,126 +1841,136 @@
         
         // Add smooth scrolling for navigation links
         document.querySelectorAll('.nav-links a').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Remove active class from all links
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all links
                 document.querySelectorAll('.nav-links a').forEach(link => {
-                    link.classList.remove('active');
-                });
-                
-                // Add active class to clicked link
-                this.classList.add('active');
-                
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 100, // Offset for fixed header
-                        behavior: 'smooth'
+                        link.classList.remove('active');
                     });
-                }
+                    
+                    // Add active class to clicked link
+                    this.classList.add('active');
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 100, // Offset for fixed header
+                            behavior: 'smooth'
+                        });
+                    }
+                });
             });
-        });
         
         // Highlight active section on scroll
         window.addEventListener('scroll', function() {
             const scrollPosition = window.scrollY;
             
             document.querySelectorAll('section.section, section.contact-us-section, section.about-us-section').forEach(section => {
-                const sectionTop = section.offsetTop - 150;
-                const sectionBottom = sectionTop + section.offsetHeight;
-                
-                if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
-                    const id = section.getAttribute('id');
+                    const sectionTop = section.offsetTop - 150;
+                    const sectionBottom = sectionTop + section.offsetHeight;
+                    
+                    if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+                        const id = section.getAttribute('id');
                     document.querySelectorAll('.nav-links a').forEach(link => {
-                        link.classList.remove('active');
-                        if (link.getAttribute('href') === '#' + id) {
-                            link.classList.add('active');
-                        }
-                    });
-                }
-            });
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === '#' + id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
         });
 
         // View All Jobs toggle functionality
         const viewAllJobsBtn = document.getElementById('viewAllJobsBtn');
         const jobsGrid = document.querySelector('.jobs-grid');
         const jobCards = document.querySelectorAll('.job-card');
+        const viewAllContainer = document.querySelector('.view-all-container');
 
         // Hide the button if there are 6 or fewer jobs
-        if (jobCards.length <= 6) {
-            document.querySelector('.view-all-container').style.display = 'none';
+        if (viewAllContainer && jobCards.length <= 6) {
+            viewAllContainer.style.display = 'none';
         }
 
         // Toggle between limited view and all jobs
-        viewAllJobsBtn.addEventListener('click', function() {
-            jobsGrid.classList.toggle('limited-view');
-            viewAllJobsBtn.classList.toggle('expanded');
-            
-            if (jobsGrid.classList.contains('limited-view')) {
-                viewAllJobsBtn.querySelector('.view-all-text').textContent = 'View All Jobs';
-            } else {
-                viewAllJobsBtn.querySelector('.view-all-text').textContent = 'Show Less';
-            }
-            
-            // Smooth scroll to jobs section if expanding
-            if (!jobsGrid.classList.contains('limited-view')) {
-                window.scrollTo({
-                    top: document.querySelector('#jobs').offsetTop - 100,
-                    behavior: 'smooth'
-                });
-            }
-        });
+        if (viewAllJobsBtn && jobsGrid) {
+            viewAllJobsBtn.addEventListener('click', function() {
+                jobsGrid.classList.toggle('limited-view');
+                viewAllJobsBtn.classList.toggle('expanded');
+                
+                const viewAllText = viewAllJobsBtn.querySelector('.view-all-text');
+                if (viewAllText) {
+                    if (jobsGrid.classList.contains('limited-view')) {
+                        viewAllText.textContent = 'View All Jobs';
+                    } else {
+                        viewAllText.textContent = 'Show Less';
+                    }
+                }
+                
+                // Smooth scroll to jobs section if expanding
+                if (!jobsGrid.classList.contains('limited-view')) {
+                    const jobsSection = document.querySelector('#jobs');
+                    if (jobsSection) {
+                        window.scrollTo({
+                            top: jobsSection.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+        }
         
         // Profile modal scroll buttons functionality
         const profileModal = document.getElementById('profileModal');
         const scrollToTopBtn = document.getElementById('scrollToTop');
         const scrollToBottomBtn = document.getElementById('scrollToBottom');
         
-        if (profileModal) {
+        if (profileModal && scrollToTopBtn && scrollToBottomBtn) {
             const modalContent = profileModal.querySelector('.modal-content');
             
-            // Show/hide scroll buttons based on scroll position
-            modalContent.addEventListener('scroll', function() {
-                if (modalContent.scrollTop > 100) {
-                    scrollToTopBtn.classList.add('visible');
-                } else {
-                    scrollToTopBtn.classList.remove('visible');
-                }
+            if (modalContent) {
+                // Show/hide scroll buttons based on scroll position
+                modalContent.addEventListener('scroll', function() {
+                    if (modalContent.scrollTop > 100) {
+                        scrollToTopBtn.classList.add('visible');
+                    } else {
+                        scrollToTopBtn.classList.remove('visible');
+                    }
+                    
+                    if (modalContent.scrollHeight - modalContent.scrollTop - modalContent.clientHeight > 100) {
+                        scrollToBottomBtn.classList.add('visible');
+                    } else {
+                        scrollToBottomBtn.classList.remove('visible');
+                    }
+                });
                 
-                if (modalContent.scrollHeight - modalContent.scrollTop - modalContent.clientHeight > 100) {
-                    scrollToBottomBtn.classList.add('visible');
-                } else {
-                    scrollToBottomBtn.classList.remove('visible');
-                }
-            });
-            
-            // Scroll to top button click handler
-            scrollToTopBtn.addEventListener('click', function() {
-                modalContent.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
+                // Scroll to top button click handler
+                scrollToTopBtn.addEventListener('click', function() {
+                    modalContent.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
                 });
-            });
-            
-            // Scroll to bottom button click handler
-            scrollToBottomBtn.addEventListener('click', function() {
-                modalContent.scrollTo({
-                    top: modalContent.scrollHeight,
-                    behavior: 'smooth'
+                
+                // Scroll to bottom button click handler
+                scrollToBottomBtn.addEventListener('click', function() {
+                    modalContent.scrollTo({
+                        top: modalContent.scrollHeight,
+                        behavior: 'smooth'
+                    });
                 });
-            });
-            
-            // Trigger scroll event to check initial button visibility
-            modalContent.dispatchEvent(new Event('scroll'));
+                
+                // Trigger scroll event to check initial button visibility
+                modalContent.dispatchEvent(new Event('scroll'));
+            }
         }
     });
 </script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<script src="{% static 'js/dashboard.js' %}"></script>
-<script src="{% static 'js/search.js' %}"></script>
+
 <script src="{% static 'js/profile-settings.js' %}"></script>
 <script>
     // Connect the empty state create job button to the modal
@@ -1260,6 +2051,917 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    
+    // Update message badge count
+    function updateMessageBadge() {
+        fetch('{% url "employer_get_unread_count" %}')
+            .then(response => response.json())
+            .then(data => {
+                const messageBadge = document.getElementById('messageBadge');
+                if (messageBadge) {
+                    if (data.unread_count > 0) {
+                        messageBadge.textContent = data.unread_count;
+                        messageBadge.style.display = 'block';
+                    } else {
+                        messageBadge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => console.error('Error updating message badge:', error));
+    }
+    
+    // Update message badge on page load
+    updateMessageBadge();
+    
+    // Auto-refresh message badge every 30 seconds
+    setInterval(updateMessageBadge, 30000);
+    
+    // Job Search and Filter Functionality
+    const jobSearchInput = document.getElementById('jobSearchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const jobCards = document.querySelectorAll('.job-card');
+    
+    // Function to filter jobs based on search term and status
+    function filterJobs() {
+        if (!jobSearchInput || !statusFilter || !jobCards.length) return;
+        
+        const searchTerm = jobSearchInput.value.toLowerCase().trim();
+        const selectedStatus = statusFilter.value.toLowerCase();
+        
+        jobCards.forEach(card => {
+            const titleElement = card.querySelector('h3');
+            const descriptionElement = card.querySelector('p');
+            const jobMetaElement = card.querySelector('.job-meta');
+            const statusBadge = card.querySelector('.status-badge');
+            
+            if (!titleElement || !descriptionElement || !statusBadge) return;
+            
+            const title = titleElement.textContent.toLowerCase();
+            const description = descriptionElement.textContent.toLowerCase();
+            const location = jobMetaElement ? jobMetaElement.textContent.toLowerCase() : '';
+            const jobStatus = statusBadge.textContent.toLowerCase();
+            
+            // Check if job matches search term
+            const matchesSearch = searchTerm === '' || 
+                title.includes(searchTerm) || 
+                description.includes(searchTerm) || 
+                location.includes(searchTerm);
+            
+            // Check if job matches status filter
+            const matchesStatus = selectedStatus === 'all' || jobStatus === selectedStatus;
+            
+            // Show/hide card based on both filters
+            if (matchesSearch && matchesStatus) {
+                card.style.display = '';
+                card.style.opacity = '1';
+                card.style.transform = 'none';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Show/hide no results message
+        const visibleJobs = Array.from(jobCards).filter(card => card.style.display !== 'none');
+        const jobsGrid = document.querySelector('.jobs-grid');
+        
+        if (!jobsGrid) return;
+        
+        if (visibleJobs.length === 0 && (searchTerm !== '' || selectedStatus !== 'all')) {
+            if (!document.querySelector('.no-search-results')) {
+                const noResults = document.createElement('div');
+                noResults.className = 'no-jobs no-search-results';
+                noResults.innerHTML = `
+                    <p>No jobs found matching your criteria. Try adjusting your search or filters.</p>
+                    <button onclick="clearFilters()" class="create-job-button">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Clear All Filters
+                    </button>
+                `;
+                jobsGrid.appendChild(noResults);
+            }
+        } else {
+            const noSearchResults = document.querySelector('.no-search-results');
+            if (noSearchResults) {
+                noSearchResults.remove();
+            }
+        }
+    }
+    
+    // Add event listeners for search and filter
+    if (jobSearchInput) {
+        jobSearchInput.addEventListener('input', filterJobs);
+    }
+    
+    if (statusFilter) {
+        statusFilter.addEventListener('change', filterJobs);
+    }
+    
+    // Function to clear all filters
+    window.clearFilters = function() {
+        if (jobSearchInput) {
+            jobSearchInput.value = '';
+        }
+        if (statusFilter) {
+            statusFilter.value = 'all';
+        }
+        
+        jobCards.forEach(card => {
+            // Restore original display and styling
+            card.style.display = '';
+            card.style.opacity = '1';
+            card.style.transform = 'none';
+        });
+        
+        const noSearchResults = document.querySelector('.no-search-results');
+        if (noSearchResults) {
+            noSearchResults.remove();
+        }
+    };
+    
+    // Keep the old function name for backward compatibility
+    window.clearSearch = window.clearFilters;
+    
+    // Add missing toast notification function
+    window.toastNotification = function(message, type = 'info') {
+        const toastContainer = document.getElementById('toastContainer');
+        if (toastContainer) {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            toastContainer.appendChild(toast);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 5000);
+        }
+    };
+    
+
+    
+
+    
+    // Debug form function
+
+    
+    // Notification system functions
+    window.showNotification = function(message, type = 'info') {
+        const container = document.getElementById('notificationContainer');
+        const messageEl = document.getElementById('notificationMessage');
+        
+        if (container && messageEl) {
+            // Set message and type
+            messageEl.textContent = message;
+            messageEl.className = `notification-message ${type}`;
+            
+            // Show notification
+            container.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                container.style.display = 'none';
+            }, 5000);
+        }
+    };
+    
+    window.hideNotification = function() {
+        const container = document.getElementById('notificationContainer');
+        if (container) {
+            container.style.display = 'none';
+        }
+    };
+    
+    // Verify job exists in database function
+    window.verifyJobExists = function(jobId, jobTitle) {
+        console.log('Verifying job exists in database...', jobId, jobTitle);
+        
+        // Check if the job actually exists by fetching it from the backend
+        fetch(`/employer/get-job/${jobId}/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            console.log('Verification response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Verification response data:', data);
+            
+            if (data.success && data.job && data.job.id === jobId) {
+                // Job actually exists in database - show success
+                console.log('Job verification successful:', data.job);
+                showNotification(`Job "${jobTitle}" created successfully with ID: ${jobId}!`, 'success');
+                
+                // Close modal
+                document.getElementById('createJobModal').style.display = 'none';
+                
+                // Reset form
+                document.querySelector('.job-form').reset();
+                
+                // Refresh the page to show new job
+                window.location.reload();
+        } else {
+                // Job doesn't exist in database - show error
+                console.error('Job verification failed:', data);
+                showNotification('Job creation failed: Job was not saved to database', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Job verification error:', error);
+            showNotification('Job creation failed: Could not verify job was saved', 'error');
+        });
+    };
+    
+    // Open create job modal function
+    window.openCreateJobModal = function() {
+        console.log('openCreateJobModal function called!');
+        const createModal = document.getElementById('createJobModal');
+        if (createModal) {
+            createModal.style.display = 'block';
+            createModal.style.zIndex = '10001';
+            console.log('Create job modal opened successfully!');
+        } else {
+            console.error('Create job modal not found!');
+        }
+    };
+    
+    // Close modal functions
+    window.closeCreateJobModal = function() {
+        const createModal = document.getElementById('createJobModal');
+        if (createModal) {
+            createModal.style.display = 'none';
+            console.log('Create job modal closed');
+        }
+    };
+    
+    window.closeViewJobModal = function() {
+        const viewModal = document.getElementById('viewJobModal');
+        if (viewModal) {
+            viewModal.style.display = 'none';
+            console.log('View job modal closed');
+        }
+    };
+    
+    window.closeEditJobModal = function() {
+        const editModal = document.getElementById('editJobModal');
+        if (editModal) {
+            editModal.style.display = 'none';
+            console.log('Edit job modal closed');
+        }
+    };
+    
+    // Job action functions
+    window.editJob = function(jobId) {
+        console.log('🔄 Editing job with ID:', jobId);
+        
+        // Show loading state
+        const editModal = document.getElementById('editJobModal');
+        if (editModal) {
+            editModal.style.display = 'block';
+        }
+        
+        // Fetch complete job data from database
+        fetch(`/employer/get-job/${jobId}/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            console.log('📥 Edit job response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📥 Edit job response data:', data);
+            
+            if (data.success && data.job) {
+                const job = data.job;
+                console.log('✅ Job data fetched successfully:', job);
+                
+                // Populate the edit form with accurate database values
+            const editJobTitle = document.getElementById('editJobTitle');
+            const editDescription = document.getElementById('editDescription');
+            const editRequirements = document.getElementById('editRequirements');
+            const editStatus = document.getElementById('editStatus');
+            const editLocation = document.getElementById('editLocation');
+            const editSalary = document.getElementById('editSalary');
+                const editJobType = document.getElementById('editJobType');
+                const editWorkSetup = document.getElementById('editWorkSetup');
+                const editExperience = document.getElementById('editExperience');
+                
+                // Set all form fields with accurate data
+                if (editJobTitle) editJobTitle.value = job.title || '';
+                if (editDescription) editDescription.value = job.description || '';
+                if (editRequirements) editRequirements.value = job.requirements || '';
+                if (editStatus) editStatus.value = job.status || 'active';
+                if (editLocation) editLocation.value = job.location || '';
+                if (editSalary) editSalary.value = job.salary_range || '';
+                
+                // Set job type
+                if (editJobType && job.job_type) {
+                    for (let option of editJobType.options) {
+                        if (option.value === job.job_type) {
+                            option.selected = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // Set work setup
+                if (editWorkSetup && job.work_setup) {
+                    for (let option of editWorkSetup.options) {
+                        if (option.value === job.work_setup) {
+                            option.selected = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // Set experience level
+                if (editExperience && job.experience_level) {
+                    for (let option of editExperience.options) {
+                        if (option.value === job.experience_level) {
+                            option.selected = true;
+                            break;
+                    }
+                }
+            }
+            
+            // Store the job ID for form submission
+            const editJobForm = document.getElementById('editJobForm');
+            if (editJobForm) {
+                editJobForm.setAttribute('data-job-id', jobId);
+            }
+            
+                console.log('✅ Edit form populated with accurate data');
+                
+            } else {
+                console.error('❌ Failed to fetch job data:', data.error);
+                alert('Failed to fetch job data: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error fetching job data:', error);
+            alert('Error fetching job data: ' + error.message);
+        });
+    };
+    
+    // Function to edit job from view modal
+    window.editJobFromView = function() {
+        const viewModal = document.getElementById('viewJobModal');
+        if (viewModal) {
+            const jobId = viewModal.getAttribute('data-job-id');
+            if (jobId) {
+                // Close view modal
+                viewModal.style.display = 'none';
+                // Open edit modal with the same job data
+                editJob(jobId);
+            }
+        }
+    };
+    
+    window.viewJob = function(jobId) {
+        console.log('👁️ Viewing job with ID:', jobId);
+        
+        // Show loading state
+        const viewModal = document.getElementById('viewJobModal');
+        if (viewModal) {
+            viewModal.style.display = 'block';
+        }
+        
+        // Fetch complete job data from database
+        fetch(`/employer/get-job/${jobId}/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            console.log('📥 View job response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📥 View job response data:', data);
+            
+            if (data.success && data.job) {
+                const job = data.job;
+                console.log('✅ Job data fetched successfully for view:', job);
+                
+                // Populate the view modal with accurate database values
+                const viewJobTitle = document.getElementById('viewJobTitle');
+                const viewJobStatus = document.getElementById('viewJobStatus');
+                const viewJobLocation = document.getElementById('viewJobLocation');
+                const viewJobType = document.getElementById('viewJobType');
+                const viewWorkSetup = document.getElementById('viewWorkSetup');
+                const viewJobExperience = document.getElementById('viewJobExperience');
+                const viewJobSalary = document.getElementById('viewJobSalary');
+                const viewJobDescription = document.getElementById('viewJobDescription');
+                const viewJobRequirements = document.getElementById('viewJobRequirements');
+                
+                // Set all view fields with accurate data
+                if (viewJobTitle) viewJobTitle.textContent = job.title || 'Job Title Not Available';
+                if (viewJobStatus) viewJobStatus.textContent = job.status || 'Status Not Available';
+                if (viewJobLocation) viewJobLocation.textContent = job.location || 'Location Not Available';
+                if (viewJobType) viewJobType.textContent = job.job_type || 'Job Type Not Available';
+                if (viewWorkSetup) viewWorkSetup.textContent = job.work_setup || 'Work Setup Not Available';
+                if (viewJobExperience) viewJobExperience.textContent = job.experience_level || 'Experience Level Not Available';
+                if (viewJobSalary) viewJobSalary.textContent = job.salary_range || 'Salary Not Available';
+                if (viewJobDescription) viewJobDescription.textContent = job.description || 'Description Not Available';
+                if (viewJobRequirements) viewJobRequirements.textContent = job.requirements || 'Requirements Not Available';
+                
+                // Store the job ID in the modal for the edit button
+                if (viewModal) {
+                    viewModal.setAttribute('data-job-id', jobId);
+                }
+                
+                console.log('✅ View modal populated with accurate data');
+                
+            } else {
+                console.error('❌ Failed to fetch job data for view:', data.error);
+                alert('Failed to fetch job data: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error fetching job data for view:', error);
+            alert('Error fetching job data: ' + error.message);
+        });
+    };
+    
+    // Modal close functions
+    window.closeEditModal = function() {
+        document.getElementById('editJobModal').style.display = 'none';
+    };
+    
+    window.closeViewModal = function() {
+        document.getElementById('viewJobModal').style.display = 'none';
+    };
+    
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+        const editModal = document.getElementById('editJobModal');
+        const viewModal = document.getElementById('viewJobModal');
+        const createModal = document.getElementById('createJobModal');
+        
+        if (event.target === editModal) {
+            editModal.style.display = 'none';
+            console.log('Edit modal closed by clicking outside');
+        }
+        if (event.target === viewModal) {
+            viewModal.style.display = 'none';
+            console.log('View modal closed by clicking outside');
+        }
+        if (event.target === createModal) {
+            createModal.style.display = 'none';
+            console.log('Create modal closed by clicking outside');
+        }
+    };
+    
+    // Add event listeners for modal close buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        // Close buttons for all modals
+        const closeButtons = document.querySelectorAll('.close-modal, .close-view-modal, .close-edit-modal');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const modal = this.closest('.modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+        
+        // Close button for view modal
+        const viewCloseBtn = document.querySelector('.view-close-btn');
+        if (viewCloseBtn) {
+            viewCloseBtn.addEventListener('click', function() {
+                const viewModal = document.getElementById('viewJobModal');
+                if (viewModal) {
+                    viewModal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Close button for edit modal
+        const editCloseBtn = document.querySelector('.enhanced-close-btn');
+        if (editCloseBtn) {
+            editCloseBtn.addEventListener('click', function() {
+                const editModal = document.getElementById('editJobModal');
+                if (editModal) {
+                    editModal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Create job modal close button
+        const createCloseBtn = document.querySelector('.close-modal');
+        if (createCloseBtn) {
+            createCloseBtn.addEventListener('click', function() {
+                const createModal = document.getElementById('createJobModal');
+                if (createModal) {
+                    createModal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Cancel button for create job modal
+        const cancelJobBtn = document.getElementById('cancelJob');
+        if (cancelJobBtn) {
+            cancelJobBtn.addEventListener('click', function() {
+                const createModal = document.getElementById('createJobModal');
+                if (createModal) {
+                    createModal.style.display = 'none';
+                }
+            });
+        }
+    });
+        
+    // Create job button functionality - MOVED OUTSIDE THE NESTED DOMContentLoaded
+        const createJobBtn = document.getElementById('createJobBtn');
+        if (createJobBtn) {
+            createJobBtn.addEventListener('click', function() {
+            console.log('Create job button clicked!');
+                const createModal = document.getElementById('createJobModal');
+                if (createModal) {
+                    createModal.style.display = 'block';
+                createModal.style.zIndex = '10001';
+                console.log('Modal should be visible now');
+                } else {
+                console.error('Create job modal not found!');
+                }
+            });
+        }
+    
+    // Handle edit form submission function
+    window.handleEditJobSubmit = function() {
+        console.log('🔄 Edit job form submitted via onclick!');
+        
+        const editForm = document.getElementById('editJobForm');
+        if (!editForm) {
+            console.error('❌ Edit form not found!');
+            alert('Error: Edit form not found. Please try again.');
+            return;
+        }
+        
+        const jobId = editForm.getAttribute('data-job-id');
+        console.log('🆔 Job ID from form:', jobId);
+        
+        if (!jobId) {
+            console.error('❌ No job ID found in form');
+            alert('Error: Job ID not found. Please try again.');
+            return;
+        }
+        
+        // Get form data
+        const formData = {
+            jobTitle: document.getElementById('editJobTitle').value.trim(),
+            jobType: document.getElementById('editJobType').value,
+            workSetup: document.getElementById('editWorkSetup').value,
+            location: document.getElementById('editLocation').value.trim(),
+            description: document.getElementById('editDescription').value.trim(),
+            requirements: document.getElementById('editRequirements').value.trim(),
+            salary: document.getElementById('editSalary').value.trim() || 'Not specified',
+            experience: document.getElementById('editExperience').value,
+            status: document.getElementById('editStatus').value,
+            latitude: document.getElementById('editJobLatitude') ? document.getElementById('editJobLatitude').value || null : null,
+            longitude: document.getElementById('editJobLongitude') ? document.getElementById('editJobLongitude').value || null : null
+        };
+        
+        console.log('📝 Edit form data:', formData);
+        
+        // Validate required fields
+        if (!formData.jobTitle || !formData.jobType || !formData.workSetup || 
+            !formData.location || !formData.description || !formData.requirements || 
+            !formData.experience || !formData.status) {
+            console.error('❌ Validation failed:', formData);
+            alert('Error: Please fill in all required fields.');
+            return;
+        }
+        
+        console.log('✅ Validation passed, sending to backend...');
+        
+        // Show loading state
+        const submitBtn = document.querySelector('#editJobModal button[onclick="handleEditJobSubmit()"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Updating...';
+        }
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (!csrfToken) {
+            console.error('❌ CSRF token not found');
+            alert('Error: CSRF token not found. Please refresh the page.');
+            return;
+        }
+        
+        console.log('🔐 CSRF Token found, making request to backend...');
+        
+        // Send to backend
+        fetch(`/employer/edit-job/${jobId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken.value
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            console.log('📥 Edit job response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📥 Edit job response data:', data);
+            
+            if (data.success) {
+                console.log('✅ Job updated successfully!');
+                alert('✅ Job updated successfully!');
+                
+                // Close the modal
+                closeEditJobModal();
+                
+                // Refresh the page to show updated data
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+                
+            } else {
+                console.error('❌ Backend returned error:', data.error);
+                alert('❌ Failed to update job: ' + (data.error || 'Unknown error'));
+                
+                // Re-enable submit button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Save Changes';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error updating job:', error);
+            alert('❌ Error updating job: ' + error.message);
+            
+            // Re-enable submit button
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Changes';
+            }
+        });
+    };
+    
+    // Handle edit form submission
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔧 Setting up edit form submission handler...');
+        
+        const editForm = document.getElementById('editJobForm');
+        if (editForm) {
+            console.log('✅ Edit form found, adding submit listener');
+            editForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                console.log('🔄 Edit job form submitted!');
+                
+                const jobId = this.getAttribute('data-job-id');
+                if (!jobId) {
+                    console.error('❌ No job ID found in form');
+                    alert('Error: Job ID not found. Please try again.');
+                    return;
+                }
+                
+                // Get form data
+                const formData = {
+                    jobTitle: document.getElementById('editJobTitle').value.trim(),
+                    jobType: document.getElementById('editJobType').value,
+                    workSetup: document.getElementById('editWorkSetup').value,
+                    location: document.getElementById('editLocation').value.trim(),
+                    description: document.getElementById('editDescription').value.trim(),
+                    requirements: document.getElementById('editRequirements').value.trim(),
+                    salary: document.getElementById('editSalary').value.trim() || 'Not specified',
+                    experience: document.getElementById('editExperience').value,
+                    status: document.getElementById('editStatus').value,
+                    latitude: document.getElementById('editJobLatitude').value || null,
+                    longitude: document.getElementById('editJobLongitude').value || null
+                };
+                
+                // Validate required fields
+                if (!formData.jobTitle || !formData.jobType || !formData.workSetup || 
+                    !formData.location || !formData.description || !formData.requirements || 
+                    !formData.experience || !formData.status) {
+                    console.error('❌ Validation failed:', formData);
+                    alert('Error: Please fill in all required fields.');
+                    return;
+                }
+                
+                console.log('📝 Edit form data:', formData);
+                console.log('🆔 Job ID to update:', jobId);
+                
+                console.log('✅ Validation passed, sending to backend...');
+                
+                // Disable submit button to prevent double submission
+                const submitBtn = document.querySelector('#editJobModal button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Updating...';
+                }
+                
+                // Send to backend
+                fetch(`/employer/edit-job/${jobId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => {
+                    console.log('📥 Edit job response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📥 Edit job response data:', data);
+                    
+                    if (data.success) {
+                        console.log('✅ Job updated successfully!');
+                        alert('✅ Job updated successfully!');
+                        
+                        // Close the modal
+                        closeEditJobModal();
+                        
+                        // Refresh the page to show updated data
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                        
+                    } else {
+                        console.error('❌ Backend returned error:', data.error);
+                        alert('❌ Failed to update job: ' + (data.error || 'Unknown error'));
+                        
+                        // Re-enable submit button
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Save Changes';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error updating job:', error);
+                    alert('❌ Error updating job: ' + error.message);
+                    
+                    // Re-enable submit button
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Save Changes';
+                    }
+                });
+            });
+            
+            console.log('✅ Edit form submit listener added successfully');
+        } else {
+            console.error('❌ Edit form not found!');
+        }
+        
+        // Test backend connection function
+        window.testBackendConnection = function() {
+            console.log('Testing backend connection...');
+            showNotification('Testing backend connection...', 'info');
+            
+            fetch('/employer/create-job/', {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => {
+                console.log('Backend test response status:', response.status);
+                if (response.status === 405) {
+                    // Method not allowed means endpoint exists but doesn't accept GET
+                    showNotification('Backend is working! Endpoint exists.', 'success');
+                } else {
+                    showNotification(`Backend response: ${response.status}`, 'info');
+                }
+            })
+            .catch(error => {
+                console.error('Backend test error:', error);
+                showNotification('Backend connection failed: ' + error.message, 'error');
+            });
+        };
+        
+        // Handle create job form submission
+        const createJobForm = document.querySelector('.job-form');
+        if (createJobForm) {
+            createJobForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                console.log('Create job form submitted!');
+                
+                // Get form data - using the same approach as the working test function
+                const formData = {
+                    jobTitle: document.getElementById('jobTitle').value.trim(),
+                    jobType: document.getElementById('jobType').value,
+                    workSetup: document.getElementById('workSetup').value,
+                    location: document.getElementById('location').value.trim(),
+                    description: document.getElementById('description').value.trim(),
+                    requirements: document.getElementById('requirements').value.trim(),
+                    salary: document.getElementById('salary').value.trim() || 'Not specified',
+                    experience: document.getElementById('experience').value,
+                    latitude: document.getElementById('jobLatitude').value || null,
+                    longitude: document.getElementById('jobLongitude').value || null
+                };
+                
+                // Validate required fields
+                if (!formData.jobTitle || !formData.jobType || !formData.workSetup || 
+                    !formData.location || !formData.description || !formData.requirements || 
+                    !formData.experience) {
+                    showNotification('Please fill in all required fields.', 'error');
+                    return;
+                }
+                
+                console.log('Form data:', formData);
+                
+                // Show loading notification
+                showNotification('Creating job... Please wait.', 'info');
+                
+                // Disable submit button to prevent double submission
+                const submitBtn = document.querySelector('.job-form button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Creating...';
+                }
+                
+                // Send to backend - using the exact same approach as the working test
+                console.log('Sending request to /employer/create-job/');
+                console.log('CSRF Token:', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                
+                fetch('/employer/create-job/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    if (data.success && data.job && data.job.id) {
+                        console.log('Job created successfully:', data.job);
+                        
+                        // Verify the job was actually created by checking the response
+                        if (data.job.id && data.job.title) {
+                            console.log('Job creation response verified:', data.job);
+                            
+                            // Verify the job actually exists in database before showing success
+                            verifyJobExists(data.job.id, data.job.title);
+                        } else {
+                            console.error('Job creation response incomplete:', data);
+                            alert('Job creation failed: Incomplete response from server');
+                        }
+                    } else {
+                        console.error('Error creating job:', data.error || 'Unknown error');
+                        showNotification('Error creating job: ' + (data.error || 'Unknown error occurred'), 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    showNotification('Error creating job. Please try again.', 'error');
+                })
+                .finally(() => {
+                    // Re-enable submit button
+                    const submitBtn = document.querySelector('.job-form button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Create Job';
+                    }
+                });
+            });
+        }
+        
+        // Also bind create job button here as backup
+        const createJobBtn = document.getElementById('createJobBtn');
+        if (createJobBtn) {
+            createJobBtn.addEventListener('click', function() {
+                console.log('Create job button clicked from second listener!');
+                const createModal = document.getElementById('createJobModal');
+                if (createModal) {
+                    createModal.style.display = 'block';
+                    createModal.style.zIndex = '10001';
+                    console.log('Modal should be visible now');
+                } else {
+                    console.error('Create job modal not found!');
+                }
+            });
+        }
+    });
 });
 </script>
 {% endblock %}

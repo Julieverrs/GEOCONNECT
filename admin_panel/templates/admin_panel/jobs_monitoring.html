@@ -1,0 +1,530 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Jobs Monitoring - PESO Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_panel.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="admin-dashboard container-fluid">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2>Admin Panel</h2>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <span>Users</span>
+            </a>
+            <a href="{% url 'admin_panel:user_monitoring' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span>User Monitoring</span>
+            </a>
+            <a href="{% url 'admin_panel:jobs_monitoring' %}" class="nav-item active">
+                <div class="nav-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <span>Jobs Monitoring</span>
+                <div class="nav-indicator"></div>
+            </a>
+            <a href="{% url 'admin_panel:applications_monitoring' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <span>Applications</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="{% url 'admin_panel:approvals' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <span>Employer Approval</span>
+            </a>
+            <a href="{% url 'admin_panel:employee_approvals' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <span>Employee Approval</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="{% url 'admin_panel:logout' %}" class="nav-item logout-item">
+                <div class="nav-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <span>Logout</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>Jobs Monitoring</h1>
+                    <p>Monitor all jobs posted by employers</p>
+                </div>
+                <div class="header-actions">
+                    <div class="current-time">
+                        <i class="fas fa-clock"></i>
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card employer-card">
+                <div class="stat-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Total Jobs</h3>
+                        <div class="stat-number">{{ total_jobs }}</div>
+                        <div class="stat-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Posted positions</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar employer-progress"></div>
+                </div>
+            </div>
+
+            <div class="stat-card employee-card">
+                <div class="stat-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Active Jobs</h3>
+                        <div class="stat-number">{{ active_jobs }}</div>
+                        <div class="stat-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Available positions</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar employee-progress"></div>
+                </div>
+            </div>
+
+            <div class="stat-card job-card">
+                <div class="stat-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Closed Jobs</h3>
+                        <div class="stat-number">{{ closed_jobs }}</div>
+                        <div class="stat-trend">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>Filled positions</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar job-progress"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jobs List -->
+        <div class="tabs-section">
+            <div class="table-card">
+                <div class="table-header">
+                    <div class="search-container">
+                        <form method="GET" class="filter-form" id="filterForm">
+                            <div class="filter-grid">
+                                <div class="filter-item">
+                                    <label for="search" class="filter-label">Search</label>
+                                    <input type="text" name="search" id="search" value="{{ search_query }}" 
+                                           class="search-input" placeholder="Search by job title, description, or location">
+                                </div>
+                                <div class="filter-item">
+                                    <label for="status" class="filter-label">Status</label>
+                                    <select name="status" id="status" class="filter-select">
+                                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                                        <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item">
+                                    <label for="job_type" class="filter-label">Job Type</label>
+                                    <select name="job_type" id="job_type" class="filter-select">
+                                        <option value="all" {% if job_type_filter == 'all' %}selected{% endif %}>All Types</option>
+                                        <option value="Full-time" {% if job_type_filter == 'Full-time' %}selected{% endif %}>Full-time</option>
+                                        <option value="Part-time" {% if job_type_filter == 'Part-time' %}selected{% endif %}>Part-time</option>
+                                        <option value="Contract" {% if job_type_filter == 'Contract' %}selected{% endif %}>Contract</option>
+                                        <option value="Temporary" {% if job_type_filter == 'Temporary' %}selected{% endif %}>Temporary</option>
+                                        <option value="Internship" {% if job_type_filter == 'Internship' %}selected{% endif %}>Internship</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item">
+                                    <label for="work_setup" class="filter-label">Work Setup</label>
+                                    <select name="work_setup" id="work_setup" class="filter-select">
+                                        <option value="all" {% if work_setup_filter == 'all' %}selected{% endif %}>All Setups</option>
+                                        <option value="On-site" {% if work_setup_filter == 'On-site' %}selected{% endif %}>On-site</option>
+                                        <option value="Hybrid" {% if work_setup_filter == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                                        <option value="Remote" {% if work_setup_filter == 'Remote' %}selected{% endif %}>Remote</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item">
+                                    <label for="experience_level" class="filter-label">Experience</label>
+                                    <select name="experience_level" id="experience_level" class="filter-select">
+                                        <option value="all" {% if experience_level_filter == 'all' %}selected{% endif %}>All Levels</option>
+                                        <option value="Entry Level" {% if experience_level_filter == 'Entry Level' %}selected{% endif %}>Entry Level</option>
+                                        <option value="Junior" {% if experience_level_filter == 'Junior' %}selected{% endif %}>Junior</option>
+                                        <option value="Mid Level" {% if experience_level_filter == 'Mid Level' %}selected{% endif %}>Mid Level</option>
+                                        <option value="Senior" {% if experience_level_filter == 'Senior' %}selected{% endif %}>Senior</option>
+                                        <option value="Lead" {% if experience_level_filter == 'Lead' %}selected{% endif %}>Lead</option>
+                                        <option value="Expert" {% if experience_level_filter == 'Expert' %}selected{% endif %}>Expert</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item">
+                                    <label for="employer" class="filter-label">Employer</label>
+                                    <input type="text" name="employer" id="employer" value="{{ employer_filter }}" 
+                                           class="search-input" placeholder="Filter by employer">
+                                </div>
+                                
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Filter Results Summary -->
+                    
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Job Title</th>
+                                <th>Employer</th>
+                                <th>Location</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Applications</th>
+                                <th>Posted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in jobs %}
+                            <tr class="table-row" data-job-id="{{ job.id }}">
+                                <td>
+                                    <div class="job-cell">
+                                        <div class="job-title">{{ job.title }}</div>
+                                        <div class="job-salary">{{ job.salary_range }}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="employer-cell">
+                                        <div class="employer-name">{{ job.employer.company_name|default:job.employer.username }}</div>
+                                        <div class="employer-email">{{ job.employer.email }}</div>
+                                    </div>
+                                </td>
+                                <td class="location-cell">{{ job.location }}</td>
+                                <td>
+                                    <span class="status-badge status-job-type">
+                                        <i class="fas fa-briefcase"></i>
+                                        {{ job.job_type }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if job.status|lower == 'active' %}
+                                        <span class="status-badge status-active">
+                                            <i class="fas fa-check-circle"></i>
+                                            Active
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge status-inactive">
+                                            <i class="fas fa-times-circle"></i>
+                                            Closed
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="applications-cell">{{ job.applications_count }}</td>
+                                <td class="date-cell">{{ job.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <button onclick="viewJobDetails('{{ job.id }}')" 
+                                            class="action-button">
+                                        <i class="fas fa-eye"></i>
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="empty-cell">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">
+                                            <i class="fas fa-briefcase"></i>
+                                        </div>
+                                        <h3>No jobs found</h3>
+                                        <p>There are currently no jobs posted in the system.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Job Details Modal -->
+<div id="jobDetailsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalJobTitle">Job Details</h2>
+            <span class="close" onclick="closeJobModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="job-details-grid">
+                <div class="detail-section">
+                    <h3>Basic Information</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Job Title:</span>
+                        <span id="modalJobTitleText" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Company:</span>
+                        <span id="modalCompanyName" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Location:</span>
+                        <span id="modalLocation" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Job Type:</span>
+                        <span id="modalJobType" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Work Setup:</span>
+                        <span id="modalWorkSetup" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Experience Level:</span>
+                        <span id="modalExperienceLevel" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Salary Range:</span>
+                        <span id="modalSalaryRange" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span id="modalStatus" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Posted Date:</span>
+                        <span id="modalPostedDate" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Applications:</span>
+                        <span id="modalApplicationsCount" class="detail-value"></span>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Job Description</h3>
+                    <div class="detail-content">
+                        <p id="modalDescription"></p>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Requirements</h3>
+                    <div class="detail-content">
+                        <p id="modalRequirements"></p>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Employer Information</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Company Name:</span>
+                        <span id="modalEmployerCompany" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span id="modalEmployerEmail" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Industry:</span>
+                        <span id="modalIndustry" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Website:</span>
+                        <span id="modalWebsite" class="detail-value"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-button secondary" onclick="closeJobModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Function to update the current time display
+function updateCurrentTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', {
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    const dateString = now.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    const timeElement = document.getElementById('current-time');
+    if (timeElement) {
+        timeElement.innerHTML = `<div class="time-display">${timeString}</div><div class="date-display">${dateString}</div>`;
+    }
+}
+
+// Update time every second
+setInterval(updateCurrentTime, 1000);
+
+// Initialize time display when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateCurrentTime();
+});
+
+function viewJobDetails(jobId) {
+    console.log('Opening job details for ID:', jobId);
+    
+    // Fetch job details from the server
+    fetch(`/secret-admin/job-details/${jobId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const job = data.job;
+                console.log('Job data received:', job);
+                
+                // Populate modal with job data
+                document.getElementById('modalJobTitleText').textContent = job.title;
+                document.getElementById('modalCompanyName').textContent = job.employer.company_name || job.employer.username;
+                document.getElementById('modalLocation').textContent = job.location;
+                document.getElementById('modalJobType').textContent = job.job_type;
+                document.getElementById('modalWorkSetup').textContent = job.work_setup;
+                document.getElementById('modalExperienceLevel').textContent = job.experience_level;
+                document.getElementById('modalSalaryRange').textContent = job.salary_range;
+                document.getElementById('modalStatus').textContent = job.status;
+                document.getElementById('modalPostedDate').textContent = new Date(job.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                document.getElementById('modalApplicationsCount').textContent = job.applications_count;
+                document.getElementById('modalDescription').textContent = job.description;
+                document.getElementById('modalRequirements').textContent = job.requirements || 'No specific requirements listed';
+                document.getElementById('modalEmployerCompany').textContent = job.employer.company_name || 'N/A';
+                document.getElementById('modalEmployerEmail').textContent = job.employer.email;
+                document.getElementById('modalIndustry').textContent = job.employer.industry || 'N/A';
+                document.getElementById('modalWebsite').textContent = job.employer.company_website || 'N/A';
+                
+                // Show the modal
+                const modal = document.getElementById('jobDetailsModal');
+                modal.style.display = 'block';
+                modal.style.zIndex = '10000';
+                console.log('Modal should now be visible');
+            } else {
+                console.error('Error loading job details:', data.error);
+                alert('Error loading job details: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading job details. Please try again.');
+        });
+}
+
+function closeJobModal() {
+    document.getElementById('jobDetailsModal').style.display = 'none';
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById('jobDetailsModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Enhanced filtering functionality
+function clearFilters() {
+    // Reset all filter inputs to default values
+    document.getElementById('search').value = '';
+    document.getElementById('status').value = 'all';
+    document.getElementById('job_type').value = 'all';
+    document.getElementById('work_setup').value = 'all';
+    document.getElementById('experience_level').value = 'all';
+    document.getElementById('employer').value = '';
+    
+    // Submit the form to refresh the results
+    document.getElementById('filterForm').submit();
+}
+
+// Auto-submit form when select filters change (optional enhancement)
+document.addEventListener('DOMContentLoaded', function() {
+    const autoSubmitSelects = ['status', 'job_type', 'work_setup', 'experience_level'];
+    
+    autoSubmitSelects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (select) {
+            select.addEventListener('change', function() {
+                // Only auto-submit if it's not the "all" option
+                if (this.value !== 'all') {
+                    document.getElementById('filterForm').submit();
+                }
+            });
+        }
+    });
+    
+    // Add debounced search for better performance
+    const searchInput = document.getElementById('search');
+    let searchTimeout;
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (this.value.length >= 2 || this.value.length === 0) {
+                    document.getElementById('filterForm').submit();
+                }
+            }, 500); // Wait 500ms after user stops typing
+        });
+    }
+});
+</script>
+
+<script src="{% static 'js/admin-dashboard.js' %}"></script>
+{% endblock %}

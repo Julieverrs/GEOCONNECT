@@ -1,0 +1,211 @@
+[
+  {
+    "model": "employee.notification",
+    "pk": 1,
+    "fields": {
+      "employee": 24,
+      "message": "New job posted: kim bilog at Sarah's Store. Check it out!",
+      "created_at": "2025-07-21T04:34:18.072Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 2,
+    "fields": {
+      "employee": 25,
+      "message": "New job posted: kim bilog at Sarah's Store. Check it out!",
+      "created_at": "2025-07-21T04:34:18.072Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 3,
+    "fields": {
+      "employee": 26,
+      "message": "New job posted: kim bilog at Sarah's Store. Check it out!",
+      "created_at": "2025-07-21T04:34:18.072Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 4,
+    "fields": {
+      "employee": 24,
+      "message": "New job posted: Cashier Clerk at Sarah's Store. Check it out!",
+      "created_at": "2025-07-21T05:40:31.363Z",
+      "is_read": true,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 5,
+    "fields": {
+      "employee": 25,
+      "message": "New job posted: Cashier Clerk at Sarah's Store. Check it out!",
+      "created_at": "2025-07-21T05:40:31.363Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 6,
+    "fields": {
+      "employee": 26,
+      "message": "New job posted: Cashier Clerk at Sarah's Store. Check it out!",
+      "created_at": "2025-07-21T05:40:31.363Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 7,
+    "fields": {
+      "employee": 24,
+      "message": "New job posted: SECRET at Sarah's Store. Check it out!",
+      "created_at": "2025-07-23T02:34:51.713Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 8,
+    "fields": {
+      "employee": 25,
+      "message": "New job posted: SECRET at Sarah's Store. Check it out!",
+      "created_at": "2025-07-23T02:34:51.713Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 9,
+    "fields": {
+      "employee": 26,
+      "message": "New job posted: SECRET at Sarah's Store. Check it out!",
+      "created_at": "2025-07-23T02:34:51.713Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 10,
+    "fields": {
+      "employee": 24,
+      "message": "New job posted: kimmmmmyy at Sarah's Store. Check it out!",
+      "created_at": "2025-07-25T04:49:08.244Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 11,
+    "fields": {
+      "employee": 25,
+      "message": "New job posted: kimmmmmyy at Sarah's Store. Check it out!",
+      "created_at": "2025-07-25T04:49:08.244Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 12,
+    "fields": {
+      "employee": 26,
+      "message": "New job posted: kimmmmmyy at Sarah's Store. Check it out!",
+      "created_at": "2025-07-25T04:49:08.244Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 13,
+    "fields": {
+      "employee": 24,
+      "message": "New job posted: need pogi at Sarah's Store. Check it out!",
+      "created_at": "2025-07-25T04:58:03.661Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 14,
+    "fields": {
+      "employee": 25,
+      "message": "New job posted: need pogi at Sarah's Store. Check it out!",
+      "created_at": "2025-07-25T04:58:03.661Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 15,
+    "fields": {
+      "employee": 26,
+      "message": "New job posted: need pogi at Sarah's Store. Check it out!",
+      "created_at": "2025-07-25T04:58:03.661Z",
+      "is_read": false,
+      "job": null
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 16,
+    "fields": {
+      "employee": 25,
+      "message": "New job posted: Cashier at Sarah's Store. Check it out!",
+      "created_at": "2025-07-29T09:25:45.394Z",
+      "is_read": false,
+      "job": 51
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 17,
+    "fields": {
+      "employee": 26,
+      "message": "New job posted: Cashier at Sarah's Store. Check it out!",
+      "created_at": "2025-07-29T09:25:45.394Z",
+      "is_read": false,
+      "job": 51
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 18,
+    "fields": {
+      "employee": 24,
+      "message": "New job posted: Cashier at Sarah's Store. Check it out!",
+      "created_at": "2025-07-29T09:25:45.394Z",
+      "is_read": false,
+      "job": 51
+    }
+  },
+  {
+    "model": "employee.notification",
+    "pk": 19,
+    "fields": {
+      "employee": 27,
+      "message": "New job posted: Cashier at Sarah's Store. Check it out!",
+      "created_at": "2025-07-29T09:25:45.394Z",
+      "is_read": false,
+      "job": 51
+    }
+  }
+]

@@ -21,5 +21,13 @@ urlpatterns = [
     path('candidate-recommendations/', views.candidate_recommendations, name='candidate_recommendations'),
     path('send-contact-message/', views.send_contact_message, name='employer_send_contact_message'),
     path('employee-profile/<int:employee_id>/', views.employee_profile, name='employee_profile'),
+    # Messaging System URLs
+    path('messages/', views.messages_list, name='employer_messages_list'),
+    path('messages/<int:conversation_id>/', views.conversation_detail, name='employer_conversation_detail'),
+    path('messages/<int:conversation_id>/send/', views.send_message, name='employer_send_message'),
+    path('messages/unread-count/', views.get_unread_count, name='employer_get_unread_count'),
+    path('messages/<int:conversation_id>/mark-read/', views.mark_messages_read, name='employer_mark_messages_read'),
+    path('start-conversation/<int:application_id>/', views.start_conversation, name='start_conversation'),
+    path('debug-applications/', views.debug_job_applications, name='debug_job_applications'),
 ]
 

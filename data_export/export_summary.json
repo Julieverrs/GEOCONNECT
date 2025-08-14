@@ -1,0 +1,7 @@
+{
+  "export_date": "2025-08-11T20:09:58.472547",
+  "total_models": 20,
+  "exported_models": 17,
+  "export_directory": "data_export",
+  "source_database": "local_postgresql"
+}

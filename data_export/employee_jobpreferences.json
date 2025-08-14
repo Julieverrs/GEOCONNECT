@@ -1,0 +1,65 @@
+[
+  {
+    "model": "employee.jobpreferences",
+    "pk": 3,
+    "fields": {
+      "employee": 24,
+      "industry": "Manufacturing",
+      "job_type": "Part-Time",
+      "work_arrangement": "On-site",
+      "skills": "[\"Marketing\"]",
+      "experience": 5,
+      "current_role_years": "At least 1 year",
+      "education_level": "Some College",
+      "certifications": "[\"Civil Service Eligibility\"]",
+      "languages": "[\"Filipino/Tagalog\"]",
+      "salary_min": 20000,
+      "salary_max": 150000,
+      "availability": "Immediate",
+      "created_at": "2025-07-03T11:33:36.190Z",
+      "updated_at": "2025-07-03T11:33:36.190Z"
+    }
+  },
+  {
+    "model": "employee.jobpreferences",
+    "pk": 4,
+    "fields": {
+      "employee": 25,
+      "industry": "Information Technology",
+      "job_type": "Full-Time",
+      "work_arrangement": "On-site",
+      "skills": "[\"Python\", \"Java\", \"PHP\"]",
+      "experience": 3,
+      "current_role_years": "Any Duration",
+      "education_level": "Bachelor's Degree",
+      "certifications": "[\"TESDA Certification\", \"Civil Service Eligibility\"]",
+      "languages": "[\"Filipino/Tagalog\"]",
+      "salary_min": 25000,
+      "salary_max": 150000,
+      "availability": "Immediate",
+      "created_at": "2025-07-03T11:52:20.907Z",
+      "updated_at": "2025-07-03T11:52:20.907Z"
+    }
+  },
+  {
+    "model": "employee.jobpreferences",
+    "pk": 5,
+    "fields": {
+      "employee": 26,
+      "industry": "Education",
+      "job_type": "Full-Time",
+      "work_arrangement": "On-site",
+      "skills": "[\"Python\", \"Vue.js\"]",
+      "experience": 2,
+      "current_role_years": "Any Duration",
+      "education_level": "Bachelor's Degree",
+      "certifications": "[\"PRC License\", \"TESDA Certification\"]",
+      "languages": "[\"Filipino/Tagalog\"]",
+      "salary_min": 19000,
+      "salary_max": 150000,
+      "availability": "Immediate",
+      "created_at": "2025-07-04T08:56:24.289Z",
+      "updated_at": "2025-07-04T08:56:24.289Z"
+    }
+  }
+]

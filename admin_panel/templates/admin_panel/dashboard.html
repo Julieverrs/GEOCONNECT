@@ -29,6 +29,25 @@
                 <span>Users</span>
                 <div class="nav-indicator"></div>
             </a>
+            <a href="{% url 'admin_panel:user_monitoring' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span>User Monitoring</span>
+            </a>
+            <a href="{% url 'admin_panel:jobs_monitoring' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <span>Jobs Monitoring</span>
+            </a>
+            <a href="{% url 'admin_panel:applications_monitoring' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <span>Applications</span>
+            </a>
+            <div class="nav-divider"></div>
             <a href="{% url 'admin_panel:approvals' %}" class="nav-item">
                 <div class="nav-icon">
                     <i class="fas fa-building"></i>
@@ -109,7 +128,7 @@
             </div>
         </div>
 
-        <!-- Enhanced Tabs Section -->
+        <!-- Enhanced Tabs Section with Filters -->
         <div class="tabs-section">
             <div class="tabs-header">
                 <h2>User Directory</h2>
@@ -127,20 +146,68 @@
                 </div>
             </div>
 
-            <!-- Employers Tab -->
-            <div id="employers-content" class="tab-content active">
-                <div class="table-card">
-                    <div class="table-header">
-                        <div class="search-container">
-                            <div class="search-box">
-                                <i class="fas fa-search"></i>
-                                <input type="text" placeholder="Search employers..." class="search-input">
+            <!-- Enhanced Filters Section -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div class="search-container">
+                        <form method="GET" class="filter-form">
+                            <div class="filter-grid">
+                                <div class="filter-item">
+                                    <label for="search" class="filter-label">
+                                        <i class="fas fa-search"></i>
+                                        Search Users
+                                    </label>
+                                    <input type="text" name="search" id="search" value="{{ search_query }}" 
+                                           class="search-input" placeholder="Search by name, email, or company...">
+                                </div>
+
+                                <div class="filter-item">
+                                    <label for="status" class="filter-label">
+                                        <i class="fas fa-toggle-on"></i>
+                                        Account Status
+                                    </label>
+                                    <select name="status" id="status" class="filter-select">
+                                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                                        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending Approval</option>
+                                        <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                                        <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item">
+                                    <button type="submit" class="filter-button">
+                                        <i class="fas fa-filter"></i>
+                                        Apply Filters
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="table-meta">
-                            <span class="total-count">{{ employers|length }} employers</span>
-                        </div>
+                        </form>
                     </div>
+                </div>
+                
+                                 <!-- Filter Results Summary -->
+                 {% if search_query or status_filter != 'all' %}
+                 <div class="filter-results">
+                     <div class="filter-results-info">
+                         <i class="fas fa-info-circle"></i>
+                         <span>
+                             Showing {{ employers|length|add:employees|length }} results
+                             {% if search_query %}for "{{ search_query }}"{% endif %}
+                             {% if status_filter != 'all' %}({{ status_filter|title }} status){% endif %}
+                         </span>
+                     </div>
+                     <div class="filter-results-actions">
+                         <a href="{% url 'admin_panel:dashboard' %}" class="clear-filters">
+                             <i class="fas fa-times"></i>
+                             Clear Filters
+                         </a>
+                     </div>
+                 </div>
+                 {% endif %}
+
+                <!-- Employers Tab -->
+                <div id="employers-content" class="tab-content active">
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
@@ -149,6 +216,8 @@
                                     <th>Email</th>
                                     <th>Company</th>
                                     <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -168,22 +237,35 @@
                                     <td class="email-cell">{{ employer.email }}</td>
                                     <td class="company-cell">{{ employer.company_name }}</td>
                                     <td>
-                                        {% if employer.is_approved %}
+                                        {% if employer.is_approved == True %}
                                             <span class="status-badge status-active">
                                                 <i class="fas fa-check-circle"></i>
-                                                Active
+                                                Approved
+                                            </span>
+                                        {% elif employer.is_approved == False %}
+                                            <span class="status-badge status-inactive">
+                                                <i class="fas fa-times-circle"></i>
+                                                Rejected
                                             </span>
                                         {% else %}
-                                            <span class="status-badge status-inactive">
+                                            <span class="status-badge status-pending">
                                                 <i class="fas fa-clock"></i>
                                                 Pending
                                             </span>
                                         {% endif %}
                                     </td>
+                                    <td class="date-cell">{{ employer.date_joined|date:"M d, Y" }}</td>
+                                    <td>
+                                        <button onclick="viewUserDetails('employer', {{ employer.id }})" 
+                                                class="action-button view">
+                                            <i class="fas fa-eye"></i>
+                                            <span>View Details</span>
+                                        </button>
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="4" class="empty-cell">
+                                    <td colspan="6" class="empty-cell">
                                         <div class="empty-state">
                                             <div class="empty-icon">
                                                 <i class="fas fa-building"></i>
@@ -198,30 +280,19 @@
                         </table>
                     </div>
                 </div>
-            </div>
 
-            <!-- Employees Tab -->
-            <div id="employees-content" class="tab-content">
-                <div class="table-card">
-                    <div class="table-header">
-                        <div class="search-container">
-                            <div class="search-box">
-                                <i class="fas fa-search"></i>
-                                <input type="text" placeholder="Search employees..." class="search-input">
-                            </div>
-                        </div>
-                        <div class="table-meta">
-                            <span class="total-count">{{ employees|length }} employees</span>
-                        </div>
-                    </div>
+                <!-- Employees Tab -->
+                <div id="employees-content" class="tab-content">
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>User</th>
                                     <th>Email</th>
-                                    <th>Joined</th>
+                                    <th>Location</th>
                                     <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -239,24 +310,37 @@
                                         </div>
                                     </td>
                                     <td class="email-cell">{{ employee.email }}</td>
-                                    <td class="date-cell">{{ employee.date_joined|date:"M d, Y" }}</td>
+                                    <td class="location-cell">{{ employee.location|default:"Not specified" }}</td>
                                     <td>
-                                        {% if employee.is_approved %}
+                                        {% if employee.is_approved == True %}
                                             <span class="status-badge status-active">
                                                 <i class="fas fa-check-circle"></i>
-                                                Active
+                                                Approved
+                                            </span>
+                                        {% elif employee.is_approved == False %}
+                                            <span class="status-badge status-inactive">
+                                                <i class="fas fa-times-circle"></i>
+                                                Rejected
                                             </span>
                                         {% else %}
-                                            <span class="status-badge status-inactive">
+                                            <span class="status-badge status-pending">
                                                 <i class="fas fa-clock"></i>
                                                 Pending
                                             </span>
                                         {% endif %}
                                     </td>
+                                    <td class="date-cell">{{ employee.date_joined|date:"M d, Y" }}</td>
+                                    <td>
+                                        <button onclick="viewUserDetails('employee', {{ employee.id }})" 
+                                                class="action-button view">
+                                            <i class="fas fa-eye"></i>
+                                            <span>View Details</span>
+                                        </button>
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="4" class="empty-cell">
+                                    <td colspan="6" class="empty-cell">
                                         <div class="empty-state">
                                             <div class="empty-icon">
                                                 <i class="fas fa-user-tie"></i>
@@ -278,6 +362,68 @@
 
 <!-- Toast container -->
 <div id="toastContainer" class="toast-container"></div>
+
+<!-- User Details Modal -->
+<div id="userDetailsModal" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <div class="modal-title">
+                <div class="user-avatar-modal">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="title-content">
+                    <h3 id="modalUserName">User Details</h3>
+                    <span id="modalUserType" class="user-type-badge">User</span>
+                </div>
+            </div>
+            <button class="modal-close" onclick="closeUserModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div id="modalLoading" class="modal-loading">
+                <div class="loading-spinner"></div>
+                <p>Loading user details...</p>
+            </div>
+            
+            <div id="modalContent" class="modal-content" style="display: none;">
+                <!-- Content will be dynamically loaded -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Document Viewer Modal -->
+<div id="documentViewerModal" class="modal-overlay">
+    <div class="modal-container document-viewer-modal">
+        <div class="modal-header">
+            <div class="modal-title">
+                <div class="document-icon">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <div class="title-content">
+                    <h3 id="documentModalTitle">Document Viewer</h3>
+                    <span id="documentModalType" class="document-type-badge">Registration Document</span>
+                </div>
+            </div>
+            <button class="modal-close" onclick="closeDocumentModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div id="documentModalLoading" class="modal-loading">
+                <div class="loading-spinner"></div>
+                <p>Loading document...</p>
+            </div>
+            
+            <div id="documentModalContent" class="document-modal-content" style="display: none;">
+                <!-- Document content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 // Update current time
@@ -308,9 +454,589 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 500);
 });
+
+// Modal Functions
+function viewUserDetails(userType, userId) {
+    const modal = document.getElementById('userDetailsModal');
+    const modalLoading = document.getElementById('modalLoading');
+    const modalContent = document.getElementById('modalContent');
+    const modalUserName = document.getElementById('modalUserName');
+    const modalUserType = document.getElementById('modalUserType');
+    
+    // Show modal and loading state
+    modal.classList.add('active');
+    modalLoading.style.display = 'flex';
+    modalContent.style.display = 'none';
+    
+    // Set initial title
+    modalUserName.textContent = 'Loading...';
+    modalUserType.textContent = userType === 'employee' ? 'Employee' : 'Employer';
+    modalUserType.className = `user-type-badge ${userType}`;
+    
+    // Fetch user details
+    const url = userType === 'employee' 
+        ? `{% url 'admin_panel:get_employee_details' 0 %}`.replace('0', userId)
+        : `{% url 'admin_panel:get_employer_details' 0 %}`.replace('0', userId);
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showModalError(data.error);
+                return;
+            }
+            
+            // Hide loading, show content
+            modalLoading.style.display = 'none';
+            modalContent.style.display = 'block';
+            
+            // Update modal title
+            const displayName = userType === 'employee' 
+                ? (data.full_name || data.username)
+                : (data.company_name || 'Unknown');
+            modalUserName.textContent = displayName;
+            
+            // Render content based on user type
+            if (userType === 'employee') {
+                renderEmployeeDetails(data);
+            } else {
+                renderEmployerDetails(data);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching user details:', error);
+            showModalError('Failed to load user details. Please try again.');
+        });
+}
+
+function renderEmployeeDetails(data) {
+    const modalContent = document.getElementById('modalContent');
+    
+    modalContent.innerHTML = `
+        <div class="user-details-grid">
+            <div class="detail-section">
+                <h4><i class="fas fa-user"></i> Personal Information</h4>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Username</label>
+                        <span>${data.username || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Full Name</label>
+                        <span>${data.full_name || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Email</label>
+                        <span>${data.email || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Phone</label>
+                        <span>${data.phone || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Location</label>
+                        <span>${data.location || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Date Joined</label>
+                        <span>${formatDate(data.date_joined)}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h4><i class="fas fa-briefcase"></i> Professional Information</h4>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Job Title</label>
+                        <span>${data.job_title || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Years of Experience</label>
+                        <span>${data.years_of_experience || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Expected Salary</label>
+                        <span>${data.expected_salary ? '₱' + data.expected_salary : 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Preferred Job Type</label>
+                        <span>${data.preferred_job_type || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Remote Work Preference</label>
+                        <span>${data.remote_work_preference || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Willing to Relocate</label>
+                        <span>${data.willing_to_relocate ? 'Yes' : 'No'}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h4><i class="fas fa-graduation-cap"></i> Education & Skills</h4>
+                <div class="detail-grid">
+                    <div class="detail-item full-width">
+                        <label>Education</label>
+                        <span>${data.education || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <label>Skills</label>
+                        <span>${data.skills || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <label>Certifications</label>
+                        <span>${data.certifications || 'N/A'}</span>
+                    </div>
+                </div>
+            </div>
+            
+            ${data.document ? `
+            <div class="detail-section">
+                <h4><i class="fas fa-file-alt"></i> Documents</h4>
+                <div class="document-item">
+                    <a href="${data.document}" target="_blank" class="document-link">
+                        <i class="fas fa-download"></i>
+                        View Resume/CV
+                    </a>
+                </div>
+            </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function renderEmployerDetails(data) {
+    const modalContent = document.getElementById('modalContent');
+    
+    modalContent.innerHTML = `
+        <div class="user-details-grid">
+            <div class="detail-section">
+                <h4><i class="fas fa-building"></i> Company Information</h4>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Company Name</label>
+                        <span>${data.company_name || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Email</label>
+                        <span>${data.email || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Industry</label>
+                        <span>${data.industry || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Location</label>
+                        <span>${data.company_location || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Website</label>
+                        <span>${data.company_website ? `<a href="${data.company_website}" target="_blank">${data.company_website}</a>` : 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Date Joined</label>
+                        <span>${formatDate(data.date_joined)}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h4><i class="fas fa-info-circle"></i> Company Details</h4>
+                <div class="detail-item full-width">
+                    <label>Description</label>
+                    <span>${data.company_description || 'N/A'}</span>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h4><i class="fas fa-certificate"></i> Registration Information</h4>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Registration Number</label>
+                        <span>${data.registration_number || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Registration Date</label>
+                        <span>${formatDate(data.registration_date)}</span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <label>Registration Types</label>
+                        <span>${data.registration_types ? data.registration_types.join(', ') : 'N/A'}</span>
+                    </div>
+                </div>
+            </div>
+            
+            ${renderDocumentSection(data.document_urls)}
+        </div>
+    `;
+}
+
+function renderDocumentSection(documentUrls) {
+    if (!documentUrls) return '';
+    
+    const documents = [];
+    const documentLabels = {
+        'business_permit': 'Business Permit',
+        'registration_document': 'Registration Document',
+        'barangay_clearance': 'Barangay Clearance',
+        'mayors_permit': 'Mayor\'s Permit',
+        'bir_certificate': 'BIR Certificate',
+        'sanitary_permit': 'Sanitary Permit',
+        'fda_permit': 'FDA Permit',
+        'labeling_compliance': 'Labeling Compliance'
+    };
+    
+    for (const [key, url] of Object.entries(documentUrls)) {
+        if (url) {
+            if (key === 'registration_document') {
+                // For registration documents, show embedded PDF viewer
+                documents.push(`
+                    <div class="document-item">
+                        <button onclick="togglePdfViewer('${url}', '${documentLabels[key]}')" class="document-link document-modal-btn">
+                            <i class="fas fa-file-pdf"></i>
+                            ${documentLabels[key] || key}
+                        </button>
+                    </div>
+                `);
+            } else {
+                // For other documents, open in new tab
+                documents.push(`
+                    <div class="document-item">
+                        <a href="${url}" target="_blank" class="document-link">
+                            <i class="fas fa-file-pdf"></i>
+                            ${documentLabels[key] || key}
+                        </a>
+                    </div>
+                `);
+            }
+        }
+    }
+    
+    if (documents.length === 0) return '';
+    
+    return `
+        <div class="detail-section">
+            <h4><i class="fas fa-file-alt"></i> Documents</h4>
+            ${documents.join('')}
+            <div id="pdfViewerContainer" class="pdf-viewer-container" style="display: none;">
+                <div class="pdf-viewer-header">
+                    <h5 id="pdfViewerTitle">Document Viewer</h5>
+                    <button onclick="closePdfViewer()" class="pdf-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="pdf-viewer-content">
+                    <iframe id="pdfViewer" src="" width="100%" height="600" frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function showModalError(message) {
+    const modalContent = document.getElementById('modalContent');
+    const modalLoading = document.getElementById('modalLoading');
+    
+    modalLoading.style.display = 'none';
+    modalContent.style.display = 'block';
+    
+    modalContent.innerHTML = `
+        <div class="modal-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h4>Error</h4>
+            <p>${message}</p>
+        </div>
+    `;
+}
+
+function closeUserModal() {
+    const modal = document.getElementById('userDetailsModal');
+    modal.classList.remove('active');
+}
+
+// Document Viewer Functions
+let currentDocumentUrl = '';
+
+// Helper function to safely get PDF viewer container
+function getPdfViewerContainer() {
+    const container = document.getElementById('pdfViewerContainer');
+    if (!container) {
+        console.error('PDF viewer container not found');
+        return null;
+    }
+    return container;
+}
+
+
+
+function viewDocument(documentUrl, documentTitle, documentType) {
+    const modal = document.getElementById('documentViewerModal');
+    const modalLoading = document.getElementById('documentModalLoading');
+    const modalContent = document.getElementById('documentModalContent');
+    const modalTitle = document.getElementById('documentModalTitle');
+    const modalType = document.getElementById('documentModalType');
+    
+    // Store the current document URL globally
+    currentDocumentUrl = documentUrl;
+    
+    // Show modal and loading state
+    modal.classList.add('active');
+    modalLoading.style.display = 'flex';
+    modalContent.style.display = 'none';
+    
+    // Set modal title and type
+    modalTitle.textContent = documentTitle;
+    modalType.textContent = documentType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    
+    // Hide loading and show content
+    modalLoading.style.display = 'none';
+    modalContent.style.display = 'block';
+    modalContent.innerHTML = `
+        <div class="document-actions">
+            <button onclick="openDocumentInNewTab()" class="btn btn-primary">
+                <i class="fas fa-external-link-alt"></i>
+                Open in New Tab
+            </button>
+            <button onclick="downloadDocument()" class="btn btn-secondary">
+                <i class="fas fa-download"></i>
+                Download
+            </button>
+        </div>
+        
+        <div class="document-preview">
+            <div class="preview-placeholder">
+                <i class="fas fa-file-pdf"></i>
+                <p>Document Preview</p>
+                <span>Click "Open in New Tab" to view the full document</span>
+            </div>
+        </div>
+    `;
+}
+
+function openDocumentInNewTab() {
+    if (currentDocumentUrl) {
+        window.open(currentDocumentUrl, '_blank');
+    }
+}
+
+function downloadDocument() {
+    if (currentDocumentUrl) {
+        const link = document.createElement('a');
+        link.href = currentDocumentUrl;
+        link.download = '';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+
+function closeDocumentModal() {
+    const modal = document.getElementById('documentViewerModal');
+    modal.classList.remove('active');
+}
+
+function togglePdfViewer(url, title) {
+    console.log('Opening PDF viewer for:', url, title);
+    
+    const pdfViewerContainer = getPdfViewerContainer();
+    if (!pdfViewerContainer) return;
+    
+    // Show the container with simplified viewing options
+    pdfViewerContainer.innerHTML = `
+        <div class="pdf-viewer-header">
+            <h5>${title}</h5>
+            <button onclick="closePdfViewer()" class="pdf-close-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="pdf-viewer-content">
+            <div class="pdf-viewer-options">
+                <div class="pdf-option">
+                    <h6><i class="fas fa-file-pdf"></i> Document Options</h6>
+                    <div class="pdf-buttons">
+                        <button onclick="openPdfInNewTab('${url}')" class="btn btn-primary">
+                            <i class="fas fa-external-link-alt"></i>
+                            Open in New Tab
+                        </button>
+                        <button onclick="downloadPdf('${url}')" class="btn btn-secondary">
+                            <i class="fas fa-download"></i>
+                            Download
+                        </button>
+                    </div>
+                </div>
+                <div class="pdf-preview">
+                    <div class="preview-placeholder">
+                        <i class="fas fa-file-pdf"></i>
+                        <p>${title}</p>
+                        <span>Choose an option above to view or download</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Show the container
+    pdfViewerContainer.style.display = 'block';
+}
+
+
+
+function openPdfInNewTab(url) {
+    if (url) {
+        try {
+            window.open(url, '_blank');
+        } catch (error) {
+            console.error('Error opening PDF in new tab:', error);
+            alert('Unable to open document in new tab. Please try downloading instead.');
+        }
+    }
+}
+
+function downloadPdf(url) {
+    if (url) {
+        try {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = '';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Error downloading PDF:', error);
+            alert('Unable to download document. Please try opening in new tab instead.');
+        }
+    }
+}
+
+function closePdfViewer() {
+    const pdfViewerContainer = getPdfViewerContainer();
+    if (pdfViewerContainer) {
+        pdfViewerContainer.style.display = 'none';
+    }
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+// Close modal when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+    const userModal = document.getElementById('userDetailsModal');
+    const documentModal = document.getElementById('documentViewerModal');
+    
+    // User modal event listeners
+    userModal.addEventListener('click', function(e) {
+        if (e.target === userModal) {
+            closeUserModal();
+        }
+    });
+    
+    // Document modal event listeners
+    documentModal.addEventListener('click', function(e) {
+        if (e.target === documentModal) {
+            closeDocumentModal();
+        }
+    });
+    
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (userModal.classList.contains('active')) {
+                closeUserModal();
+            }
+            if (documentModal.classList.contains('active')) {
+                closeDocumentModal();
+            }
+        }
+    });
+});
+
+// Enhanced Filter Interactions
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.querySelector('.filter-form');
+    const searchInput = document.getElementById('search');
+    const statusSelect = document.getElementById('status');
+    
+    // Auto-submit on select change
+    statusSelect.addEventListener('change', function() {
+        filterForm.submit();
+    });
+    
+    // Debounced search input
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            filterForm.submit();
+        }, 500);
+    });
+    
+    // Enhanced focus effects
+    const filterInputs = document.querySelectorAll('.search-input, .filter-select');
+    filterInputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('focused');
+        });
+    });
+    
+    // Filter button animation
+    const filterButton = document.querySelector('.filter-button');
+    if (filterButton) {
+        filterButton.addEventListener('click', function(e) {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    }
+});
 </script>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/admin-dashboard.js' %}"></script>
+
+<script>
+// Function to update the current time display
+function updateCurrentTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', {
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    const dateString = now.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    const timeElement = document.getElementById('current-time');
+    if (timeElement) {
+        timeElement.innerHTML = `<div class="time-display">${timeString}</div><div class="date-display">${dateString}</div>`;
+    }
+}
+
+// Update time every second
+setInterval(updateCurrentTime, 1000);
+
+// Initialize time display when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateCurrentTime();
+});
+</script>
 {% endblock %}

@@ -4400,7 +4400,10 @@ body {
 
 #createJobModal .modal-content {
   z-index: 10002 !important;
-  position: relative;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
 }
 
 /* Profile modal z-index */
@@ -4764,5 +4767,1506 @@ body {
 
   .content-text {
     font-size: 0.95rem;
+  }
+}
+
+/* Enhanced responsive design fixes for better mobile experience */
+
+/* Improved header responsive design */
+@media (max-width: 1200px) {
+  .header-container {
+    padding: 0 20px;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 110px;
+  }
+
+  .logo-section,
+  .header-actions {
+    min-width: 200px;
+  }
+
+  .nav-links a {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .header-container {
+    padding: 15px 20px;
+    flex-direction: column;
+    height: auto;
+    min-height: 140px;
+  }
+
+  .header-nav {
+    order: 3;
+    width: 100%;
+    margin: 15px 0 5px;
+    overflow-x: auto;
+  }
+
+  .nav-links {
+    width: 100%;
+    justify-content: center;
+    border-radius: 15px;
+    padding: 5px;
+    min-width: max-content;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .nav-links::-webkit-scrollbar {
+    display: block;
+    height: 4px;
+  }
+
+  .nav-links::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+  }
+
+  .nav-links::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+
+  .nav-links a {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  body {
+    padding-top: 160px;
+  }
+
+  .logo-section,
+  .header-actions {
+    min-width: auto;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .header-actions {
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    padding: 15px 10px;
+    min-height: 130px;
+  }
+
+  .logo-section {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .logo-text {
+    font-size: 1.5rem;
+  }
+
+  .header-logo {
+    height: 50px;
+    margin-right: 0;
+  }
+
+  .header-actions {
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .view-applications-button {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .profile-name {
+    display: none;
+  }
+
+  .nav-links {
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .nav-links a {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  body {
+    padding-top: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-container {
+    padding: 10px 5px;
+    min-height: 120px;
+  }
+
+  .logo-text {
+    font-size: 1.3rem;
+  }
+
+  .header-logo {
+    height: 45px;
+  }
+
+  .header-actions {
+    gap: 8px;
+  }
+
+  .view-applications-button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
+  .nav-links a {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  body {
+    padding-top: 140px;
+  }
+}
+
+/* Enhanced section actions responsive design */
+@media (max-width: 1200px) {
+  .section-actions {
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .search-input {
+    width: 220px;
+  }
+}
+
+@media (max-width: 992px) {
+  .section-actions {
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .search-input {
+    width: 200px;
+  }
+
+  .filter-select {
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .section-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.8rem;
+    align-items: stretch;
+  }
+
+  .search-input {
+    width: 100%;
+    max-width: none;
+  }
+
+  .filter-select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .create-job-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-actions {
+    gap: 0.6rem;
+  }
+
+  .search-input,
+  .filter-select {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .create-job-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Enhanced welcome section responsive design */
+@media (max-width: 1200px) {
+  .welcome-section {
+    padding: 50px 30px;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  .welcome-content {
+    padding-right: 30px;
+    max-width: 45%;
+  }
+
+  .welcome-visualization {
+    margin-left: 20px;
+    max-width: 45%;
+  }
+}
+
+@media (max-width: 992px) {
+  .welcome-section {
+    flex-direction: column;
+    padding: 50px 40px;
+    text-align: center;
+    min-height: calc(100vh - 180px);
+    gap: 2rem;
+  }
+
+  .welcome-content {
+    padding-right: 0;
+    margin-bottom: 0;
+    max-width: 100%;
+  }
+
+  .welcome-visualization {
+    margin-left: 0;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .welcome-content h1::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .welcome-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .welcome-section {
+    padding: 40px 20px;
+    min-height: calc(100vh - 160px);
+    gap: 1.5rem;
+  }
+
+  .welcome-content h1 {
+    font-size: 2.4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .welcome-content p {
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .get-recommendations-button {
+    padding: 15px 30px;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+
+  .welcome-visualization {
+    height: 320px;
+    padding: 20px;
+    max-width: 100%;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .stat-card {
+    padding: 25px 20px;
+  }
+
+  .stat-card .stat-value {
+    font-size: 2.5rem;
+  }
+
+  .stat-card .stat-label {
+    font-size: 1rem;
+    letter-spacing: 1.5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-section {
+    padding: 30px 15px;
+    min-height: calc(100vh - 140px);
+    gap: 1rem;
+  }
+
+  .welcome-content h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+
+  .welcome-content p {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .get-recommendations-button {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    max-width: 280px;
+  }
+
+  .welcome-visualization {
+    height: 280px;
+    padding: 15px;
+  }
+
+  .stats-grid {
+    gap: 15px;
+    max-width: 100%;
+  }
+
+  .stat-card {
+    padding: 20px 15px;
+  }
+
+  .stat-card .stat-value {
+    font-size: 2.2rem;
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.9rem;
+  }
+}
+
+/* Enhanced jobs section responsive design */
+@media (max-width: 768px) {
+  .jobs-section {
+    padding: 40px 15px;
+    min-height: calc(100vh - 160px);
+  }
+
+  .section-header h2 {
+    font-size: 2rem;
+    text-align: center;
+  }
+
+  .section-header h2::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 480px) {
+  .jobs-section {
+    padding: 30px 10px;
+    min-height: calc(100vh - 140px);
+  }
+
+  .section-header h2 {
+    font-size: 1.8rem;
+  }
+}
+
+/* Enhanced job cards responsive design */
+@media (max-width: 1400px) {
+  .jobs-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .jobs-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+  }
+
+  .job-card {
+    min-height: 260px;
+  }
+}
+
+@media (max-width: 992px) {
+  .jobs-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+    max-height: calc(100vh - 350px);
+  }
+
+  .job-card {
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .jobs-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 5px;
+    max-height: calc(100vh - 300px);
+  }
+
+  .job-card {
+    min-height: 220px;
+    margin: 0 auto;
+    max-width: 500px;
+    width: 100%;
+  }
+
+  .job-card-header {
+    padding: 18px 20px;
+    min-height: 70px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .status-badge {
+    position: static;
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 576px) {
+  .jobs-grid {
+    gap: 12px;
+    padding: 2px;
+  }
+
+  .job-card {
+    min-height: 200px;
+    max-width: 100%;
+  }
+
+  .job-card-header {
+    padding: 15px 18px;
+    min-height: 65px;
+  }
+
+  .job-card-header h3 {
+    font-size: 1.1rem;
+    line-height: 1.3;
+  }
+}
+
+@media (max-width: 480px) {
+  .job-card {
+    border-radius: 15px;
+    min-height: 180px;
+  }
+
+  .job-card-header {
+    padding: 12px 15px;
+    min-height: 60px;
+  }
+
+  .job-card-header h3 {
+    font-size: 1rem;
+  }
+
+  .status-badge {
+    padding: 6px 12px;
+    font-size: 0.7rem;
+  }
+}
+
+/* Enhanced contact and about sections responsive design */
+@media (max-width: 768px) {
+  .contact-us-section,
+  .about-us-section {
+    padding: 40px 15px;
+  }
+
+  .contact-us-content h2,
+  .about-us-content h2 {
+    font-size: 2rem;
+    text-align: center;
+  }
+
+  .contact-info-cards,
+  .about-us-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-us-section,
+  .about-us-section {
+    padding: 30px 10px;
+  }
+
+  .contact-us-content h2,
+  .about-us-content h2 {
+    font-size: 1.8rem;
+  }
+
+  .contact-info-cards,
+  .about-us-grid {
+    gap: 15px;
+  }
+
+  .team-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .contact-us-form .form-group {
+    margin-bottom: 15px;
+  }
+
+  .contact-us-form input,
+  .contact-us-form textarea {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Enhanced modal responsive design */
+@media (max-width: 768px) {
+  .modal {
+    padding: 1rem;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    max-height: 85vh;
+  }
+  
+  #createJobModal .modal-content {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+
+  .modal-header {
+    padding: 1rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .job-form .form-row {
+    flex-direction: column;
+  }
+
+  .job-form .form-group {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    padding: 0.5rem;
+  }
+
+  .modal-content {
+    width: 98%;
+    border-radius: 0.5rem;
+  }
+
+  .modal-header {
+    padding: 0.75rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .job-form .form-group {
+    margin-bottom: 15px;
+  }
+
+  .job-form input,
+  .job-form select,
+  .job-form textarea {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Enhanced profile modal responsive design */
+@media (max-width: 768px) {
+  .profile-modal .modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .modal-tabs {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tab-button {
+    width: 100%;
+    border-radius: 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .tab-content {
+    padding: 1rem;
+  }
+
+  .profile-scroll-buttons {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-modal .modal-content {
+    width: 98%;
+    max-height: 95vh;
+  }
+
+  .modal-tabs {
+    gap: 0;
+  }
+
+  .tab-button {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .tab-content {
+    padding: 0.75rem;
+  }
+
+  .settings-form .form-group {
+    margin-bottom: 15px;
+  }
+
+  .settings-form input,
+  .settings-form textarea,
+  .settings-form select {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Enhanced view all jobs button responsive design */
+@media (max-width: 768px) {
+  .view-all-container {
+    margin-top: 20px;
+  }
+
+  .view-all-button {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .view-all-button {
+    max-width: 280px;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Enhanced no jobs state responsive design */
+@media (max-width: 768px) {
+  .no-jobs {
+    padding: 30px 20px;
+  }
+
+  .no-jobs p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+
+  #createEmptyJobBtn {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .no-jobs {
+    padding: 20px 15px;
+  }
+
+  .no-jobs p {
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+  }
+
+  #createEmptyJobBtn {
+    max-width: 280px;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Enhanced floating elements responsive design */
+@media (max-width: 768px) {
+  .welcome-section::before,
+  .welcome-section::after {
+    display: none;
+  }
+}
+
+/* Enhanced animations responsive design */
+@media (max-width: 768px) {
+  .welcome-content,
+  .welcome-visualization {
+    animation: none;
+  }
+
+  .welcome-content h1::after {
+    animation: none;
+  }
+
+  .section-header h2::after {
+    animation: none;
+  }
+}
+
+/* Enhanced scroll behavior for mobile */
+@media (max-width: 768px) {
+  .jobs-grid {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-content {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Enhanced touch targets for mobile */
+@media (max-width: 768px) {
+  .nav-links a,
+  .action-button,
+  .create-job-button,
+  .view-all-button,
+  .get-recommendations-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .profile-trigger,
+  .view-applications-button {
+    min-height: 44px;
+  }
+
+  .dropdown-item {
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+}
+
+/* Enhanced focus states for accessibility */
+@media (max-width: 768px) {
+  .nav-links a:focus,
+  .action-button:focus,
+  .create-job-button:focus,
+  .view-all-button:focus,
+  .get-recommendations-button:focus {
+    outline: 2px solid #1a237e;
+    outline-offset: 2px;
+  }
+}
+
+/* Enhanced loading states for mobile */
+@media (max-width: 768px) {
+  .fa-spinner {
+    font-size: 1rem;
+  }
+
+  #contactSubmitBtn:disabled {
+    opacity: 0.6;
+  }
+}
+
+/* Critical responsive design fixes for all screen sizes */
+/* Ensure the website works perfectly on mobile, tablet, and desktop */
+
+/* Base responsive container */
+.container-fluid {
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+/* Enhanced responsive breakpoints */
+@media (max-width: 1400px) {
+  .container-fluid {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .container-fluid {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+}
+
+@media (max-width: 992px) {
+  .container-fluid {
+    padding-right: 6px;
+    padding-left: 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+}
+
+@media (max-width: 576px) {
+  .container-fluid {
+    padding-right: 2px;
+    padding-left: 2px;
+  }
+}
+
+/* Critical mobile-first responsive fixes */
+@media (max-width: 768px) {
+  /* Ensure all content fits within viewport */
+  .dashboard-main {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Fix header overflow issues */
+  .dashboard-header {
+    width: 100vw;
+    max-width: 100vw;
+    overflow: hidden;
+  }
+  
+  .header-container {
+    width: 100%;
+    max-width: 100vw;
+    padding: 0 10px;
+    flex-wrap: wrap;
+  }
+  
+  /* Ensure logo fits on small screens */
+  .logo-section {
+    min-width: auto;
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .logo-text {
+    font-size: 1.5rem;
+    white-space: nowrap;
+  }
+  
+  .header-logo {
+    height: 45px;
+    margin-right: 10px;
+  }
+  
+  /* Stack header elements vertically on very small screens */
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  /* Make navigation scrollable horizontally */
+  .header-nav {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .nav-links {
+    min-width: max-content;
+    justify-content: center;
+    gap: 5px;
+  }
+  
+  .nav-links a {
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+  
+  /* Adjust body padding for mobile header */
+  body {
+    padding-top: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screen optimizations */
+  .dashboard-header {
+    height: auto;
+    min-height: 120px;
+  }
+  
+  .header-container {
+    padding: 10px 5px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .logo-section {
+    flex-direction: column;
+    text-align: center;
+    gap: 5px;
+  }
+  
+  .logo-text {
+    font-size: 1.3rem;
+  }
+  
+  .header-logo {
+    height: 40px;
+    margin-right: 0;
+  }
+  
+  .header-actions {
+    gap: 8px;
+    justify-content: center;
+  }
+  
+  .view-applications-button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  
+  .profile-name {
+    display: none;
+  }
+  
+  .nav-links {
+    padding: 2px;
+    gap: 2px;
+  }
+  
+  .nav-links a {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+  }
+  
+  body {
+    padding-top: 130px;
+  }
+}
+
+/* Critical content responsive fixes */
+@media (max-width: 768px) {
+  /* Ensure welcome section fits on mobile */
+  .welcome-section {
+    width: 100vw;
+    max-width: 100vw;
+    padding: 30px 15px;
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+    min-height: auto;
+    overflow: hidden;
+  }
+  
+  .welcome-content {
+    width: 100%;
+    max-width: 100%;
+    padding-right: 0;
+    margin-bottom: 20px;
+  }
+  
+  .welcome-content h1 {
+    font-size: 2.2rem;
+    line-height: 1.2;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .welcome-content p {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  
+  .welcome-visualization {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    height: auto;
+    min-height: 250px;
+    padding: 15px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    max-width: 100%;
+  }
+  
+  .stat-card {
+    padding: 20px 15px;
+  }
+  
+  .stat-card .stat-value {
+    font-size: 2.2rem;
+  }
+  
+  .stat-card .stat-label {
+    font-size: 0.9rem;
+  }
+  
+  .get-recommendations-button {
+    width: 100%;
+    max-width: 280px;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    justify-content: center;
+  }
+  
+  /* Ensure jobs section fits on mobile */
+  .jobs-section {
+    width: 100vw;
+    max-width: 100vw;
+    padding: 30px 15px;
+    overflow: hidden;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .section-header h2 {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+  
+  .section-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .search-input,
+  .filter-select,
+  .create-job-button {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .jobs-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 5px;
+    max-height: none;
+    overflow: visible;
+  }
+  
+  .job-card {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    min-height: auto;
+  }
+  
+  .job-card-header {
+    padding: 15px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .status-badge {
+    position: static;
+    align-self: flex-end;
+  }
+  
+  .job-card-content {
+    padding: 15px;
+  }
+  
+  .job-card-footer {
+    padding: 15px;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  /* Ensure contact and about sections fit on mobile */
+  .contact-us-section,
+  .about-us-section {
+    width: 100vw;
+    max-width: 100vw;
+    padding: 30px 15px;
+    overflow: hidden;
+  }
+  
+  .contact-us-content h2,
+  .about-us-content h2 {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+  
+  .contact-info-cards,
+  .about-us-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .team-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .contact-us-form .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .contact-us-form input,
+  .contact-us-form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screen content optimizations */
+  .welcome-section {
+    padding: 20px 10px;
+  }
+  
+  .welcome-content h1 {
+    font-size: 1.8rem;
+  }
+  
+  .welcome-content p {
+    font-size: 0.9rem;
+  }
+  
+  .welcome-visualization {
+    min-height: 200px;
+    padding: 10px;
+  }
+  
+  .stats-grid {
+    gap: 10px;
+  }
+  
+  .stat-card {
+    padding: 15px 10px;
+  }
+  
+  .stat-card .stat-value {
+    font-size: 1.8rem;
+  }
+  
+  .stat-card .stat-label {
+    font-size: 0.8rem;
+  }
+  
+  .get-recommendations-button {
+    max-width: 250px;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
+  
+  .jobs-section {
+    padding: 20px 10px;
+  }
+  
+  .section-header h2 {
+    font-size: 1.6rem;
+  }
+  
+  .section-actions {
+    gap: 8px;
+  }
+  
+  .jobs-grid {
+    gap: 10px;
+    padding: 2px;
+  }
+  
+  .job-card {
+    border-radius: 12px;
+  }
+  
+  .job-card-header {
+    padding: 12px;
+  }
+  
+  .job-card-content {
+    padding: 12px;
+  }
+  
+  .job-card-footer {
+    padding: 12px;
+  }
+  
+  .contact-us-section,
+  .about-us-section {
+    padding: 20px 10px;
+  }
+  
+  .contact-us-content h2,
+  .about-us-content h2 {
+    font-size: 1.6rem;
+  }
+}
+
+/* Critical modal responsive fixes */
+@media (max-width: 768px) {
+  .modal {
+    padding: 10px;
+  }
+  
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    max-height: 90vh;
+    border-radius: 12px;
+  }
+  
+  #createJobModal .modal-content {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+  
+  .modal-header {
+    padding: 15px;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.4rem;
+  }
+  
+  .job-form .form-row {
+    flex-direction: column;
+  }
+  
+  .job-form .form-group {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  
+  .job-form input,
+  .job-form select,
+  .job-form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    padding: 5px;
+  }
+  
+  .modal-content {
+    width: 98%;
+    max-height: 95vh;
+    border-radius: 8px;
+  }
+  
+  #createJobModal .modal-content {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+  
+  .modal-header {
+    padding: 12px;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.2rem;
+  }
+  
+  .job-form .form-group {
+    margin-bottom: 12px;
+  }
+  
+  .job-form input,
+  .job-form select,
+  .job-form textarea {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Critical utility classes for responsive design */
+.d-none {
+  display: none !important;
+}
+
+.d-block {
+  display: block !important;
+}
+
+.d-flex {
+  display: flex !important;
+}
+
+.d-grid {
+  display: grid !important;
+}
+
+@media (max-width: 768px) {
+  .d-md-none {
+    display: none !important;
+  }
+  
+  .d-md-block {
+    display: block !important;
+  }
+  
+  .d-md-flex {
+    display: flex !important;
+  }
+  
+  .d-md-grid {
+    display: grid !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .d-sm-none {
+    display: none !important;
+  }
+  
+  .d-sm-block {
+    display: block !important;
+  }
+  
+  .d-sm-flex {
+    display: flex !important;
+  }
+  
+  .d-sm-grid {
+    display: grid !important;
+  }
+}
+
+/* Critical overflow fixes */
+.overflow-hidden {
+  overflow: hidden !important;
+}
+
+.overflow-x-hidden {
+  overflow-x: hidden !important;
+}
+
+.overflow-y-auto {
+  overflow-y: auto !important;
+}
+
+/* Critical width and height utilities */
+.w-100 {
+  width: 100% !important;
+}
+
+.h-auto {
+  height: auto !important;
+}
+
+.min-h-auto {
+  min-height: auto !important;
+}
+
+/* Critical spacing utilities */
+.p-0 {
+  padding: 0 !important;
+}
+
+.m-0 {
+  margin: 0 !important;
+}
+
+.gap-0 {
+  gap: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .p-md-0 {
+    padding: 0 !important;
+  }
+  
+  .m-md-0 {
+    margin: 0 !important;
+  }
+  
+  .gap-md-0 {
+    gap: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .p-sm-0 {
+    padding: 0 !important;
+  }
+  
+  .m-sm-0 {
+    margin: 0 !important;
+  }
+  
+  .gap-sm-0 {
+    gap: 0 !important;
   }
 }

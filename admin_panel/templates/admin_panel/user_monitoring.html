@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}User Monitoring - PESO Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_panel.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="admin-dashboard container-fluid">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2>Admin Panel</h2>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <span>Users</span>
+            </a>
+            <a href="{% url 'admin_panel:user_monitoring' %}" class="nav-item active">
+                <div class="nav-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span>User Monitoring</span>
+                <div class="nav-indicator"></div>
+            </a>
+            <a href="{% url 'admin_panel:jobs_monitoring' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <span>Jobs Monitoring</span>
+            </a>
+            <a href="{% url 'admin_panel:applications_monitoring' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <span>Applications</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="{% url 'admin_panel:approvals' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <span>Employer Approval</span>
+            </a>
+            <a href="{% url 'admin_panel:employee_approvals' %}" class="nav-item">
+                <div class="nav-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <span>Employee Approval</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="{% url 'admin_panel:logout' %}" class="nav-item logout-item">
+                <div class="nav-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <span>Logout</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>User Monitoring Dashboard</h1>
+                    <p>Monitor user activities and system statistics</p>
+                </div>
+                <div class="header-actions">
+                    <div class="current-time">
+                        <i class="fas fa-clock"></i>
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card employer-card">
+                <div class="stat-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Total Employees</h3>
+                        <div class="stat-number">{{ total_employees }}</div>
+                        <div class="stat-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Registered users</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar employer-progress"></div>
+                </div>
+            </div>
+
+            <div class="stat-card employee-card">
+                <div class="stat-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Total Employers</h3>
+                        <div class="stat-number">{{ total_employers }}</div>
+                        <div class="stat-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Active accounts</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar employee-progress"></div>
+                </div>
+            </div>
+
+            <div class="stat-card job-card">
+                <div class="stat-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Active Jobs</h3>
+                        <div class="stat-number">{{ active_jobs }}</div>
+                        <div class="stat-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Available positions</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar job-progress"></div>
+                </div>
+            </div>
+
+            <div class="stat-card application-card">
+                <div class="stat-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Total Applications</h3>
+                        <div class="stat-number">{{ total_applications }}</div>
+                        <div class="stat-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Submitted applications</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar application-progress"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Status Overview -->
+        <div class="tabs-section">
+            <div class="tabs-header">
+                <h2>User Status Overview</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card status-card">
+                    <div class="stat-content">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Active Employees</h3>
+                            <div class="stat-number">{{ active_employees }}</div>
+                            <div class="stat-trend">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Approved accounts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card status-card">
+                    <div class="stat-content">
+                        <div class="stat-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Active Employers</h3>
+                            <div class="stat-number">{{ active_employers }}</div>
+                            <div class="stat-trend">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Approved accounts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card status-card">
+                    <div class="stat-content">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Pending Employees</h3>
+                            <div class="stat-number">{{ pending_employees }}</div>
+                            <div class="stat-trend">
+                                <i class="fas fa-clock"></i>
+                                <span>Awaiting approval</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card status-card">
+                    <div class="stat-content">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Pending Employers</h3>
+                            <div class="stat-number">{{ pending_employers }}</div>
+                            <div class="stat-trend">
+                                <i class="fas fa-clock"></i>
+                                <span>Awaiting approval</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="tabs-section">
+            <div class="tabs-header">
+                <h2>Recent Activities</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Recent Employee Registrations</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for employee in recent_employees %}
+                                <tr>
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="user-avatar employee-avatar">
+                                                {{ employee.username|make_list|first|upper }}
+                                            </div>
+                                            <div class="user-info">
+                                                <span class="user-name">{{ employee.username }}</span>
+                                                <span class="user-type">Employee</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="email-cell">{{ employee.email }}</td>
+                                    <td class="date-cell">{{ employee.date_joined|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="empty-cell">
+                                        <div class="empty-state">
+                                            <div class="empty-icon">
+                                                <i class="fas fa-user-tie"></i>
+                                            </div>
+                                            <h3>No recent employee registrations</h3>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Recent Employer Registrations</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Company</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for employer in recent_employers %}
+                                <tr>
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="user-avatar employer-avatar">
+                                                {{ employer.username|make_list|first|upper }}
+                                            </div>
+                                            <div class="user-info">
+                                                <span class="user-name">{{ employer.username }}</span>
+                                                <span class="user-type">Employer</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="email-cell">{{ employer.email }}</td>
+                                    <td class="company-cell">{{ employer.company_name|default:"N/A" }}</td>
+                                    <td class="date-cell">{{ employer.date_joined|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="empty-cell">
+                                        <div class="empty-state">
+                                            <div class="empty-icon">
+                                                <i class="fas fa-building"></i>
+                                            </div>
+                                            <h3>No recent employer registrations</h3>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="{% static 'js/admin-dashboard.js' %}"></script>
+
+<script>
+// Function to update the current time display
+function updateCurrentTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', {
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    const dateString = now.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    const timeElement = document.getElementById('current-time');
+    if (timeElement) {
+        timeElement.innerHTML = `<div class="time-display">${timeString}</div><div class="date-display">${dateString}</div>`;
+    }
+}
+
+// Update time every second
+setInterval(updateCurrentTime, 1000);
+
+// Initialize time display when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateCurrentTime();
+});
+</script>
+{% endblock %}

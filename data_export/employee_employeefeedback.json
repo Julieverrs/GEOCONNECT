@@ -1,0 +1,13 @@
+[
+  {
+    "model": "employee.employeefeedback",
+    "pk": 1,
+    "fields": {
+      "employee": 27,
+      "job": 51,
+      "rating": 4,
+      "comment": "Goods naman, bobo lang yung boss ko ACE JEROME GEROLEO",
+      "created_at": "2025-07-31T04:03:45.301Z"
+    }
+  }
+]

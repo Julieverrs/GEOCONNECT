@@ -2,16 +2,15 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib import messages
 from .forms import EmployeeSignupForm, EmployeeLoginForm, PasswordResetForm, SetPasswordForm
-from .models import Employee, Notification, SavedJob  # Add SavedJob import
-from employer.models import Job, Employer, JobApplication  # Add JobApplication import
-# Update imports
+from .models import Employee, Notification, SavedJob, EmployeeFeedback
+from employer.models import Job, Employer, JobApplication
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.conf import settings
 from django.utils import timezone
-from .tokens import password_reset_token  # Import our custom token generator
+from .tokens import password_reset_token
 from django.http import JsonResponse
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
@@ -22,16 +21,14 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 import os
 import uuid
-from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-# Add these imports at the top of the file
 from .resume_analyzer import ResumeAnalyzer
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from employer.models import Job
-import json
 import logging
 import re
+from django.db import models
+
+# Messaging System Views
+from .models import Conversation, Message
 
 def employee_signup(request):
     if request.method == "POST":
@@ -349,6 +346,7 @@ def update_profile(request):
         employee.phone = request.POST.get('phone', employee.phone)
         employee.location = request.POST.get('location', employee.location)
         employee.bio = request.POST.get('bio', employee.bio)
+        employee.work_experience = request.POST.get('work_experience', employee.work_experience)
         
         # Handle avatar upload
         if 'avatar' in request.FILES:
@@ -556,12 +554,12 @@ def resume_analyzer(request):
     return render(request, 'employee/resume-analyzer.html', context)
 
 # Add this new view function after the existing resume_analyzer view
-@login_required
+@employee_login_required
 def resume_analyzer_view(request):
     """View for the resume analyzer page"""
     return render(request, 'employee/resume-analyzer.html')
 
-@login_required
+@employee_login_required
 def analyze_resume(request):
     """API endpoint to analyze a resume"""
     if request.method != 'POST':
@@ -1325,3 +1323,333 @@ def get_saved_jobs(request):
         return JsonResponse({'success': True, 'saved_jobs': list(saved_job_ids)})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
+def profile_settings_view(request):
+    # Assume user is authenticated and employee is available
+    employee = Employee.objects.get(username=request.session.get('employee_username'))
+    if request.method == 'POST':
+        employee.full_name = request.POST.get('full_name', employee.full_name)
+        employee.bio = request.POST.get('bio', employee.bio)
+        employee.education = request.POST.get('education', employee.education)
+        employee.work_experience = request.POST.get('work_experience', employee.work_experience)
+        employee.skills = request.POST.get('skills', employee.skills)
+        employee.certifications = request.POST.get('certifications', employee.certifications)
+        employee.preferred_job_type = request.POST.get('preferred_job_type', employee.preferred_job_type)
+        employee.location = request.POST.get('location', employee.location)
+        employee.linkedin_url = request.POST.get('linkedin_url', getattr(employee, 'linkedin_url', ''))
+        employee.github_url = request.POST.get('github_url', getattr(employee, 'github_url', ''))
+        employee.portfolio_url = request.POST.get('portfolio_url', getattr(employee, 'portfolio_url', ''))
+        if 'avatar' in request.FILES:
+            employee.avatar = request.FILES['avatar']
+        employee.save()
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('employee_profile_settings')
+    return render(request, 'employee/profile_settings.html', {'employee': employee})
+
+@employee_login_required
+def job_details(request, job_id):
+    """
+    Display detailed information about a specific job
+    """
+    # Get the job object or return 404
+    job = get_object_or_404(Job, id=job_id)
+    
+    # Get employee information
+    employee_id = request.session['employee_id']
+    employee = get_object_or_404(Employee, id=employee_id)
+    
+    # Check if user has already applied for this job
+    has_applied = JobApplication.objects.filter(
+        job=job,
+        employee=employee
+    ).exists()
+    
+    # Check if job is saved
+    is_saved = SavedJob.objects.filter(
+        employee=employee,
+        job=job
+    ).exists()
+    
+    # Get feedback statistics
+    feedback_list = EmployeeFeedback.objects.filter(job=job)
+    total_reviews = feedback_list.count()
+    
+    if total_reviews > 0:
+        average_rating_result = feedback_list.aggregate(avg=models.Avg('rating'))
+        average_rating = average_rating_result.get('avg__avg', 0) or 0
+        positive_reviews = feedback_list.filter(rating__gte=4).count()
+        
+        # Recent reviews (last 30 days)
+        from datetime import timedelta
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        recent_reviews = feedback_list.filter(created_at__gte=thirty_days_ago).count()
+    else:
+        average_rating = 0
+        positive_reviews = 0
+        recent_reviews = 0
+    
+    context = {
+        'job': job,
+        'employee': employee,
+        'username': employee.username,
+        'has_applied': has_applied,
+        'is_saved': is_saved,
+        'average_rating': round(average_rating, 1) if average_rating else 0,
+        'total_reviews': total_reviews,
+        'positive_reviews': positive_reviews,
+        'recent_reviews': recent_reviews,
+    }
+    
+    return render(request, 'employee/job_details.html', context)
+
+@employee_login_required
+@require_http_methods(["GET"])
+def check_saved_job(request, job_id):
+    """Check if a job is saved by the current employee."""
+    try:
+        employee = Employee.objects.get(username=request.session.get('employee_username'))
+        job = Job.objects.get(id=job_id)
+        is_saved = SavedJob.objects.filter(employee=employee, job=job).exists()
+        return JsonResponse({'success': True, 'is_saved': is_saved})
+    except (Employee.DoesNotExist, Job.DoesNotExist):
+        return JsonResponse({'success': False, 'error': 'Employee or job not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+@employee_login_required
+@require_http_methods(["POST"])
+def submit_feedback(request):
+    """Submit employee feedback for a job/employer."""
+    try:
+        employee = Employee.objects.get(username=request.session.get('employee_username'))
+        job_id = request.POST.get('job_id')
+        
+        if not job_id:
+            return JsonResponse({'success': False, 'message': 'Job ID is required.'}, status=400)
+        
+        job = Job.objects.get(id=job_id)
+        
+        # Check if employee has already submitted feedback for this job
+        existing_feedback = EmployeeFeedback.objects.filter(employee=employee, job=job).first()
+        if existing_feedback:
+            return JsonResponse({'success': False, 'message': 'You have already submitted feedback for this job.'}, status=400)
+        
+        # Get form data - use the fields that match your model
+        rating = int(request.POST.get('overall_rating', 5))  # Use overall_rating as the main rating
+        comment = request.POST.get('comment', '').strip()
+        
+        # Validate required fields
+        if not comment:
+            return JsonResponse({'success': False, 'message': 'Comment is required.'}, status=400)
+        
+        if rating < 1 or rating > 5:
+            return JsonResponse({'success': False, 'message': 'Invalid rating value.'}, status=400)
+        
+        # Create feedback with only the fields your model has
+        feedback = EmployeeFeedback.objects.create(
+            employee=employee,
+            job=job,
+            rating=rating,
+            comment=comment
+        )
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Thank you for your feedback!'
+        })
+        
+    except Employee.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Employee not found.'}, status=404)
+    except Job.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Job not found.'}, status=404)
+    except ValueError:
+        return JsonResponse({'success': False, 'message': 'Invalid rating values.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'}, status=500)
+
+
+@employee_login_required
+@require_http_methods(["GET"])
+def get_reviews(request, job_id):
+    """Get all reviews for a specific job."""
+    try:
+        job = Job.objects.get(id=job_id)
+        
+        # Get all feedback for this job
+        feedback_list = EmployeeFeedback.objects.filter(job=job).order_by('-created_at')
+        
+        reviews = []
+        for feedback in feedback_list:
+            reviews.append({
+                'id': feedback.id,
+                'reviewer_name': feedback.employee.username,  # Use employee username
+                'rating': feedback.rating,  # Use the rating field from your model
+                'comment': feedback.comment,
+                'created_at': feedback.created_at.isoformat(),
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'reviews': reviews,
+            'total_reviews': len(reviews)
+        })
+        
+    except Job.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Job not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'}, status=500)
+
+
+@employee_login_required
+@require_http_methods(["GET"])
+def get_job_feedback_stats(request, job_id):
+    """Get feedback statistics for a specific job."""
+    try:
+        job = Job.objects.get(id=job_id)
+        
+        # Get all feedback for this job
+        feedback_list = EmployeeFeedback.objects.filter(job=job)
+        
+        if not feedback_list.exists():
+            return JsonResponse({
+                'success': True,
+                'stats': {
+                    'average_rating': 0,
+                    'total_reviews': 0,
+                    'positive_reviews': 0,
+                    'recent_reviews': 0
+                }
+            })
+        
+        # Calculate statistics
+        total_reviews = feedback_list.count()
+        average_rating_result = feedback_list.aggregate(avg=models.Avg('rating'))
+        average_rating = average_rating_result.get('avg__avg', 0) or 0
+        positive_reviews = feedback_list.filter(rating__gte=4).count()
+        
+        # Recent reviews (last 30 days)
+        from datetime import timedelta
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        recent_reviews = feedback_list.filter(created_at__gte=thirty_days_ago).count()
+        
+        return JsonResponse({
+            'success': True,
+            'stats': {
+                'average_rating': round(average_rating, 1) if average_rating else 0,
+                'total_reviews': total_reviews,
+                'positive_reviews': positive_reviews,
+                'recent_reviews': recent_reviews
+            }
+        })
+        
+    except Job.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Job not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'}, status=500)
+
+# Messaging System Views
+@employee_login_required
+def messages_list(request):
+    """Display list of conversations for employee"""
+    employee_username = request.session.get('employee_username')
+    employee = get_object_or_404(Employee, username=employee_username)
+    conversations = Conversation.objects.filter(employee=employee, is_active=True)
+    
+    # Get unread counts for each conversation
+    for conversation in conversations:
+        conversation.unread_count = conversation.unread_count_employee
+    
+    context = {
+        'conversations': conversations,
+        'employee': employee,
+    }
+    return render(request, 'employee/messages_list.html', context)
+
+@employee_login_required
+def conversation_detail(request, conversation_id):
+    """Display conversation detail and messages"""
+    employee_username = request.session.get('employee_username')
+    employee = get_object_or_404(Employee, username=employee_username)
+    conversation = get_object_or_404(Conversation, id=conversation_id, employee=employee)
+    
+    # Mark messages as read
+    conversation.messages.filter(sender_type='employer', is_read=False).update(is_read=True)
+    
+    if request.method == 'POST':
+        content = request.POST.get('message_content')
+        if content:
+            Message.objects.create(
+                conversation=conversation,
+                sender_type='employee',
+                content=content
+            )
+            # Update conversation timestamp
+            conversation.save()
+            return redirect('conversation_detail', conversation_id=conversation_id)
+    
+    messages = conversation.messages.all()
+    
+    context = {
+        'conversation': conversation,
+        'messages': messages,
+        'employee': employee,
+    }
+    return render(request, 'employee/conversation_detail.html', context)
+
+@employee_login_required
+def send_message(request, conversation_id):
+    """Send a message via AJAX"""
+    if request.method == 'POST':
+        employee_username = request.session.get('employee_username')
+        employee = get_object_or_404(Employee, username=employee_username)
+        conversation = get_object_or_404(Conversation, id=conversation_id, employee=employee)
+        
+        content = request.POST.get('content')
+        if content:
+            message = Message.objects.create(
+                conversation=conversation,
+                sender_type='employee',
+                content=content
+            )
+            # Update conversation timestamp
+            conversation.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': {
+                    'id': message.id,
+                    'content': message.content,
+                    'created_at': message.created_at.strftime('%Y-%m-%d %H:%M'),
+                    'sender_type': message.sender_type
+                }
+            })
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@employee_login_required
+def get_unread_count(request):
+    """Get unread message count for employee"""
+    employee_username = request.session.get('employee_username')
+    employee = get_object_or_404(Employee, username=employee_username)
+    conversations = Conversation.objects.filter(employee=employee, is_active=True)
+    
+    total_unread = 0
+    for conversation in conversations:
+        total_unread += conversation.unread_count_employee
+    
+    return JsonResponse({'unread_count': total_unread})
+
+@employee_login_required
+def mark_messages_read(request, conversation_id):
+    """Mark messages as read"""
+    if request.method == 'POST':
+        employee_username = request.session.get('employee_username')
+        employee = get_object_or_404(Employee, username=employee_username)
+        conversation = get_object_or_404(Conversation, id=conversation_id, employee=employee)
+        
+        conversation.messages.filter(sender_type='employer', is_read=False).update(is_read=True)
+        
+        return JsonResponse({'success': True})
+    
+    return JsonResponse({'success': False})

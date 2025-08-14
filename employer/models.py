@@ -160,8 +160,8 @@ class Job(models.Model):
     ]
 
     STATUS_CHOICES = [
-        ('Active', 'Active'),
-        ('Closed', 'Closed'),
+        ('active', 'Active'),
+        ('closed', 'Closed'),
     ]
 
     employer = models.ForeignKey('Employer', on_delete=models.CASCADE, related_name='jobs')
@@ -177,7 +177,6 @@ class Job(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    applications_count = models.IntegerField(default=0)
     requirements = models.TextField(blank=True, help_text='List the job requirements')
 
     class Meta:

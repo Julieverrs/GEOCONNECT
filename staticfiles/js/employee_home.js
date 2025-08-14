@@ -26,148 +26,253 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // Smooth scrolling for anchor links
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  // Find the smooth scrolling code section and replace it with this improved version:
+
+  // Add smooth scrolling to navigation links
+  document.querySelectorAll(".nav-links a, .scroll-btn, .scroll-down").forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
-      const href = this.getAttribute("href")
-      // Only proceed if href is a valid selector (not just "#")
-      if (href && href !== "#") {
-        e.preventDefault()
-        const targetElement = document.querySelector(href)
-        if (targetElement) {
-          targetElement.scrollIntoView({
-            behavior: "smooth",
-          })
-        }
+      e.preventDefault()
+
+      const targetId = this.getAttribute("href").substring(1)
+      const targetElement = document.getElementById(targetId)
+
+      if (targetElement) {
+        // Calculate header height
+        const headerHeight = document.querySelector(".dashboard-header").offsetHeight
+
+        // Calculate the position to scroll to
+        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight
+
+        window.scrollTo({
+          top: targetPosition,
+          behavior: "smooth",
+        })
+
+        // Update active link manually
+        document.querySelectorAll(".nav-links a").forEach((link) => {
+          link.classList.remove("active")
+        })
+        this.classList.add("active")
       }
     })
   })
 
+  // Improve the active navigation link detection based on scroll position
+  function updateActiveNavLink() {
+    const sections = document.querySelectorAll("section.section")
+    const navLinks = document.querySelectorAll(".nav-links a")
+    const headerHeight = document.querySelector(".dashboard-header").offsetHeight
+
+    let currentSectionId = ""
+
+    sections.forEach((section) => {
+      const sectionTop = section.offsetTop - headerHeight - 10 // Added extra offset for better detection
+      const sectionHeight = section.offsetHeight
+      const sectionId = section.getAttribute("id")
+
+      // Check if we've scrolled past the top of the section and not past the bottom
+      if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+        currentSectionId = sectionId
+      }
+    })
+
+    navLinks.forEach((link) => {
+      link.classList.remove("active")
+      const href = link.getAttribute("href").substring(1)
+      if (href === currentSectionId) {
+        link.classList.add("active")
+      }
+    })
+  }
+
   // Job search functionality
-  const jobSearch = document.getElementById("jobSearch")
-  const jobCategory = document.getElementById("jobCategory")
-  const jobLocation = document.getElementById("jobLocation")
-  const jobsGrid = document.getElementById("jobsGrid")
   const filterJobsBtn = document.getElementById("filterJobs")
+  if (filterJobsBtn) {
+    filterJobsBtn.addEventListener("click", () => filterJobs(false))
+  }
 
-  async function filterJobs(showAll = false) {
-    const searchQuery = document.getElementById("jobSearch").value
-    const category = document.getElementById("jobCategory").value
-    const location = document.getElementById("jobLocation").value
+  const jobSearch = document.getElementById("jobSearch")
+  if (jobSearch) {
+    jobSearch.addEventListener(
+      "input",
+      debounce(() => filterJobs(false), 500),
+    )
+  }
 
+  const jobCategory = document.getElementById("jobCategory")
+  if (jobCategory) {
+    jobCategory.addEventListener("change", () => filterJobs(false))
+  }
+
+  const jobLocation = document.getElementById("jobLocation")
+  if (jobLocation) {
+    jobLocation.addEventListener("change", () => filterJobs(false))
+  }
+
+  // Initial job load
+  filterJobs(false)
+
+  // Add this near the top of the file, after the DOMContentLoaded event
+  let appliedJobs = new Set()
+
+  // Add a function to fetch applied jobs
+  async function fetchAppliedJobs() {
     try {
-      const response = await fetch(
-        `/employee/filter-jobs/?search=${searchQuery}&category=${category}&location=${location}`,
-      )
+      const response = await fetch("/employee/get-applied-jobs/")
       if (!response.ok) {
         throw new Error("Network response was not ok")
       }
       const data = await response.json()
-
-      const jobsGrid = document.getElementById("jobsGrid")
-      jobsGrid.innerHTML = "" // Clear existing content
-
-      // Create container for jobs
-      const jobsContainer = document.createElement("div")
-      jobsContainer.className = "row jobs-container"
-
-      if (data.jobs.length === 0) {
-        jobsContainer.innerHTML = `
-                <div class="col-12 text-center">
-                    <div class="alert alert-info">
-                        No jobs found matching your criteria.
-                    </div>
-                </div>
-            `
-        jobsGrid.appendChild(jobsContainer)
-        return
-      }
-
-      // Display jobs (all or just 6 based on showAll)
-      const jobsToShow = showAll ? data.jobs : data.jobs.slice(0, 6)
-      jobsToShow.forEach((job) => {
-        const jobCard = `
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="job-card">
-                        <div class="job-card-header">
-                            <h3 class="job-title">${job.title}</h3>
-                            <div class="badges">
-                                <span class="badge bg-primary">${job.job_type}</span>
-                                <span class="badge bg-info">${job.work_setup}</span>
-                            </div>
-                        </div>
-                        <div class="job-card-body">
-                            <p class="company-name">
-                                <i class="fas fa-building me-2"></i>
-                                ${job.company}
-                            </p>
-                            <p class="location">
-                                <i class="fas fa-map-marker-alt me-2"></i>
-                                ${job.location}
-                            </p>
-                            <p class="salary">
-                                <i class="fas fa-money-bill-wave me-2"></i>
-                                ${job.salary_range}
-                            </p>
-                            <p class="experience">
-                                <i class="fas fa-briefcase me-2"></i>
-                                ${job.experience_level}
-                            </p>
-                            <div class="description">
-                                ${job.description.length > 150 ? job.description.substring(0, 150) + "..." : job.description}
-                            </div>
-                        </div>
-                        <div class="job-card-footer">
-                            <small class="text-muted">Posted on ${job.created_at}</small>
-                            <button class="btn btn-primary btn-sm apply-btn" data-job-id="${job.id}">
-                                Apply Now
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `
-        jobsContainer.innerHTML += jobCard
-      })
-
-      jobsGrid.appendChild(jobsContainer)
-
-      // Add toggle button if there are more than 6 jobs
-      if (data.jobs.length > 6) {
-        const viewAllContainer = document.createElement("div")
-        viewAllContainer.className = "view-all-container text-center mt-4 mb-4"
-        viewAllContainer.innerHTML = `
-                <button id="viewAllJobs" class="btn btn-outline-primary btn-lg">
-                    <i class="fas ${showAll ? "fa-compress-alt" : "fa-expand-alt"} me-2"></i>
-                    ${showAll ? "Show Less" : `View All Jobs (${data.jobs.length})`}
-                </button>
-            `
-        jobsGrid.appendChild(viewAllContainer)
-
-        // Add event listener to the toggle button
-        document.getElementById("viewAllJobs").addEventListener("click", () => {
-          filterJobs(!showAll) // Toggle the showAll state
-        })
+      if (data.success) {
+        appliedJobs = new Set(data.applied_jobs)
       }
     } catch (error) {
-      console.error("Error fetching jobs:", error)
-      const jobsGrid = document.getElementById("jobsGrid")
-      jobsGrid.innerHTML = `
-            <div class="row jobs-container">
-                <div class="col-12 text-center">
-                    <div class="alert alert-danger">
-                        Error loading jobs. Please try again later.
-                    </div>
-                </div>
-            </div>
-        `
+      console.error("Error fetching applied jobs:", error)
     }
   }
 
-  // Add event listeners
-  document.getElementById("filterJobs").addEventListener("click", filterJobs)
-  document.getElementById("jobSearch").addEventListener("input", debounce(filterJobs, 500))
-  document.getElementById("jobCategory").addEventListener("change", filterJobs)
-  document.getElementById("jobLocation").addEventListener("change", filterJobs)
+  // Find the filterJobs function and modify it to support the showAll parameter
+  // Update the filterJobs function to work with the scrollable container
+
+  // Find the filterJobs function and replace it with:
+
+  async function filterJobs(showAll = false) {
+    // Fetch applied jobs first
+    await fetchAppliedJobs()
+
+    const searchQuery = document.getElementById("jobSearch").value
+    const category = document.getElementById("jobCategory").value
+    const location = document.getElementById("jobLocation").value
+
+    // Filter jobs function
+    const searchTerm = jobSearch ? jobSearch.value.toLowerCase() : ""
+    const categoryFilter = jobCategory ? jobCategory.value : ""
+    const locationFilter = jobLocation ? jobLocation.value : ""
+
+    const jobCards = document.querySelectorAll(".job-card")
+    let visibleCount = 0
+
+    jobCards.forEach((card) => {
+      const cardContainer = card.closest(".col-md-6")
+      const jobTitle = card.querySelector(".job-title").textContent.toLowerCase()
+      const jobType = card.querySelector(".badge.bg-primary").textContent
+      const jobWorkSetup = card.querySelector(".badge.bg-info").textContent
+
+      const matchesSearch = !searchTerm || jobTitle.includes(searchTerm)
+      const matchesCategory = !categoryFilter || jobType === categoryFilter
+      const matchesLocation = !locationFilter || jobWorkSetup === locationFilter
+
+      if (matchesSearch && matchesCategory && matchesLocation) {
+        cardContainer.style.display = "block"
+        visibleCount++
+      } else {
+        cardContainer.style.display = "none"
+      }
+    })
+
+    // Show/hide no results message
+    const noResultsMsg = document.querySelector(".no-results-message")
+    if (visibleCount === 0) {
+      if (!noResultsMsg) {
+        const message = document.createElement("div")
+        message.className = "col-12 text-center no-results-message"
+        message.innerHTML = '<div class="alert alert-info">No jobs match your search criteria.</div>'
+        document.querySelector(".jobs-container").appendChild(message)
+      }
+    } else if (noResultsMsg) {
+      noResultsMsg.remove()
+    }
+
+    // Update the jobs count indicator
+    const jobsCount = document.querySelector(".jobs-count .text-muted")
+    if (jobsCount) {
+      const totalJobs = document.querySelectorAll(".job-card").length
+      jobsCount.textContent = `Showing ${visibleCount} of ${totalJobs} available jobs`
+    }
+
+    // Scroll the container back to top after filtering
+    const scrollableContainer = document.querySelector(".scrollable-jobs-container")
+    if (scrollableContainer) {
+      scrollableContainer.scrollTop = 0
+    }
+  }
+
+  // Find the initializeJobButtons function and replace it with:
+  function initializeJobButtons() {
+    // Initialize view/apply job buttons
+    document.querySelectorAll(".view-job-btn").forEach((button) => {
+      button.addEventListener("click", function (e) {
+        e.preventDefault()
+        // Now prepareJobDetails will open the apply modal directly
+        prepareJobDetails(this)
+      })
+    })
+  }
+
+  // Function to prepare job details and open the apply modal
+  function prepareJobDetails(button) {
+    // Get job details from data attributes
+    const jobId = button.getAttribute("data-job-id")
+    const jobTitle = button.getAttribute("data-job-title")
+    const company = button.getAttribute("data-company")
+    const location = button.getAttribute("data-location")
+    const jobType = button.getAttribute("data-job-type")
+    const workSetup = button.getAttribute("data-work-setup")
+    const salary = button.getAttribute("data-salary")
+    const experience = button.getAttribute("data-experience")
+    const description = button.getAttribute("data-description")
+    const requirements = button.getAttribute("data-requirements")
+    const posted = button.getAttribute("data-posted")
+
+    // Set company initial
+    if (document.getElementById("viewJobCompanyInitial")) {
+      document.getElementById("viewJobCompanyInitial").textContent = company.charAt(0)
+    }
+
+    // Set values in the apply modal
+    if (document.getElementById("viewJobTitle")) {
+      document.getElementById("viewJobTitle").textContent = jobTitle
+    }
+    if (document.getElementById("viewJobCompany")) {
+      document.getElementById("viewJobCompany").textContent = company
+    }
+    if (document.getElementById("viewJobLocation")) {
+      document.getElementById("viewJobLocation").textContent = location
+    }
+    if (document.getElementById("viewJobType")) {
+      document.getElementById("viewJobType").textContent = jobType
+    }
+    if (document.getElementById("viewJobWorkSetup")) {
+      document.getElementById("viewJobWorkSetup").textContent = workSetup
+    }
+    if (document.getElementById("viewJobSalary")) {
+      document.getElementById("viewJobSalary").textContent = salary
+    }
+    if (document.getElementById("viewJobExperience")) {
+      document.getElementById("viewJobExperience").textContent = experience
+    }
+    if (document.getElementById("viewJobPosted")) {
+      document.getElementById("viewJobPosted").textContent = "Posted " + posted
+    }
+
+    // Set content sections
+    if (document.getElementById("viewJobDescription")) {
+      document.getElementById("viewJobDescription").innerHTML = description
+    }
+    if (document.getElementById("viewJobRequirements")) {
+      document.getElementById("viewJobRequirements").innerHTML = requirements || "No specific requirements provided."
+    }
+
+    // Also set the application form fields
+    document.getElementById("jobId").value = jobId
+    document.getElementById("jobTitleSpan").textContent = jobTitle
+    document.getElementById("jobCompanySpan").textContent = company
+    document.getElementById("jobTitleDetail").textContent = jobTitle
+
+    // Open the apply modal
+    const applyModal = new bootstrap.Modal(document.getElementById("applyJobModal"))
+    applyModal.show()
+  }
 
   // Debounce function to prevent too many requests
   function debounce(func, wait) {
@@ -182,38 +287,74 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Initial job load
-  if (typeof filterJobs === "function") {
-    filterJobs()
-  }
-
   // Profile form submission
   const profileForm = document.getElementById("profileForm")
-  const saveProfileBtn = document.getElementById("saveProfileBtn")
+  const saveProfileBtn = document.getElementById("saveProfile")
+
   if (saveProfileBtn) {
-    saveProfileBtn.addEventListener("click", (e) => {
+    saveProfileBtn.addEventListener("click", async (e) => {
       e.preventDefault()
-      // Simulated form submission (replace with actual AJAX call to your backend)
-      const formData = new FormData(profileForm)
-      console.log("Profile data:", Object.fromEntries(formData))
-      // $("#profileModal").modal("hide")
-      if (typeof toastNotification === "function") {
-        toastNotification("Profile updated successfully!", "success")
+
+      try {
+        const formData = new FormData(profileForm)
+        const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value
+
+        // Get file input
+        const avatarInput = document.getElementById("avatarUpload")
+        if (avatarInput.files.length > 0) {
+          formData.append("avatar", avatarInput.files[0])
+        }
+
+        const response = await fetch("/employee/update-profile/", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrfToken,
+          },
+          body: formData,
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success) {
+            // Show success message
+            toastNotification("Profile updated successfully!", "success")
+
+            // Update avatar in navbar if it was changed
+            if (data.avatar_url) {
+              const navAvatar = document.querySelector(".avatar-sm img")
+              if (navAvatar) {
+                navAvatar.src = data.avatar_url
+              }
+            }
+
+            // Close the modal
+            const modalElement = document.getElementById("profileModal")
+            const modal = bootstrap.Modal.getInstance(modalElement)
+            modal.hide()
+
+            // Optionally reload the page to show all updates
+            // window.location.reload();
+          } else {
+            throw new Error(data.error || "Profile update failed")
+          }
+        } else {
+          throw new Error("Profile update failed")
+        }
+      } catch (error) {
+        console.error("Error updating profile:", error)
+        toastNotification(error.message || "Error updating profile", "error")
       }
     })
   }
 
-  // Profile Settings Modal Functionality
-  const profileModal = document.getElementById("profileModal")
-  const saveProfile = document.getElementById("saveProfile") // Match the ID in HTML
+  // Avatar preview functionality
   const avatarUpload = document.getElementById("avatarUpload")
   const avatarPreview = document.getElementById("avatarPreview")
 
-  // Handle avatar upload preview
-  if (avatarUpload) {
+  if (avatarUpload && avatarPreview) {
     avatarUpload.addEventListener("change", (e) => {
       const file = e.target.files[0]
-      if (file && avatarPreview) {
+      if (file) {
         const reader = new FileReader()
         reader.onload = (e) => {
           avatarPreview.src = e.target.result
@@ -223,60 +364,16 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
+  // Profile Settings Modal Functionality
+  const profileModal = document.getElementById("profileModal")
+  const saveProfile = document.getElementById("saveProfile") // Match the ID in HTML
+
   // Handle profile form submission
-  if (profileForm && saveProfile) {
-    saveProfile.addEventListener("click", async (e) => {
-      e.preventDefault()
-
-      const formData = new FormData(profileForm)
-
-      try {
-        // Add CSRF token to formData if needed
-        const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value
-
-        const response = await fetch("/employee/update-profile/", {
-          method: "POST",
-          body: formData,
-          headers: {
-            "X-CSRFToken": csrftoken,
-          },
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          toastNotification("Profile updated successfully!", "success")
-
-          // Close the modal using Bootstrap's modal method
-          const modalInstance = bootstrap.Modal.getInstance(profileModal)
-          modalInstance.hide()
-
-          // Update the UI with new data if needed
-          if (data.profile) {
-            // Update profile picture in navbar if it was changed
-            const navProfilePic = document.querySelector(".avatar-sm img")
-            if (navProfilePic && data.profile.avatar) {
-              navProfilePic.src = data.profile.avatar
-            }
-
-            // Update username in navbar if it was changed
-            const navUsername = document.querySelector("#navbarDropdown span")
-            if (navUsername && data.profile.username) {
-              navUsername.textContent = data.profile.username
-            }
-          }
-        } else {
-          throw new Error("Profile update failed")
-        }
-      } catch (error) {
-        console.error("Error updating profile:", error)
-        toastNotification("Error updating profile. Please try again.", "error")
-      }
-    })
-  }
 
   // Initialize Bootstrap modal
   const modalElement = document.getElementById("profileModal")
   if (modalElement) {
+    // The issue was here.  bootstrap wasn't imported or declared.  This assumes it's available globally, which is bad practice, but fixes the immediate issue.
     const modal = new bootstrap.Modal(modalElement, {
       keyboard: true,
       backdrop: true,
@@ -357,5 +454,45 @@ document.addEventListener("DOMContentLoaded", () => {
       card.style.transform = "scale(1)"
     })
   })
-})
 
+  // Dummy functions to satisfy the calls.  These would normally be defined elsewhere.
+  function prepareJobApplication(jobId, jobTitle, company) {
+    console.log("prepareJobApplication called", jobId, jobTitle, company)
+  }
+
+  // Remove or comment out the Bootstrap popover initialization code if it exists
+  // Look for code like this and remove or comment it out:
+
+  // Initialize popovers for company badges
+  // const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+  // const popoverList = popoverTriggerList.map(
+  //   (popoverTriggerEl) =>
+  //     new bootstrap.Popover(popoverTriggerEl, {
+  //       container: "body",
+  //       sanitize: false,
+  //     }),
+  // )
+
+  // Also remove or comment out any other popover initialization code
+
+  // Function to initialize popovers for dynamically added elements
+  function initializePopovers() {
+    const newPopoverTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="popover"]:not([data-bs-popover-initialized])'),
+    )
+    newPopoverTriggerList.forEach((popoverTriggerEl) => {
+      new bootstrap.Popover(popoverTriggerEl, {
+        container: "body",
+        sanitize: false,
+      })
+      popoverTriggerEl.setAttribute("data-bs-popover-initialized", "true")
+    })
+  }
+
+  // Call after filtering jobs
+  const originalFilterJobs = filterJobs
+  filterJobs = (showAll = false) => {
+    originalFilterJobs(showAll)
+    setTimeout(initializePopovers, 100)
+  }
+})

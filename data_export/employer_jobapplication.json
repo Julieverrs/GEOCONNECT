@@ -1,0 +1,17 @@
+[
+  {
+    "model": "employer.jobapplication",
+    "pk": 34,
+    "fields": {
+      "job": 51,
+      "employee": 27,
+      "status": "pending",
+      "application_date": "2025-07-31T05:04:04.885Z",
+      "resume": "resumes/Kim_Bilog_Resume_1_654aec250a0f422e9b436ff33f6e1939.pdf",
+      "cover_letter": "Because i am good with these work\r\n",
+      "employer_notes": "",
+      "interview_date": null,
+      "last_updated": "2025-07-31T05:04:04.909Z"
+    }
+  }
+]

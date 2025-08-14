@@ -1,0 +1,1597 @@
+{% extends 'employee/base.html' %}
+{% load static %}
+{% load message_filters %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/employee_home.css' %}">
+<style>
+/* Job Details Page Specific Styles */
+.job-details-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.job-details-header {
+    background: linear-gradient(135deg, #3949ab 0%, #1e88e5 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px 15px 0 0;
+    margin: -2rem -2rem 2rem -2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.job-details-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 L0,100 Z" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></svg>');
+    background-size: 20px 20px;
+    opacity: 0.3;
+}
+
+.job-details-header-content {
+    position: relative;
+    z-index: 1;
+}
+
+.back-button {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    transform: translateX(-3px);
+}
+
+.job-title-section {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.job-title-main {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.company-name-main {
+    font-size: 1.3rem;
+    opacity: 0.9;
+    margin-bottom: 1.5rem;
+}
+
+.job-badges-main {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.job-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.job-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.job-meta-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.job-meta-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.job-meta-content h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.job-meta-content p {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.job-content-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.job-main-content {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 15px;
+}
+
+.job-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.job-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e9ecef;
+}
+
+.job-section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #3949ab;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e3f2fd;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.job-section-content {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #444;
+    white-space: pre-line;
+}
+
+.job-actions-sidebar {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+}
+
+.apply-button-main {
+    width: 100%;
+    background: linear-gradient(135deg, #3949ab 0%, #1e88e5 100%);
+    border: none;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(57, 73, 171, 0.3);
+    margin-bottom: 1rem;
+}
+
+.apply-button-main:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(57, 73, 171, 0.4);
+    background: linear-gradient(135deg, #303f9f 0%, #1976d2 100%);
+}
+
+.save-button-main {
+    width: 100%;
+    background: white;
+    border: 2px solid #dc3545;
+    color: #dc3545;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.save-button-main:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.share-button-main {
+    width: 100%;
+    background: white;
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.share-button-main:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+.company-info-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e9ecef;
+}
+
+.company-logo {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #3949ab 0%, #1e88e5 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0 auto 1rem auto;
+}
+
+.company-name {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.company-location {
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.company-description {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #555;
+    text-align: left;
+    margin-bottom: 0;
+    word-wrap: break-word;
+}
+
+.job-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.job-stat {
+    text-align: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.job-stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3949ab;
+    margin-bottom: 0.25rem;
+}
+
+.job-stat-label {
+    font-size: 0.8rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .job-details-container {
+        padding: 1rem;
+        margin: 1rem;
+    }
+    
+    .job-details-header {
+        padding: 1.5rem;
+        margin: -1rem -1rem 1.5rem -1rem;
+    }
+    
+    .job-title-main {
+        font-size: 2rem;
+    }
+    
+    .job-content-section {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .job-meta-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .job-meta-item {
+        padding: 0.75rem;
+    }
+    
+    .job-meta-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .back-button {
+        position: relative;
+        top: auto;
+        left: auto;
+        margin-bottom: 1rem;
+        display: inline-block;
+    }
+}
+
+@media (max-width: 576px) {
+    .job-title-main {
+        font-size: 1.5rem;
+    }
+    
+    .company-name-main {
+        font-size: 1.1rem;
+    }
+    
+    .job-badges-main {
+        gap: 0.5rem;
+    }
+    
+    .job-badge {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+    
+    .job-main-content,
+    .job-sidebar {
+        padding: 1rem;
+    }
+}
+
+/* Loading Animation */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3949ab;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.error-container {
+    text-align: center;
+    padding: 3rem;
+    color: #dc3545;
+}
+
+.error-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.error-message {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.error-description {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+/* Feedback and Rating System Styles */
+.feedback-stats {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+}
+
+.stat-card {
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #3949ab;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.stars-display {
+    margin-top: 0.5rem;
+}
+
+.stars-display i {
+    font-size: 1.1rem;
+    margin: 0 1px;
+}
+
+.feedback-action {
+    text-align: center;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 2px dashed #dee2e6;
+}
+
+.feedback-action .btn {
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.feedback-action .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(57, 73, 171, 0.3);
+}
+
+.existing-reviews {
+    margin-top: 2rem;
+}
+
+.review-item {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+
+.review-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.reviewer-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #3949ab 0%, #1e88e5 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.reviewer-details h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.reviewer-details small {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.review-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.review-rating .stars {
+    color: #ffc107;
+}
+
+.review-rating .rating-number {
+    font-weight: 600;
+    color: #3949ab;
+}
+
+.review-date {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.review-content {
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.review-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.review-category {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Rating Modal Styles */
+.rating-stars {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.rating-stars i {
+    font-size: 2rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.rating-stars i:hover,
+.rating-stars i.active {
+    color: #ffc107;
+}
+
+.rating-stars i.filled {
+    color: #ffc107;
+}
+
+.rating-label {
+    text-align: center;
+    margin-top: 0.5rem;
+    font-weight: 600;
+    color: #3949ab;
+}
+
+/* Responsive Design for Feedback */
+@media (max-width: 768px) {
+    .feedback-stats .row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stat-card {
+        padding: 0.75rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .review-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .rating-stars i {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .feedback-stats .row {
+        grid-template-columns: 1fr;
+    }
+    
+    .reviewer-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="job-details-container">
+    {% if job %}
+    <!-- Job Details Header -->
+    <div class="job-details-header">
+        <a href="{% url 'employee_home' %}" class="back-button">
+            <i class="fas fa-arrow-left me-2"></i>Back to Jobs
+        </a>
+        
+        <div class="job-details-header-content">
+            <div class="job-title-section">
+                <h1 class="job-title-main">{{ job.title }}</h1>
+                <p class="company-name-main">{{ job.employer.company_name }}</p>
+                
+                <div class="job-badges-main">
+                    <span class="job-badge">{{ job.job_type }}</span>
+                    <span class="job-badge">{{ job.work_setup }}</span>
+                    <span class="job-badge">{{ job.experience_level }}</span>
+                </div>
+            </div>
+            
+            <div class="job-meta-grid">
+                <div class="job-meta-item">
+                    <div class="job-meta-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="job-meta-content">
+                        <h4>Location</h4>
+                        <p>{{ job.location }}</p>
+                    </div>
+                </div>
+                
+                <div class="job-meta-item">
+                    <div class="job-meta-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="job-meta-content">
+                        <h4>Salary Range</h4>
+                        <p>{{ job.salary_range }}</p>
+                    </div>
+                </div>
+                
+                <div class="job-meta-item">
+                    <div class="job-meta-icon">
+                        <i class="far fa-calendar-alt"></i>
+                    </div>
+                    <div class="job-meta-content">
+                        <h4>Posted Date</h4>
+                        <p>{{ job.created_at|date:"F d, Y" }}</p>
+                    </div>
+                </div>
+                
+                <div class="job-meta-item">
+                    <div class="job-meta-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="job-meta-content">
+                        <h4>Job Type</h4>
+                        <p>{{ job.job_type }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Job Content Section -->
+    <div class="job-content-section">
+        <!-- Main Content -->
+        <div class="job-main-content">
+            <!-- Job Description -->
+            <div class="job-section">
+                <h2 class="job-section-title">
+                    <i class="fas fa-align-left"></i>
+                    Job Description
+                </h2>
+                <div class="job-section-content">
+                    {{ job.description|clean_corrupted_text|linebreaks }}
+                </div>
+            </div>
+            
+            <!-- Requirements -->
+            {% if job.requirements %}
+            <div class="job-section">
+                <h2 class="job-section-title">
+                    <i class="fas fa-list-check"></i>
+                    Requirements
+                </h2>
+                <div class="job-section-content">
+                    {{ job.requirements|clean_corrupted_text|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Qualifications -->
+            {% if job.qualifications %}
+            <div class="job-section">
+                <h2 class="job-section-title">
+                    <i class="fas fa-graduation-cap"></i>
+                    Qualifications
+                </h2>
+                <div class="job-section-content">
+                    {{ job.qualifications|clean_corrupted_text|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Benefits -->
+            {% if job.benefits %}
+            <div class="job-section">
+                <h2 class="job-section-title">
+                    <i class="fas fa-gift"></i>
+                    Benefits
+                </h2>
+                <div class="job-section-content">
+                    {{ job.benefits|clean_corrupted_text|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Post-Employment Feedback Section -->
+            <div class="job-section">
+                <h2 class="job-section-title">
+                    <i class="fas fa-star"></i>
+                    Employee Reviews & Ratings
+                </h2>
+                
+                <!-- Feedback Statistics -->
+                <div class="feedback-stats mb-4">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stat-card text-center">
+                                <div class="stat-number">{{ job.average_rating|default:"0"|floatformat:1 }}</div>
+                                <div class="stat-label">Average Rating</div>
+                                <div class="stars-display">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= job.average_rating|default:0 %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-warning"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card text-center">
+                                <div class="stat-number">{{ job.total_reviews|default:"0" }}</div>
+                                <div class="stat-label">Total Reviews</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card text-center">
+                                <div class="stat-number">{{ job.positive_reviews|default:"0" }}</div>
+                                <div class="stat-label">Positive Reviews</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card text-center">
+                                <div class="stat-number">{{ job.recent_reviews|default:"0" }}</div>
+                                <div class="stat-label">Recent Reviews</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Leave Feedback Button -->
+                <div class="feedback-action mb-4">
+                    <button class="btn btn-outline-primary" onclick="openFeedbackModal()">
+                        <i class="fas fa-edit me-2"></i>Leave Your Review
+                    </button>
+                    <small class="text-muted d-block mt-2">
+                        Share your experience working for this employer to help future applicants
+                    </small>
+                </div>
+                
+                <!-- Existing Reviews -->
+                <div class="existing-reviews">
+                    <h4 class="mb-3">Recent Reviews</h4>
+                    <div id="reviewsContainer">
+                        <!-- Reviews will be loaded here via JavaScript -->
+                        <div class="text-center text-muted">
+                            <i class="fas fa-comments fa-2x mb-2"></i>
+                            <p>No reviews yet. Be the first to share your experience!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="job-sidebar">
+            <!-- Company Information -->
+            <div class="company-info-card">
+                <div class="company-logo">
+                    {{ job.employer.company_name|slice:":1" }}
+                </div>
+                <h3 class="company-name">{{ job.employer.company_name }}</h3>
+                <p class="company-location">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    {{ job.employer.company_location|default:"Location not specified" }}
+                </p>
+                {% if job.employer.company_description %}
+                <p class="company-description">
+                    {{ job.employer.company_description|clean_corrupted_text|linebreaks }}
+                </p>
+                {% endif %}
+            </div>
+            
+            <!-- Job Actions -->
+            <div class="job-actions-sidebar">
+                <button class="apply-button-main" onclick="openApplyModal()">
+                    <i class="fas fa-paper-plane me-2"></i>Apply Now
+                </button>
+                
+                <button class="save-button-main" onclick="saveJob()" id="saveJobBtn">
+                    <i class="far fa-heart me-2"></i>Save Job
+                </button>
+                
+                <button class="share-button-main" onclick="shareJob()">
+                    <i class="fas fa-share-alt me-2"></i>Share Job
+                </button>
+            </div>
+            
+            <!-- Job Statistics -->
+            <div class="job-section">
+                <h3 class="job-section-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Job Overview
+                </h3>
+                <div class="job-stats">
+                    <div class="job-stat">
+                        <div class="job-stat-number">{{ job.experience_level }}</div>
+                        <div class="job-stat-label">Experience</div>
+                    </div>
+                    <div class="job-stat">
+                        <div class="job-stat-number">{{ job.work_setup }}</div>
+                        <div class="job-stat-label">Work Setup</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- Error State -->
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h2 class="error-message">Job Not Found</h2>
+        <p class="error-description">
+            The job you're looking for doesn't exist or has been removed.
+        </p>
+        <a href="{% url 'employee_home' %}" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Jobs
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Apply Modal (Hidden by default, will be shown via JavaScript) -->
+<div class="modal fade" id="applyJobModal" tabindex="-1" aria-labelledby="applyJobModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="applyJobModalLabel">Apply for {{ job.title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="jobApplicationForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" id="jobId" name="job_id" value="{{ job.id }}">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="applicantName" class="form-label">Full Name</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="applicantName" 
+                                   name="applicant_name"
+                                   value="{{ employee.full_name|default:employee.username }}"
+                                   required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="applicantEmail" class="form-label">Email</label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="applicantEmail" 
+                                   name="applicant_email"
+                                   value="{{ employee.email }}" 
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="applicantPhone" class="form-label">Phone Number</label>
+                            <input type="tel" 
+                                   class="form-control" 
+                                   id="applicantPhone" 
+                                   name="applicant_phone"
+                                   value="{{ employee.phone|default:'' }}"
+                                   required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="applicantLocation" class="form-label">Current Location</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="applicantLocation" 
+                                   name="applicant_location"
+                                   value="{{ employee.location|default:'' }}"
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="resumeUpload" class="form-label">Upload Resume/CV</label>
+                        <input type="file" 
+                               class="form-control" 
+                               id="resumeUpload" 
+                               name="resume"
+                               accept=".pdf,.doc,.docx"
+                               required>
+                        <div class="form-text">Accepted formats: PDF, DOC, DOCX. Max size: 5MB</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="coverLetter" class="form-label">Cover Letter</label>
+                        <textarea class="form-control" 
+                                  id="coverLetter" 
+                                  name="cover_letter"
+                                  rows="4" 
+                                  placeholder="Introduce yourself and explain why you're a good fit for this position"></textarea>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                        <label class="form-check-label" for="termsCheck">
+                            I agree to the terms and conditions and consent to the processing of my personal data.
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitApplication">Submit Application</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="feedbackModalLabel">Share Your Experience</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="feedbackForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="feedbackJobId" name="job_id" value="{{ job.id }}">
+                    
+                    <div class="text-center mb-4">
+                        <h6>Rate your overall experience working for {{ job.employer.company_name }}</h6>
+                        <div class="rating-stars" id="ratingStars">
+                            <i class="far fa-star" data-rating="1"></i>
+                            <i class="far fa-star" data-rating="2"></i>
+                            <i class="far fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                        </div>
+                        <div class="rating-label" id="ratingLabel">Select your rating</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="workEnvironment" class="form-label">Work Environment</label>
+                            <select class="form-select" id="workEnvironment" name="work_environment" required>
+                                <option value="">Select rating</option>
+                                <option value="5">Excellent</option>
+                                <option value="4">Very Good</option>
+                                <option value="3">Good</option>
+                                <option value="2">Fair</option>
+                                <option value="1">Poor</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="management" class="form-label">Management</label>
+                            <select class="form-select" id="management" name="management" required>
+                                <option value="">Select rating</option>
+                                <option value="5">Excellent</option>
+                                <option value="4">Very Good</option>
+                                <option value="3">Good</option>
+                                <option value="2">Fair</option>
+                                <option value="1">Poor</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="compensation" class="form-label">Compensation & Benefits</label>
+                            <select class="form-select" id="compensation" name="compensation" required>
+                                <option value="">Select rating</option>
+                                <option value="5">Excellent</option>
+                                <option value="4">Very Good</option>
+                                <option value="3">Good</option>
+                                <option value="2">Fair</option>
+                                <option value="1">Poor</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="workLifeBalance" class="form-label">Work-Life Balance</label>
+                            <select class="form-select" id="workLifeBalance" name="work_life_balance" required>
+                                <option value="">Select rating</option>
+                                <option value="5">Excellent</option>
+                                <option value="4">Very Good</option>
+                                <option value="3">Good</option>
+                                <option value="2">Fair</option>
+                                <option value="1">Poor</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="feedbackComment" class="form-label">Your Review</label>
+                        <textarea class="form-control" 
+                                  id="feedbackComment" 
+                                  name="comment"
+                                  rows="5" 
+                                  placeholder="Share your experience working for this employer. What did you like? What could be improved? Your feedback helps future applicants make informed decisions."
+                                  required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Would you recommend this employer?</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="recommend" id="recommendYes" value="yes" required>
+                            <label class="form-check-label" for="recommendYes">
+                                Yes, I would recommend
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="recommend" id="recommendNo" value="no" required>
+                            <label class="form-check-label" for="recommendNo">
+                                No, I would not recommend
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="feedbackTermsCheck" required>
+                        <label class="form-check-label" for="feedbackTermsCheck">
+                            I confirm that this review is based on my actual work experience and is truthful to the best of my knowledge.
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitFeedback">Submit Review</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Job Details Page JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize job details page functionality
+    
+    // Check if job is saved
+    checkIfJobSaved();
+    
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+// Function to open apply modal
+function openApplyModal() {
+    var applyModal = new bootstrap.Modal(document.getElementById('applyJobModal'));
+    applyModal.show();
+}
+
+// Function to save job
+function saveJob() {
+    const jobId = '{{ job.id }}';
+    const saveBtn = document.getElementById('saveJobBtn');
+    
+    // Toggle save state
+    if (saveBtn.innerHTML.includes('far fa-heart')) {
+        // Save job
+        const formData = new FormData();
+        formData.append('job_id', jobId);
+        formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+        
+        fetch('/employee/save-job/', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                saveBtn.innerHTML = '<i class="fas fa-heart me-2"></i>Saved Jobs';
+                saveBtn.style.background = '#28a745';
+                saveBtn.style.borderColor = '#28a745';
+                saveBtn.style.color = 'white';
+                showNotification('Job saved successfully!', 'success');
+            } else {
+                showNotification('Failed to save job. Please try again.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred. Please try again.', 'error');
+        });
+    } else {
+        // Unsave job
+        const formData = new FormData();
+        formData.append('job_id', jobId);
+        formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+        
+        fetch('/employee/unsave-job/', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                saveBtn.innerHTML = '<i class="far fa-heart me-2"></i>Save Job';
+                saveBtn.style.background = 'white';
+                saveBtn.style.borderColor = '#dc3545';
+                saveBtn.style.color = '#dc3545';
+                showNotification('Job removed from saved jobs.', 'info');
+            } else {
+                showNotification('Failed to remove job. Please try again.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred. Please try again.', 'error');
+        });
+    }
+}
+
+// Function to share job
+function shareJob() {
+    const jobTitle = '{{ job.title }}';
+    const companyName = '{{ job.employer.company_name }}';
+    const currentUrl = window.location.href;
+    
+    const shareText = `Check out this job opportunity: ${jobTitle} at ${companyName}`;
+    const shareUrl = `${shareText}\n\n${currentUrl}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: jobTitle,
+            text: shareText,
+            url: currentUrl
+        });
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            showNotification('Job link copied to clipboard!', 'success');
+        }).catch(() => {
+            showNotification('Failed to copy link. Please try again.', 'error');
+        });
+    }
+}
+
+// Function to check if job is saved
+function checkIfJobSaved() {
+    const jobId = '{{ job.id }}';
+    
+    fetch(`/employee/check-saved-job/${jobId}/`, {
+        method: 'GET',
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.is_saved) {
+            const saveBtn = document.getElementById('saveJobBtn');
+            saveBtn.innerHTML = '<i class="fas fa-heart me-2"></i>Saved Jobs';
+            saveBtn.style.background = '#28a745';
+            saveBtn.style.borderColor = '#28a745';
+            saveBtn.style.color = 'white';
+        }
+    })
+    .catch(error => {
+        console.error('Error checking saved job:', error);
+    });
+}
+
+// Function to submit application
+document.getElementById('submitApplication')?.addEventListener('click', function() {
+    const form = document.getElementById('jobApplicationForm');
+    const formData = new FormData(form);
+    
+    // Show loading state
+    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+    this.disabled = true;
+    
+    fetch('/employee/apply-job/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Application submitted successfully!', 'success');
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('applyJobModal'));
+            modal.hide();
+            // Reset form
+            form.reset();
+        } else {
+            showNotification(data.message || 'Failed to submit application. Please try again.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred. Please try again.', 'error');
+    })
+    .finally(() => {
+        // Reset button state
+        this.innerHTML = 'Submit Application';
+        this.disabled = false;
+    });
+});
+
+// Utility function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Function to show notifications
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Add smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Feedback and Rating System Functions
+let selectedRating = 0;
+
+// Function to open feedback modal
+function openFeedbackModal() {
+    var feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+    feedbackModal.show();
+    
+    // Reset form when modal opens
+    resetFeedbackForm();
+    
+    // Load existing reviews
+    loadReviews();
+}
+
+// Function to reset feedback form
+function resetFeedbackForm() {
+    document.getElementById('feedbackForm').reset();
+    selectedRating = 0;
+    updateRatingStars(0);
+    updateRatingLabel(0);
+}
+
+// Function to update rating stars
+function updateRatingStars(rating) {
+    const stars = document.querySelectorAll('#ratingStars i');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.className = 'fas fa-star filled';
+        } else {
+            star.className = 'far fa-star';
+        }
+    });
+}
+
+// Function to update rating label
+function updateRatingLabel(rating) {
+    const label = document.getElementById('ratingLabel');
+    const labels = {
+        0: 'Select your rating',
+        1: 'Poor',
+        2: 'Fair',
+        3: 'Good',
+        4: 'Very Good',
+        5: 'Excellent'
+    };
+    label.textContent = labels[rating] || 'Select your rating';
+}
+
+// Initialize rating stars functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Rating stars click handlers
+    const stars = document.querySelectorAll('#ratingStars i');
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = parseInt(this.getAttribute('data-rating'));
+            selectedRating = rating;
+            updateRatingStars(rating);
+            updateRatingLabel(rating);
+        });
+        
+        star.addEventListener('mouseenter', function() {
+            const rating = parseInt(this.getAttribute('data-rating'));
+            updateRatingStars(rating);
+            updateRatingLabel(rating);
+        });
+        
+        star.addEventListener('mouseleave', function() {
+            updateRatingStars(selectedRating);
+            updateRatingLabel(selectedRating);
+        });
+    });
+    
+    // Submit feedback handler
+    document.getElementById('submitFeedback')?.addEventListener('click', function() {
+        submitFeedback();
+    });
+    
+    // Load reviews on page load
+    loadReviews();
+});
+
+// Function to submit feedback
+function submitFeedback() {
+    const form = document.getElementById('feedbackForm');
+    const formData = new FormData(form);
+    
+    // Add overall rating
+    formData.append('overall_rating', selectedRating);
+    
+    // Validate form
+    if (selectedRating === 0) {
+        showNotification('Please select an overall rating', 'error');
+        return;
+    }
+    
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = document.getElementById('submitFeedback');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+    submitBtn.disabled = true;
+    
+    fetch('/employee/submit-feedback/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Thank you for your feedback! Your review has been submitted.', 'success');
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
+            modal.hide();
+            // Reset form
+            resetFeedbackForm();
+            // Reload reviews
+            loadReviews();
+        } else {
+            showNotification(data.message || 'Failed to submit feedback. Please try again.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred. Please try again.', 'error');
+    })
+    .finally(() => {
+        // Reset button state
+        submitBtn.innerHTML = 'Submit Review';
+        submitBtn.disabled = false;
+    });
+}
+
+// Function to load reviews
+function loadReviews() {
+    const jobId = '{{ job.id }}';
+    const reviewsContainer = document.getElementById('reviewsContainer');
+    
+    fetch(`/employee/get-reviews/${jobId}/`, {
+        method: 'GET',
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.reviews.length > 0) {
+            displayReviews(data.reviews);
+        } else {
+            reviewsContainer.innerHTML = `
+                <div class="text-center text-muted">
+                    <i class="fas fa-comments fa-2x mb-2"></i>
+                    <p>No reviews yet. Be the first to share your experience!</p>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error loading reviews:', error);
+        reviewsContainer.innerHTML = `
+            <div class="text-center text-muted">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                <p>Unable to load reviews at this time.</p>
+            </div>
+        `;
+    });
+}
+
+// Function to display reviews
+function displayReviews(reviews) {
+    const reviewsContainer = document.getElementById('reviewsContainer');
+    
+    const reviewsHTML = reviews.map(review => {
+        const stars = generateStars(review.rating);
+        const date = new Date(review.created_at).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // Note: Your model only has rating and comment, not detailed category ratings
+        
+        return `
+            <div class="review-item">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar">
+                            ${review.reviewer_name.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="reviewer-details">
+                            <h5>${review.reviewer_name}</h5>
+                            <small>Former Employee</small>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        <div class="stars">${stars}</div>
+                        <span class="rating-number">${review.rating}/5</span>
+                    </div>
+                </div>
+                <div class="review-content">
+                    ${review.comment}
+                </div>
+
+                <div class="review-date">
+                    <i class="far fa-calendar-alt me-1"></i>${date}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    reviewsContainer.innerHTML = reviewsHTML;
+}
+
+// Function to generate stars HTML
+function generateStars(rating) {
+    let starsHTML = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+            starsHTML += '<i class="fas fa-star text-warning"></i>';
+        } else {
+            starsHTML += '<i class="far fa-star text-warning"></i>';
+        }
+    }
+    return starsHTML;
+}
+</script>
+{% endblock %} 

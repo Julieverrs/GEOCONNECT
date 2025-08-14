@@ -7,7 +7,7 @@ from .forms import EmployerSignupForm, EmployerLoginForm, JobPostForm
 from django.http import HttpResponse
 from django.core.paginator import Paginator
 import json
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
@@ -523,12 +523,22 @@ def employer_home(request):
         messages.error(request, "User not found.")
         return redirect('employer_login')
     
-    # Get jobs for this employer
-    jobs = Job.objects.filter(employer=employer)
+    # Get jobs for this employer with application counts
+    jobs = Job.objects.filter(employer=employer).annotate(
+        application_count=Count('applications')
+    )
     
     # Calculate statistics
     total_jobs = jobs.count()
     total_applications = JobApplication.objects.filter(job__employer=employer).count()
+    
+    # Debug: Print job application counts
+    print(f"=== DEBUG: Job Application Counts ===")
+    for job in jobs:
+        print(f"Job: {job.title} - Applications: {job.application_count}")
+    print(f"Total Jobs: {total_jobs}")
+    print(f"Total Applications: {total_applications}")
+    print("=====================================")
     
     context = {
         'employer': employer,
@@ -539,7 +549,50 @@ def employer_home(request):
     }
     return render(request, 'employer/employer_home.html', context)
 
-from django.views.decorators.csrf import ensure_csrf_cookie
+# Debug view to check job applications
+def debug_job_applications(request):
+    if not request.session.get('employer_username'):
+        return JsonResponse({'error': 'Not authenticated'}, status=403)
+    
+    employer_username = request.session.get('employer_username')
+    employer = Employer.objects.filter(username=employer_username).first()
+    
+    if not employer:
+        return JsonResponse({'error': 'Employer not found'}, status=404)
+    
+    # Get all jobs with application counts
+    jobs = Job.objects.filter(employer=employer).annotate(
+        application_count=Count('applications')
+    )
+    
+    debug_data = []
+    for job in jobs:
+        # Get actual applications for this job
+        applications = JobApplication.objects.filter(job=job)
+        application_details = []
+        
+        for app in applications:
+            application_details.append({
+                'id': app.id,
+                'employee': app.employee.username,
+                'status': app.status,
+                'date': app.application_date.strftime('%Y-%m-%d %H:%M')
+            })
+        
+        debug_data.append({
+            'job_id': job.id,
+            'job_title': job.title,
+            'annotated_count': job.application_count,
+            'actual_applications': len(applications),
+            'applications': application_details
+        })
+    
+    return JsonResponse({
+        'success': True,
+        'employer': employer_username,
+        'total_jobs': len(debug_data),
+        'jobs': debug_data
+    })
 
 # Update the create_job view to handle work_setup
 @ensure_csrf_cookie
@@ -599,7 +652,6 @@ def create_job(request):
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
-
 @ensure_csrf_cookie
 def search_jobs(request):
     if not request.session.get('employer_username'):
@@ -610,8 +662,16 @@ def search_jobs(request):
     sort_by = request.GET.get('sort', 'newest')
     
     try:
+        print(f"Searching jobs for employer: {request.session['employer_username']}")
         employer = Employer.objects.get(username=request.session['employer_username'])
+        print(f"Found employer: {employer.username}")
+        
         jobs = Job.objects.filter(employer=employer)
+        print(f"Found {jobs.count()} jobs")
+        
+        # Debug: Check what status values exist in the database
+        status_values = jobs.values_list('status', flat=True).distinct()
+        print(f"Available status values in database: {list(status_values)}")
         
         # Apply search filters
         if query:
@@ -620,9 +680,25 @@ def search_jobs(request):
                 Q(description__icontains=query) |
                 Q(location__icontains=query)
             )
+            print(f"After search filter: {jobs.count()} jobs")
         
         if status_filter != 'all':
-            jobs = jobs.filter(status=status_filter)
+            print(f"Filtering by status: {status_filter}")
+            
+            # Handle case-insensitive status filtering
+            if status_filter.lower() == 'active':
+                jobs = jobs.filter(status='active')
+            elif status_filter.lower() == 'closed':
+                jobs = jobs.filter(status='closed')
+            else:
+                # Try exact match first, then case-insensitive
+                jobs = jobs.filter(status__iexact=status_filter)
+            
+            print(f"After status filter: {jobs.count()} jobs")
+            
+            # Debug: Check what jobs we have
+            for job in jobs:
+                print(f"  Job {job.id}: {job.title} - Status: {job.status}")
         
         # Apply sorting
         if sort_by == 'newest':
@@ -632,21 +708,59 @@ def search_jobs(request):
         elif sort_by == 'title':
             jobs = jobs.order_by('title')
         
-        jobs_data = [{
-            'id': job.id,
-            'title': job.title,
-            'location': job.location,
-            'job_type': job.get_job_type_display(),
-            'work_setup': job.get_work_setup_display(),
-            'description': job.description,
-            'requirements': job.requirements,
-            'salary_range': job.salary_range,
-            'experience_level': job.get_experience_level_display(),
-            'status': job.status,
-            'applications_count': job.applications_count,
-            'created_at': job.created_at.strftime('%Y-%m-%d')
-        } for job in jobs]
+        print(f"After sorting: {jobs.count()} jobs")
         
+        jobs_data = []
+        print(f"Processing {jobs.count()} jobs...")
+        for job in jobs:
+            try:
+                print(f"Processing job {job.id}: {job.title}")
+                
+                # Safely get applications count
+                applications_count = 0
+                try:
+                    applications_count = job.applications.count()
+                    print(f"  Applications count: {applications_count}")
+                except Exception as e:
+                    print(f"  Error getting applications count: {str(e)}")
+                    applications_count = 0
+                
+                # Safely format created_at
+                created_at = ''
+                try:
+                    if job.created_at:
+                        created_at = job.created_at.strftime('%Y-%m-%d')
+                        print(f"  Created at: {created_at}")
+                except Exception as e:
+                    print(f"  Error formatting created_at: {str(e)}")
+                    created_at = ''
+                
+                job_data = {
+                    'id': job.id,
+                    'title': job.title,
+                    'location': job.location,
+                    'job_type': job.get_job_type_display(),
+                    'work_setup': job.get_work_setup_display(),
+                    'description': job.description,
+                    'requirements': job.requirements,
+                    'salary_range': job.salary_range,
+                    'experience_level': job.get_experience_level_display(),
+                    'status': job.status,
+                    'applications_count': applications_count,
+                    'created_at': created_at
+                }
+                jobs_data.append(job_data)
+                print(f"  Successfully processed job {job.id}")
+            except Exception as e:
+                # Skip jobs with errors and continue
+                print(f"Error processing job {job.id}: {str(e)}")
+                print(f"  Job data: title='{getattr(job, 'title', 'N/A')}', status='{getattr(job, 'status', 'N/A')}'")
+                print(f"  Error type: {type(e).__name__}")
+                import traceback
+                print(f"  Traceback: {traceback.format_exc()}")
+                continue
+        
+        print(f"Returning {len(jobs_data)} jobs")
         return JsonResponse({
             'jobs': jobs_data,
             'total': len(jobs_data)
@@ -654,7 +768,8 @@ def search_jobs(request):
     except Employer.DoesNotExist:
         return JsonResponse({'error': 'Employer not found'}, status=404)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        print(f"Search jobs error: {str(e)}")
+        return JsonResponse({'error': 'An error occurred while searching jobs. Please try again.'}, status=500)
 
 # Update the get_job view to include latitude and longitude
 def get_job(request, job_id):
@@ -677,10 +792,9 @@ def get_job(request, job_id):
             'salary_range': job.salary_range,
             'experience_level': job.experience_level,
             'status': job.status,
-            'requirements': job.requirements,
-            'applications_count': job.applications_count
+            'requirements': job.requirements
         }
-        return JsonResponse({'job': job_data})
+        return JsonResponse({'success': True, 'job': job_data})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
@@ -721,8 +835,7 @@ def edit_job(request, job_id):
                 'salary_range': job.salary_range,
                 'experience_level': job.get_experience_level_display(),
                 'status': job.status,
-                'requirements': job.requirements,
-                'applications_count': job.applications_count
+                'requirements': job.requirements
             }
         })
     except Job.DoesNotExist:
@@ -854,7 +967,7 @@ def search_jobs(request):
             'salary_range': job.salary_range,
             'experience_level': job.get_experience_level_display(),
             'status': job.status,
-            'applications_count': job.applications_count,
+            'applications_count': job.applications.count(),
             'created_at': job.created_at.strftime('%Y-%m-%d')
         } for job in jobs]
         
@@ -1261,3 +1374,160 @@ def employee_profile(request, employee_id):
     except Exception as e:
         messages.error(request, f"Error viewing profile: {str(e)}")
         return redirect('candidate_recommendations')
+
+# Messaging System Views
+from employee.models import Conversation, Message
+
+@ensure_csrf_cookie
+def messages_list(request):
+    """Display list of conversations for employer"""
+    employer_username = request.session.get('employer_username')
+    if not employer_username:
+        messages.error(request, "Please login to access this page.")
+        return redirect('employer_login')
+    
+    employer = get_object_or_404(Employer, username=employer_username)
+    conversations = Conversation.objects.filter(employer=employer, is_active=True)
+    
+    # Get unread counts for each conversation
+    for conversation in conversations:
+        conversation.unread_count = conversation.unread_count_employer
+    
+    context = {
+        'conversations': conversations,
+        'employer': employer,
+        'username': employer_username,
+    }
+    return render(request, 'employer/messages_list.html', context)
+
+@ensure_csrf_cookie
+def conversation_detail(request, conversation_id):
+    """Display conversation detail and messages"""
+    employer_username = request.session.get('employer_username')
+    if not employer_username:
+        messages.error(request, "Please login to access this page.")
+        return redirect('employer_login')
+    
+    employer = get_object_or_404(Employer, username=employer_username)
+    conversation = get_object_or_404(Conversation, id=conversation_id, employer=employer)
+    
+    # Mark messages as read
+    conversation.messages.filter(sender_type='employee', is_read=False).update(is_read=True)
+    
+    if request.method == 'POST':
+        content = request.POST.get('message_content')
+        if content:
+            Message.objects.create(
+                conversation=conversation,
+                sender_type='employer',
+                content=content
+            )
+            # Update conversation timestamp
+            conversation.save()
+            return redirect('employer_conversation_detail', conversation_id=conversation_id)
+    
+    messages_list = conversation.messages.all()
+    
+    context = {
+        'conversation': conversation,
+        'messages': messages_list,
+        'employer': employer,
+        'username': employer_username,
+    }
+    return render(request, 'employer/conversation_detail.html', context)
+
+@require_POST
+def send_message(request, conversation_id):
+    """Send a message via AJAX"""
+    employer_username = request.session.get('employer_username')
+    if not employer_username:
+        return JsonResponse({'success': False, 'error': 'Not authenticated'})
+    
+    employer = get_object_or_404(Employer, username=employer_username)
+    conversation = get_object_or_404(Conversation, id=conversation_id, employer=employer)
+    
+    content = request.POST.get('content')
+    if content:
+        message = Message.objects.create(
+            conversation=conversation,
+            sender_type='employer',
+            content=content
+        )
+        # Update conversation timestamp
+        conversation.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': {
+                'id': message.id,
+                'content': message.content,
+                'created_at': message.created_at.strftime('%Y-%m-%d %H:%M'),
+                'sender_type': message.sender_type
+            }
+        })
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+def get_unread_count(request):
+    """Get unread message count for employer"""
+    employer_username = request.session.get('employer_username')
+    if not employer_username:
+        return JsonResponse({'unread_count': 0})
+    
+    employer = get_object_or_404(Employer, username=employer_username)
+    conversations = Conversation.objects.filter(employer=employer, is_active=True)
+    
+    total_unread = 0
+    for conversation in conversations:
+        total_unread += conversation.unread_count_employer
+    
+    return JsonResponse({'unread_count': total_unread})
+
+@require_POST
+def mark_messages_read(request, conversation_id):
+    """Mark messages as read"""
+    employer_username = request.session.get('employer_username')
+    if not employer_username:
+        return JsonResponse({'success': False, 'error': 'Not authenticated'})
+    
+    employer = get_object_or_404(Employer, username=employer_username)
+    conversation = get_object_or_404(Conversation, id=conversation_id, employer=employer)
+    
+    conversation.messages.filter(sender_type='employee', is_read=False).update(is_read=True)
+    
+    return JsonResponse({'success': True})
+
+@require_POST
+def start_conversation(request, application_id):
+    """Start a conversation with an employee from an application"""
+    employer_username = request.session.get('employer_username')
+    if not employer_username:
+        return JsonResponse({'success': False, 'error': 'Not authenticated'})
+    
+    employer = get_object_or_404(Employer, username=employer_username)
+    application = get_object_or_404(JobApplication, id=application_id, job__employer=employer)
+    
+    # Check if conversation already exists
+    conversation, created = Conversation.objects.get_or_create(
+        job=application.job,
+        employee=application.employee,
+        employer=employer,
+        defaults={'is_active': True}
+    )
+    
+    # If conversation was just created, send initial message
+    if created:
+        initial_message = request.POST.get('initial_message', '')
+        if initial_message:
+            Message.objects.create(
+                conversation=conversation,
+                sender_type='employer',
+                content=initial_message
+            )
+            conversation.save()
+    
+    return JsonResponse({
+        'success': True,
+        'conversation_id': conversation.id,
+        'created': created
+    })

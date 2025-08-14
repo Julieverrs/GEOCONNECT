@@ -1,0 +1,14 @@
+[
+  {
+    "model": "employee.conversation",
+    "pk": 1,
+    "fields": {
+      "job": 51,
+      "employee": 27,
+      "employer": 21,
+      "created_at": "2025-07-31T07:03:20.142Z",
+      "updated_at": "2025-07-31T13:51:10.964Z",
+      "is_active": true
+    }
+  }
+]

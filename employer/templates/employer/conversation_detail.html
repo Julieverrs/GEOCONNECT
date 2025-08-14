@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/messages.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="conversation-container">
+    <!-- Sidebar -->
+    <div class="conversation-sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-info-circle"></i> Conversation Info</h3>
+        </div>
+        <div class="sidebar-content">
+            <div class="conversation-info-card">
+                <h4><i class="fas fa-user"></i> Contact Details</h4>
+                <div class="info-item">
+                    <i class="fas fa-building"></i>
+                    <span>{{ employer.company_name }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-user"></i>
+                    <span>{{ conversation.employee.username }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>Started {{ conversation.created_at|date:"M d, Y" }}</span>
+                </div>
+            </div>
+            
+            <div class="job-details-card">
+                <h4><i class="fas fa-briefcase"></i> Job Details</h4>
+                <div class="job-detail-item">
+                    <i class="fas fa-tag"></i>
+                    <span>{{ conversation.job.title }}</span>
+                </div>
+                <div class="job-detail-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>{{ conversation.job.location }}</span>
+                </div>
+                <div class="job-detail-item">
+                    <i class="fas fa-clock"></i>
+                    <span>{{ conversation.job.job_type }}</span>
+                </div>
+                <div class="job-detail-item">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>{{ conversation.job.salary_range }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="conversation-main">
+        <div class="conversation-header">
+            <div class="header-content">
+                <a href="{% url 'employer_messages_list' %}" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div class="conversation-info">
+                    <div class="conversation-avatar">
+                        <div class="avatar-circle">
+                            <span>{{ conversation.employee.username|first|upper }}</span>
+                        </div>
+                    </div>
+                    <div class="conversation-details">
+                        <h2>{{ conversation.employee.username }}</h2>
+                        <p class="job-title">{{ conversation.job.title }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="messages-container" id="messagesContainer">
+            <div class="messages-list" id="messagesList">
+                {% for message in messages %}
+                <div class="message {% if message.sender_type == 'employer' %}message-sent{% else %}message-received{% endif %}">
+                    <div class="message-content">
+                        <div class="message-text">{{ message.content }}</div>
+                        <div class="message-time">{{ message.created_at|date:"M d, Y g:i A" }}</div>
+                        {% if message.sender_type == 'employer' %}
+                        <div class="message-status read">
+                            <i class="fas fa-check-double"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if message.sender_type == 'employer' %}
+                    <div class="message-avatar">
+                        <div class="avatar-circle small">
+                            <span>{{ employer.company_name|first|upper }}</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="message-avatar">
+                        <div class="avatar-circle small">
+                            <span>{{ conversation.employee.username|first|upper }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                
+                <!-- Typing indicator (hidden by default) -->
+                <div class="message message-received typing-indicator" id="typingIndicator" style="display: none;">
+                    <div class="message-content">
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="message-avatar">
+                        <div class="avatar-circle small">
+                            <span>{{ conversation.employee.username|first|upper }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="message-input-container">
+            <form id="messageForm" class="message-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    <textarea 
+                        id="messageInput" 
+                        name="content" 
+                        placeholder="Type your message..." 
+                        rows="1"
+                        maxlength="1000"
+                    ></textarea>
+                    <button type="submit" class="send-button" id="sendButton">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messagesContainer = document.getElementById('messagesContainer');
+    const messagesList = document.getElementById('messagesList');
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+
+    // Scroll to bottom of messages
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Auto-resize textarea
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    // Send message
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const content = messageInput.value.trim();
+        if (!content) return;
+
+        // Disable send button
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        // Send message via AJAX
+        fetch('{% url "employer_send_message" conversation.id %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: new URLSearchParams({
+                'content': content
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add message to DOM
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message message-sent';
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-text">${data.message.content}</div>
+                        <div class="message-time">${data.message.created_at}</div>
+                        <div class="message-status read">
+                            <i class="fas fa-check-double"></i>
+                        </div>
+                    </div>
+                    <div class="message-avatar">
+                        <div class="avatar-circle small">
+                            <span>{{ employer.company_name|first|upper }}</span>
+                        </div>
+                    </div>
+                `;
+                messagesList.appendChild(messageDiv);
+                
+                // Clear input and reset
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                scrollToBottom();
+            } else {
+                alert('Error sending message: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error sending message. Please try again.');
+        })
+        .finally(() => {
+            // Re-enable send button
+            sendButton.disabled = false;
+            sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        });
+    });
+
+    // Initial scroll to bottom
+    scrollToBottom();
+
+    // Auto-refresh messages every 10 seconds
+    setInterval(function() {
+        fetch(window.location.href)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newMessages = doc.querySelectorAll('.message');
+                const currentMessages = messagesList.querySelectorAll('.message');
+                
+                if (newMessages.length > currentMessages.length) {
+                    // Reload the page to show new messages
+                    window.location.reload();
+                }
+            });
+    }, 10000);
+});
+</script>
+{% endblock %} 

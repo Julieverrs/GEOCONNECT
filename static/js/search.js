@@ -134,8 +134,8 @@ function initializeSearch() {
                 ${job.applications_count || 0} Applications
             </div>
             <div class="card-actions">
-                <button class="action-button edit" onclick="editJob(${job.id})">Edit</button>
-                <button class="action-button view" onclick="viewJob(${job.id})">View</button>
+                <button class="action-button edit" data-job-id="${job.id}">Edit</button>
+                <button class="action-button view" data-job-id="${job.id}">View</button>
             </div>
         </div>
     </div>

@@ -1,0 +1,623 @@
+{% extends 'employee/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/employee_home.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<style>
+body, html {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    overflow-y: hidden; /* Hide scroll to keep everything in one screen */
+    height: 100vh; /* Full viewport height */
+}
+.return-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem; /* Increased font size */
+    font-weight: 600;
+    color: #1e88e5;
+    background: #f6f8fb;
+    border: 1.5px solid #e3e8f7;
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    margin: 0.4rem 0 0.4rem 1.5vw; /* Reduced margin, increased left margin */
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(30,136,229,0.07);
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.return-back-btn:hover, .return-back-btn:focus {
+    background: #e3e8f7;
+    color: #3949ab;
+    box-shadow: 0 4px 16px #1e88e522;
+    outline: none;
+}
+.profile-settings-banner {
+    width: 100%;
+    height: 40px; /* Further reduced height */
+    background: linear-gradient(90deg, #1e88e5 0%, #3949ab 100%);
+    border-radius: 0 0 24px 24px;
+    margin-bottom: 0.4rem; /* Reduced margin */
+    margin-top: 0;
+    padding-top: 0;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    overflow: hidden;
+}
+.profile-settings-banner img {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    opacity: 0.12;
+    pointer-events: none;
+}
+.profile-settings-flex {
+    display: flex;
+    gap: 2rem; /* Increased gap to use more space */
+    align-items: flex-start;
+    max-width: 95vw; /* Use more viewport width */
+    margin: 0 auto;
+    padding: 0 1.5vw 0.2rem 1.5vw; /* Increased horizontal padding */
+    height: calc(100vh - 160px); /* Adjusted height calculation */
+}
+.profile-edit-form {
+    flex: 1.8; /* Increased flex ratio */
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(30,136,229,0.10), 0 1px 6px rgba(30,136,229,0.07);
+    border: 1.5px solid #e3e8f7;
+    padding: 1.2rem 2rem 1rem 2rem; /* Increased padding */
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem; /* Increased gap */
+    min-width: 520px; /* Increased min-width */
+    max-width: 2000px;
+    position: relative;
+    font-size: 1rem; /* Increased font size */
+    margin-bottom: 0.2rem; /* Minimal bottom margin */
+    overflow-y: auto; /* Allow scrolling within form if needed */
+    max-height: 100%;
+}
+.profile-edit-form h2 {
+    font-size: 1.15rem; /* Increased font size */
+    margin-bottom: 0.3rem; /* Increased margin */
+    margin-top: 0.4rem; /* Increased margin */
+}
+.profile-completeness {
+    width: 100%;
+    margin-bottom: 0.3rem; /* Increased margin */
+}
+.profile-completeness-bar {
+    width: 100%;
+    height: 10px; /* Increased height */
+    background: #e3e8f7;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 0.2rem; /* Increased margin */
+}
+.profile-completeness-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, #1e88e5 0%, #3949ab 100%);
+    border-radius: 8px;
+    transition: width 0.5s;
+}
+.profile-avatar-upload {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem; /* Increased gap */
+    margin-bottom: 0.4rem; /* Increased margin */
+    background: #f6f8fb;
+    border-radius: 10px;
+    padding: 0.4rem 0.8rem; /* Increased padding */
+    box-shadow: 0 1px 4px rgba(30,136,229,0.06);
+    border: 1.5px solid #e3e8f7;
+}
+.profile-avatar-preview {
+    width: 50px; /* Increased size */
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e3e8f7;
+    box-shadow: 0 1px 4px rgba(57,73,171,0.07);
+    background: #fff;
+    position: relative;
+}
+.profile-avatar-edit-icon {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: #1e88e5;
+    color: #fff;
+    border-radius: 50%;
+    padding: 2px;
+    font-size: 0.9rem; /* Increased font size */
+    cursor: pointer;
+    border: 1.5px solid #fff;
+    box-shadow: 0 1px 4px #1e88e522;
+}
+.profile-section {
+    margin-bottom: 0.1rem; /* Increased margin */
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem; /* Increased gap */
+}
+.profile-section label {
+    font-size: 1rem; /* Increased font size */
+    color: #3949ab;
+    font-weight: 600;
+    margin-bottom: 0.05rem; /* Increased margin */
+    letter-spacing: 0.1px;
+}
+.profile-section input, .profile-section textarea {
+    width: 100%;
+    border-radius: 7px;
+    border: 1.2px solid #e3e8f7;
+    padding: 0.4rem 0.7rem; /* Increased padding */
+    margin-top: 0.05rem; /* Increased margin */
+    margin-bottom: 0.05rem; /* Increased margin */
+    font-size: 1rem; /* Increased font size */
+    background: #f8fafc;
+    transition: border 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 2px rgba(30,136,229,0.03);
+}
+.profile-section input:focus, .profile-section textarea:focus {
+    border: 1.2px solid #1e88e5;
+    outline: none;
+    background: #fff;
+    box-shadow: 0 1px 4px #1e88e533;
+}
+.profile-section textarea {
+    min-height: 32px; /* Increased height */
+    max-height: 50px; /* Increased max height */
+    resize: vertical;
+}
+/* Two-column grid for form fields on desktop */
+@media (min-width: 700px) {
+    .profile-edit-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem 2rem; /* Increased grid gap */
+    }
+    .profile-edit-form h2, .profile-completeness, .profile-avatar-upload, .save-profile-btn {
+        grid-column: 1 / -1;
+    }
+}
+.save-profile-btn {
+    padding: 0.5rem 1rem; /* Increased padding */
+    font-size: 1.05rem; /* Increased font size */
+    border-radius: 8px;
+    background: linear-gradient(90deg, #3949ab 0%, #1e88e5 100%);
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    box-shadow: 0 1px 4px rgba(30,136,229,0.10);
+    margin-top: 0.3rem; /* Increased margin */
+    align-self: flex-end;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    letter-spacing: 0.1px;
+    cursor: pointer;
+}
+.save-profile-btn:hover, .save-profile-btn:focus {
+    background: linear-gradient(90deg, #1e88e5 0%, #3949ab 100%);
+    box-shadow: 0 3px 12px #1e88e544;
+    transform: translateY(-1px) scale(1.01);
+    outline: none;
+}
+.live-preview-avatar {
+    width: 70px; /* Increased size */
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #1e88e5;
+    box-shadow: 0 1px 6px #1e88e522;
+    background: #fff;
+    margin-bottom: 0.4rem; /* Increased margin */
+}
+.live-preview-name {
+    font-size: 1.2rem; /* Increased font size */
+    font-weight: 800;
+    color: #3949ab;
+    margin: 0 0 0.1rem 0; /* Increased margin */
+}
+.live-preview-bio {
+    color: #3949ab;
+    font-size: 1.05rem; /* Increased font size */
+    margin-bottom: 0.2rem; /* Increased margin */
+}
+.live-preview-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem; /* Increased gap */
+    margin-bottom: 0.2rem; /* Increased margin */
+    font-size: 0.95rem; /* Increased font size */
+}
+.live-preview-details div {
+    min-width: 120px; /* Increased min-width */
+    font-size: 0.95rem;
+}
+.live-preview-socials {
+    display: flex;
+    gap: 0.6rem; /* Increased gap */
+    margin-top: 0.2rem; /* Increased margin */
+}
+.live-preview-socials a {
+    color: #1e88e5;
+    font-size: 1.2rem; /* Increased font size */
+    transition: color 0.2s;
+}
+.live-preview-socials a:hover {
+    color: #3949ab;
+}
+.profile-live-preview {
+    flex: 1.2; /* Adjusted flex ratio */
+    background: linear-gradient(120deg, #e3e8f7 60%, #f6f8fb 100%);
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(30,136,229,0.08);
+    border: 1.5px solid #e3e8f7;
+    padding: 1.2rem 2rem 1rem 2rem; /* Increased padding */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem; /* Increased gap */
+    min-width: 520px; /* Increased min-width */
+    max-width: 2000px;
+    font-size: 1rem; /* Increased font size */
+    margin-bottom: 0.2rem; /* Minimal bottom margin */
+    word-break: break-word;
+    overflow-wrap: break-word;
+    overflow-y: auto; /* Allow scrolling within preview if needed */
+    max-height: 100%;
+}
+
+/* Footer Styles - Made more compact but with larger fonts */
+.profile-settings-footer {
+    background: linear-gradient(135deg, #f8fafc 0%, #e3e8f7 100%);
+    border-top: 1px solid #e3e8f7;
+    padding: 0.8rem 0; /* Increased padding */
+    margin-top: 0.2rem; /* Reduced margin */
+    text-align: center;
+    box-shadow: 0 -2px 10px rgba(30,136,229,0.05);
+    height: auto;
+    min-height: 90px; /* Increased height */
+    max-height: 90px; /* Fixed maximum height */
+    overflow: hidden; /* Prevent overflow */
+}
+
+.footer-content {
+    max-width: 1400px; /* Increased max-width */
+    margin: 0 auto;
+    padding: 0 1.5rem; /* Increased padding */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.8rem; /* Increased gap */
+    height: 100%;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 200px; /* Increased min-width */
+}
+
+.footer-section h4 {
+    color: #3949ab;
+    font-size: 1.05rem; /* Increased font size */
+    font-weight: 600;
+    margin-bottom: 0.3rem; /* Increased margin */
+    letter-spacing: 0.5px;
+}
+
+.footer-section p {
+    color: #666;
+    font-size: 0.9rem; /* Increased font size */
+    line-height: 1.3; /* Increased line height */
+    margin-bottom: 0.15rem; /* Increased margin */
+}
+
+.footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem; /* Increased gap */
+}
+
+.footer-links a {
+    color: #1e88e5;
+    text-decoration: none;
+    font-size: 0.9rem; /* Increased font size */
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem; /* Increased gap */
+}
+
+.footer-links a:hover {
+    color: #3949ab;
+}
+
+.footer-social {
+    display: flex;
+    gap: 0.7rem; /* Increased gap */
+    justify-content: center;
+    margin-top: 0.3rem; /* Increased margin */
+}
+
+.footer-social a {
+    color: #1e88e5;
+    font-size: 1.2rem; /* Increased font size */
+    transition: color 0.2s, transform 0.2s;
+}
+
+.footer-social a:hover {
+    color: #3949ab;
+    transform: translateY(-2px);
+}
+
+.footer-bottom {
+    border-top: 1px solid #e3e8f7;
+    margin-top: 0.4rem; /* Increased margin */
+    padding-top: 0.3rem; /* Increased padding */
+    text-align: center;
+}
+
+.footer-bottom p {
+    color: #888;
+    font-size: 0.85rem; /* Increased font size */
+    margin: 0;
+}
+
+@media (max-width: 1600px) {
+    .profile-settings-flex {
+        max-width: 98vw;
+        gap: 1rem;
+        padding: 0 1vw 0.3rem 1vw;
+    }
+    .profile-edit-form, .profile-live-preview {
+        max-width: 98vw;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .footer-section {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .profile-settings-flex {
+        flex-direction: column;
+        gap: 0.8rem;
+        height: auto;
+        overflow-y: auto;
+    }
+    
+    .profile-edit-form, .profile-live-preview {
+        min-width: auto;
+        padding: 1rem 1.5rem;
+        max-height: none;
+    }
+    
+    body, html {
+        overflow-y: auto; /* Allow scrolling on mobile */
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'employee_home' %}" class="return-back-btn" title="Back to Home">
+    <i class="fas fa-arrow-left"></i> Return
+</a>
+<div class="profile-settings-flex">
+    <form class="profile-edit-form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="profile-completeness">
+            <label><strong>Profile Completeness</strong></label>
+            <div class="profile-completeness-bar">
+                <div class="profile-completeness-bar-inner" style="width:{{ employee.completeness|default:'80' }}%;"></div>
+            </div>
+        </div>
+        <h2>Personal Information</h2>
+        <div class="profile-avatar-upload">
+            <div style="position:relative;">
+                {% if employee.avatar %}
+                    <img src="{{ employee.avatar.url }}" alt="Profile Picture" class="profile-avatar-preview">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.png' %}" alt="Profile Picture" class="profile-avatar-preview">
+                {% endif %}
+                <label for="avatar" class="profile-avatar-edit-icon" title="Change Profile Picture"><i class="fa fa-pen"></i></label>
+            </div>
+            <div>
+                <input type="file" id="avatar" name="avatar" accept="image/*" style="display:none;">
+                <label for="avatar">Change Profile Picture</label>
+            </div>
+        </div>
+        <div class="profile-section">
+            <label for="full_name">Full Name</label>
+            <input type="text" id="full_name" name="full_name" value="{{ employee.full_name }}">
+        </div>
+        <div class="profile-section">
+            <label for="bio">Bio / About</label>
+            <textarea id="bio" name="bio">{{ employee.bio }}</textarea>
+        </div>
+        <h2>Professional Details</h2>
+        <div class="profile-section">
+            <label for="education">Education Background</label>
+            <textarea id="education" name="education">{{ employee.education }}</textarea>
+        </div>
+        <div class="profile-section">
+            <label for="work_experience">Work Experience</label>
+            <textarea id="work_experience" name="work_experience">{{ employee.work_experience }}</textarea>
+        </div>
+        <div class="profile-section">
+            <label for="skills">Skills</label>
+            <input type="text" id="skills" name="skills" value="{{ employee.skills }}" placeholder="e.g. Python, Project Management, ...">
+        </div>
+        <div class="profile-section">
+            <label for="certifications">Certifications</label>
+            <input type="text" id="certifications" name="certifications" value="{{ employee.certifications }}" placeholder="e.g. PMP, AWS Certified, ...">
+        </div>
+        <div class="profile-section">
+            <label for="preferred_job_type">Preferred Job Type</label>
+            <input type="text" id="preferred_job_type" name="preferred_job_type" value="{{ employee.preferred_job_type }}">
+        </div>
+        <div class="profile-section">
+            <label for="location">Preferred Location</label>
+            <input type="text" id="location" name="location" value="{{ employee.location }}">
+        </div>
+        <h2>Social & Resume</h2>
+        <div class="profile-section">
+            <label for="linkedin_url">LinkedIn</label>
+            <input type="url" id="linkedin_url" name="linkedin_url" value="{{ employee.linkedin_url }}" placeholder="https://linkedin.com/in/yourprofile">
+        </div>
+        <div class="profile-section">
+            <label for="github_url">GitHub</label>
+            <input type="url" id="github_url" name="github_url" value="{{ employee.github_url }}" placeholder="https://github.com/yourusername">
+        </div>
+        <div class="profile-section">
+            <label for="portfolio_url">Portfolio / Website</label>
+            <input type="url" id="portfolio_url" name="portfolio_url" value="{{ employee.portfolio_url }}" placeholder="https://yourportfolio.com">
+        </div>
+        <div class="profile-section">
+            <label for="resume">Resume (PDF)</label>
+            <input type="file" id="resume" name="resume" accept="application/pdf">
+            <span id="resume-file-name" style="font-size:0.95em;color:#3949ab;margin-left:0.5em;"></span>
+        </div>
+        {% if employee.resume %}
+        <div class="profile-section">
+            <a href="{{ employee.resume.url }}" target="_blank">View Current Resume</a>
+        </div>
+        {% endif %}
+        <button type="submit" class="save-profile-btn">Save Changes</button>
+    </form>
+    <div class="profile-live-preview">
+        <img class="live-preview-avatar" src="{% if employee.avatar %}{{ employee.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" alt="Profile Picture">
+        <div class="live-preview-name" id="preview-full-name">{{ employee.full_name }}</div>
+        <div class="live-preview-bio" id="preview-bio">{{ employee.bio }}</div>
+        <div class="live-preview-details">
+            <div><strong>Education:</strong> <span id="preview-education">{{ employee.education }}</span></div>
+            <div><strong>Experience:</strong> <span id="preview-work-experience">{{ employee.work_experience }}</span></div>
+            <div><strong>Skills:</strong> <span id="preview-skills">{{ employee.skills }}</span></div>
+            <div><strong>Certifications:</strong> <span id="preview-certifications">{{ employee.certifications }}</span></div>
+            <div><strong>Preferred Job Type:</strong> <span id="preview-preferred-job-type">{{ employee.preferred_job_type }}</span></div>
+            <div><strong>Location:</strong> <span id="preview-location">{{ employee.location }}</span></div>
+        </div>
+        <div class="live-preview-socials">
+            {% if employee.linkedin_url %}
+            <a id="preview-linkedin" href="{{ employee.linkedin_url }}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+            {% endif %}
+            {% if employee.github_url %}
+            <a id="preview-github" href="{{ employee.github_url }}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+            {% endif %}
+            {% if employee.portfolio_url %}
+            <a id="preview-portfolio" href="{{ employee.portfolio_url }}" target="_blank" title="Portfolio"><i class="fas fa-globe"></i></a>
+            {% endif %}
+        </div>
+        {% if employee.resume %}
+        <div class="live-preview-resume">
+            <a href="{{ employee.resume.url }}" target="_blank">View Resume (PDF)</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Footer Section -->
+<footer class="profile-settings-footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h4><i class="fas fa-briefcase"></i> GeoConnect</h4>
+            <p>A comprehensive job matching platform that connects talented professionals with employers through intelligent resume analysis and skill-based recommendations. Our system uses advanced AI to analyze resumes, extract skills, and provide personalized job matches to help you find your perfect career opportunity.</p>
+        </div>
+        
+        <div class="footer-section">
+            <h4><i class="fas fa-cogs"></i> System Features</h4>
+            <p>• Resume parsing and skill extraction<br>
+            • AI-powered job recommendations<br>
+            • Profile completeness tracking<br>
+            • Real-time application status<br>
+            • Employer-employee matching<br>
+            • Document management system</p>
+        </div>
+        
+        <div class="footer-section">
+            <h4><i class="fas fa-users"></i> Our Mission</h4>
+            <p>To bridge the gap between talented professionals and innovative companies by providing an intelligent, user-friendly platform that streamlines the hiring process and creates meaningful career connections.</p>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <p>&copy; 2024 GeoConnect. All rights reserved. | Empowering careers through intelligent job matching.</p>
+    </div>
+</footer>
+
+<script>
+// Live preview JS: update preview as user types
+const fields = [
+    {input: 'full_name', preview: 'preview-full-name'},
+    {input: 'bio', preview: 'preview-bio'},
+    {input: 'education', preview: 'preview-education'},
+    {input: 'work_experience', preview: 'preview-work-experience'},
+    {input: 'skills', preview: 'preview-skills'},
+    {input: 'certifications', preview: 'preview-certifications'},
+    {input: 'preferred_job_type', preview: 'preview-preferred-job-type'},
+    {input: 'location', preview: 'preview-location'},
+    {input: 'linkedin_url', preview: 'preview-linkedin', attr: 'href'},
+    {input: 'github_url', preview: 'preview-github', attr: 'href'},
+    {input: 'portfolio_url', preview: 'preview-portfolio', attr: 'href'},
+];
+fields.forEach(f => {
+    const input = document.getElementById(f.input);
+    const preview = document.getElementById(f.preview);
+    if (input && preview) {
+        input.addEventListener('input', function() {
+            if (f.attr) {
+                preview.setAttribute(f.attr, input.value);
+            } else {
+                preview.textContent = input.value;
+            }
+        });
+    }
+});
+// Avatar live preview
+const avatarInput = document.getElementById('avatar');
+if (avatarInput) {
+    avatarInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                document.querySelectorAll('.profile-avatar-preview, .live-preview-avatar').forEach(img => {
+                    img.src = ev.target.result;
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+// Avatar edit icon triggers file input
+const avatarEditIcon = document.querySelector('.profile-avatar-edit-icon');
+if (avatarEditIcon) {
+    avatarEditIcon.addEventListener('click', function() {
+        avatarInput.click();
+    });
+}
+// In the <script> section, add JS to show the selected file name
+const resumeInput = document.getElementById('resume');
+const resumeFileName = document.getElementById('resume-file-name');
+if (resumeInput && resumeFileName) {
+    resumeInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        resumeFileName.textContent = file ? file.name : '';
+    });
+}
+</script>
+{% endblock %} 
