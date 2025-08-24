@@ -129,6 +129,17 @@ function initializeProfileSettings() {
   companyProfileForm?.addEventListener("submit", async (e) => {
     e.preventDefault()
 
+    // Get the submit button and show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]')
+    const originalText = submitBtn.innerHTML
+    submitBtn.innerHTML = `
+      <svg class="spinner" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 11-6.219-8.56"></path>
+      </svg>
+      Saving...
+    `
+    submitBtn.disabled = true
+
     const formData = {
       company_name: document.getElementById("companyName").value,
       company_description: document.getElementById("companyDescription").value,
@@ -153,25 +164,157 @@ function initializeProfileSettings() {
 
       if (data.success) {
         showNotification("Company profile updated successfully", "success")
+        // Close modal on success
+        setTimeout(() => {
+          profileModal.style.display = "none"
+          document.body.style.overflow = ""
+        }, 1500) // Wait 1.5 seconds to show success message
       } else {
         showNotification(data.error || "Error updating profile", "error")
       }
     } catch (error) {
       console.error("Error:", error)
       showNotification("An error occurred while updating profile", "error")
+    } finally {
+      // Restore button state
+      submitBtn.innerHTML = originalText
+      submitBtn.disabled = false
+    }
+  })
+
+  // Account Settings Form Handler
+  accountSettingsForm?.addEventListener("submit", async (e) => {
+    e.preventDefault()
+
+    // Get the submit button and show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]')
+    const originalText = submitBtn.innerHTML
+    submitBtn.innerHTML = `
+      <svg class="spinner" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 11-6.219-8.56"></path>
+      </svg>
+      Updating...
+    `
+    submitBtn.disabled = true
+
+    const formData = {
+      email: document.getElementById("email").value,
+    }
+
+    try {
+      const response = await fetch("/employer/account/update/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        showNotification("Account settings updated successfully", "success")
+        // Close modal on success
+        setTimeout(() => {
+          profileModal.style.display = "none"
+          document.body.style.overflow = ""
+        }, 1500) // Wait 1.5 seconds to show success message
+      } else {
+        showNotification(data.error || "Error updating account settings", "error")
+      }
+    } catch (error) {
+      console.error("Error:", error)
+      showNotification("An error occurred while updating account settings", "error")
+    } finally {
+      // Restore button state
+      submitBtn.innerHTML = originalText
+      submitBtn.disabled = false
+    }
+  })
+
+  // Change Password Form Handler
+  changePasswordForm?.addEventListener("submit", async (e) => {
+    e.preventDefault()
+
+    // Get the submit button and show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]')
+    const originalText = submitBtn.innerHTML
+    submitBtn.innerHTML = `
+      <svg class="spinner" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 11-6.219-8.56"></path>
+      </svg>
+      Changing Password...
+    `
+    submitBtn.disabled = true
+
+    const formData = {
+      current_password: document.getElementById("currentPassword").value,
+      new_password: document.getElementById("newPassword").value,
+      confirm_password: document.getElementById("confirmPassword").value,
+    }
+
+    // Basic validation
+    if (formData.new_password !== formData.confirm_password) {
+      showNotification("New passwords do not match", "error")
+      submitBtn.innerHTML = originalText
+      submitBtn.disabled = false
+      return
+    }
+
+    if (formData.new_password.length < 8) {
+      showNotification("New password must be at least 8 characters long", "error")
+      submitBtn.innerHTML = originalText
+      submitBtn.disabled = false
+      return
+    }
+
+    try {
+      const response = await fetch("/employer/password/change/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        showNotification("Password changed successfully", "success")
+        // Close modal on success
+        setTimeout(() => {
+          profileModal.style.display = "none"
+          document.body.style.overflow = ""
+        }, 1500) // Wait 1.5 seconds to show success message
+        // Clear password fields
+        document.getElementById("currentPassword").value = ""
+        document.getElementById("newPassword").value = ""
+        document.getElementById("confirmPassword").value = ""
+      } else {
+        showNotification(data.error || "Error changing password", "error")
+      }
+    } catch (error) {
+      console.error("Error:", error)
+      showNotification("An error occurred while changing password", "error")
+    } finally {
+      // Restore button state
+      submitBtn.innerHTML = originalText
+      submitBtn.disabled = false
     }
   })
 
   // Event Listeners
   profileSettingsLink?.addEventListener("click", (e) => {
     e.preventDefault()
-    profileModal.classList.add("active")
+    profileModal.style.display = "block"
     document.body.style.overflow = "hidden"
     loadProfileData()
   })
 
   closeProfileModal?.addEventListener("click", () => {
-    profileModal.classList.remove("active")
+    profileModal.style.display = "none"
     document.body.style.overflow = ""
   })
 

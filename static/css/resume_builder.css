@@ -444,37 +444,33 @@ body {
     letter-spacing: 1px;
 }
 
-.preview-personal-details {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-}
 
-.preview-personal-left, .preview-personal-right {
-    flex: 1;
-}
 
-.preview-personal-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-}
-
-.preview-personal-item .dotted-line {
-    border-bottom: 1px dotted #000;
-    flex: 1;
-    margin: 0 0.5rem;
-}
-
-.preview-links {
-    text-align: center;
-    margin-bottom: 1rem;
-}
-
-.preview-profile {
+.preview-objective {
     text-align: justify;
     margin-bottom: 1rem;
     line-height: 1.6;
+}
+
+.preview-certification-item {
+    margin-bottom: 1rem;
+}
+
+.preview-certification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.preview-certification-name {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.preview-certification-location {
+    text-align: right;
+    font-size: 12px;
 }
 
 .preview-experience-item {
@@ -770,4 +766,230 @@ body {
         font-size: 10px;
         padding: 1rem;
     }
+} 
+
+/* Profile Picture Section */
+.profile-picture-section {
+    margin-bottom: 2rem;
+}
+
+.profile-picture-upload {
+    text-align: center;
+}
+
+.profile-picture-preview {
+    width: 120px;
+    height: 120px;
+    border: 2px dashed var(--border-color);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    background: var(--light-bg);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.profile-picture-preview.has-image {
+    border-style: solid;
+    border-color: var(--success-color);
+}
+
+.profile-picture-preview i {
+    font-size: 3rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.profile-picture-preview span {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.profile-picture-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.profile-picture-preview:hover {
+    border-color: var(--primary-color);
+    transform: scale(1.02);
+}
+
+/* Hide the default file input */
+.profile-picture-upload input[type="file"] {
+    display: none;
+}
+
+/* Profile Picture in Preview */
+.preview-profile-picture {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.preview-profile-picture-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.preview-profile-picture i {
+    font-size: 4rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.preview-profile-picture span {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+/* Responsive Design for Profile Picture */
+@media (max-width: 768px) {
+    .profile-picture-section .row {
+        flex-direction: column;
+    }
+    
+    .profile-picture-section .col-md-4 {
+        margin-bottom: 1.5rem;
+    }
+    
+    .profile-picture-preview {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .profile-picture-preview i {
+        font-size: 2.5rem;
+    }
+    
+    .preview-profile-picture-img {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .preview-profile-picture i {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .profile-picture-preview {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .profile-picture-preview i {
+        font-size: 2rem;
+    }
+    
+    .profile-picture-preview span {
+        font-size: 0.7rem;
+    }
+} 
+
+/* New Resume Preview Layout (rp-*) */
+.resume-preview-modern {
+	font-family: 'Inter', system-ui, Arial, sans-serif;
+	color: #111;
+}
+
+.rp-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.rp-header-left { flex: 1; }
+
+.rp-name {
+	font-size: 22px;
+	font-weight: 800;
+	text-transform: uppercase;
+	margin: 0 0 4px;
+}
+
+.rp-birthdate {
+	font-size: 12px;
+	font-weight: 700;
+	text-transform: uppercase;
+	margin-bottom: 8px;
+}
+
+.rp-contact-list {
+	list-style: none;
+	padding: 0;
+	margin: 8px 0 0;
+}
+
+.rp-contact-list li {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 6px 0;
+}
+
+.rp-contact-list i { width: 16px; text-align: center; color: #333; }
+
+.rp-header-right { width: 120px; }
+
+.rp-photo {
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	border: 3px solid #cfcfcf;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	background: #fafafa;
+}
+
+.rp-photo i { font-size: 42px; color: #888; }
+.rp-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+.rp-section { margin-top: 16px; }
+.rp-section-title { font-weight: 800; text-transform: uppercase; margin: 0 0 8px; }
+.rp-paragraph { text-align: justify; }
+
+.rp-exp-row { display: grid; grid-template-columns: 160px 1fr; gap: 16px; margin: 10px 0; }
+.rp-exp-dates { color: #111; }
+.rp-exp-head { font-weight: 700; }
+.rp-company { font-weight: 700; }
+.rp-job { font-style: italic; }
+.rp-bullets { padding-left: 18px; margin: 6px 0; }
+.rp-bullets li { margin-bottom: 4px; }
+.rp-exp-intro { font-style: italic; margin: 6px 0; }
+.rp-exp-location { margin-top: 4px; }
+
+.rp-cert-line { margin: 6px 0; }
+.rp-cert-name { font-weight: 700; }
+
+.rp-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 8px; }
+.rp-edu-list { padding-left: 18px; }
+.rp-edu-list li { margin-bottom: 4px; }
+.rp-edu-dates { font-size: 11px; color: #333; }
+
+@media (max-width: 992px) {
+	.rp-header { flex-direction: column; }
+	.rp-header-right { width: 140px; align-self: flex-end; }
+	.rp-exp-row { grid-template-columns: 140px 1fr; }
+}
+
+@media (max-width: 768px) {
+	.rp-two-col { grid-template-columns: 1fr; }
+	.rp-exp-row { grid-template-columns: 1fr; }
 } 

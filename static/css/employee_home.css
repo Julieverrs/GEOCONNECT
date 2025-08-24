@@ -2336,6 +2336,7 @@ body.modal-open {
   .about-main-content {
     gap: 1.5rem;
   }
+
 }
 
 @media (max-width: 992px) {
@@ -2711,6 +2712,7 @@ body.modal-open {
   .enhanced-profile-btn {
     padding: 0.5rem;
   }
+
 }
 
 /* Responsive adjustments for the enhanced filter */
@@ -2747,4 +2749,6 @@ body.modal-open {
   .jobs-filter .row > div:last-child {
     margin-bottom: 0;
   }
+}
+
 }

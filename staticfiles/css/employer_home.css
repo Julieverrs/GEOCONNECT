@@ -4400,7 +4400,10 @@ body {
 
 #createJobModal .modal-content {
   z-index: 10002 !important;
-  position: relative;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
 }
 
 /* Profile modal z-index */
@@ -5358,8 +5361,14 @@ body {
   .modal-content {
     width: 95%;
     max-width: none;
-    margin: 0 auto;
     max-height: 85vh;
+  }
+  
+  #createJobModal .modal-content {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
   }
 
   .modal-header {
@@ -6058,9 +6067,15 @@ body {
   .modal-content {
     width: 95%;
     max-width: none;
-    margin: 0 auto;
     max-height: 90vh;
     border-radius: 12px;
+  }
+  
+  #createJobModal .modal-content {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
   }
   
   .modal-header {
@@ -6107,6 +6122,13 @@ body {
     width: 98%;
     max-height: 95vh;
     border-radius: 8px;
+  }
+  
+  #createJobModal .modal-content {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
   }
   
   .modal-header {

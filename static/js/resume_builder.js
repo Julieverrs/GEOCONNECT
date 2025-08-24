@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     addExperience();
     addEducation();
     addSkill();
+    addCertification();
 });
 
 function initializeResumeBuilder() {
@@ -23,6 +24,32 @@ function addFormEventListeners() {
         input.addEventListener('input', updatePreview);
         input.addEventListener('change', updatePreview);
     });
+}
+
+// Profile Picture Functions
+function previewProfilePicture(input) {
+    const preview = document.getElementById('profilePicturePreview');
+    const file = input.files[0];
+    
+    if (file) {
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" alt="Profile Picture" class="profile-picture-img">`;
+                preview.classList.add('has-image');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            alert('Please select a valid image file.');
+            input.value = '';
+        }
+    } else {
+        preview.innerHTML = '<i class="fas fa-user-circle"></i><span>No image selected</span>';
+        preview.classList.remove('has-image');
+    }
+    
+    // Update preview after image change
+    updatePreview();
 }
 
 // Experience Section Functions
@@ -175,6 +202,40 @@ function addSkill() {
     });
 }
 
+// Certification Section Functions
+function addCertification() {
+    const container = document.getElementById('certificationContainer');
+    const certificationId = 'certification_' + Date.now();
+    
+    const certificationHTML = `
+        <div class="dynamic-entry" id="${certificationId}">
+            <div class="entry-header">
+                <h5 class="entry-title">Certification</h5>
+                <button type="button" class="remove-entry-btn" onclick="removeEntry('${certificationId}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="form-group">
+                <label for="certificationName_${certificationId}">Certification Name</label>
+                <input type="text" id="certificationName_${certificationId}" name="certification_name[]" class="form-control" placeholder="e.g., TESDA PROGRAMMING (JAVA) NC III">
+            </div>
+            <div class="form-group">
+                <label for="certificationLocation_${certificationId}">Location/Institution</label>
+                <input type="text" id="certificationLocation_${certificationId}" name="certification_location[]" class="form-control" placeholder="e.g., JB Serrano Bldg., Elbo St., San Vicente Central, Calapan City">
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', certificationHTML);
+    
+    // Add event listeners to new inputs
+    const newInputs = document.getElementById(certificationId).querySelectorAll('input');
+    newInputs.forEach(input => {
+        input.addEventListener('input', updatePreview);
+        input.addEventListener('change', updatePreview);
+    });
+}
+
 // Remove Entry Function
 function removeEntry(entryId) {
     const entry = document.getElementById(entryId);
@@ -214,14 +275,23 @@ function getFormData() {
     
     // Get basic information
     data.fullName = formData.get('full_name') || '';
-    data.jobTitle = formData.get('job_title') || '';
+    data.birthDate = formData.get('birth_date') || '';
     data.email = formData.get('email') || '';
     data.phone = formData.get('phone') || '';
     data.address = formData.get('address') || '';
-    data.placeOfBirth = formData.get('place_of_birth') || '';
-    data.nationality = formData.get('nationality') || '';
-    data.links = formData.get('links') || '';
-    data.summary = formData.get('summary') || '';
+    data.linkedin = formData.get('linkedin') || '';
+    data.objective = formData.get('objective') || '';
+    
+    // Get profile picture data (synchronous for now)
+    data.profilePicture = null;
+    const profilePictureInput = document.getElementById('profilePicture');
+    if (profilePictureInput && profilePictureInput.files && profilePictureInput.files.length > 0) {
+        const file = profilePictureInput.files[0];
+        if (file.type.startsWith('image/')) {
+            // Store the file for later use
+            data.profilePictureFile = file;
+        }
+    }
     
     // Get experience data
     data.experiences = [];
@@ -243,6 +313,20 @@ function getFormData() {
                 location: locations[i] || '',
                 intro: intros[i] || '',
                 responsibilities: responsibilities[i] || ''
+            });
+        }
+    }
+    
+    // Get certification data
+    data.certifications = [];
+    const certificationNames = formData.getAll('certification_name[]');
+    const certificationLocations = formData.getAll('certification_location[]');
+    
+    for (let i = 0; i < certificationNames.length; i++) {
+        if (certificationNames[i]) {
+            data.certifications.push({
+                name: certificationNames[i],
+                location: certificationLocations[i] || ''
             });
         }
     }
@@ -280,178 +364,155 @@ function getFormData() {
 
 // Generate Resume Preview Function
 function generateResumePreview(data) {
-    let html = '<div class="resume-preview">';
-    
-    // Header Section
-    html += `<div class="preview-name">${data.fullName.toUpperCase()}</div>`;
-    if (data.jobTitle) {
-        html += `<div class="preview-job-title">${data.jobTitle}</div>`;
+    let html = '<div class="resume-preview resume-preview-modern">';
+
+    // Header: Left (name + contacts), Right (photo)
+    html += '<div class="rp-header">';
+
+    // Left side
+    html += '<div class="rp-header-left">';
+    html += `<div class="rp-name">${data.fullName.toUpperCase()}</div>`;
+    if (data.birthDate) {
+        html += `<div class="rp-birthdate">${data.birthDate}</div>`;
     }
-    
-    // Contact Information
-    if (data.address || data.email) {
-        html += '<div class="preview-contact">';
-        if (data.address) html += `<div>${data.address}</div>`;
-        if (data.email) html += `<div>${data.email}</div>`;
+
+    // Contacts list with icons
+    const contacts = [];
+    if (data.phone) contacts.push(`<li><i class="fas fa-phone"></i><span>${data.phone}</span></li>`);
+    if (data.email) contacts.push(`<li><i class="fas fa-envelope"></i><span>${data.email}</span></li>`);
+    if (data.address) contacts.push(`<li><i class="fas fa-map-marker-alt"></i><span>${data.address}</span></li>`);
+    if (data.linkedin) contacts.push(`<li><i class="fab fa-linkedin-in"></i><span>${data.linkedin}</span></li>`);
+    if (contacts.length) {
+        html += '<ul class="rp-contact-list">' + contacts.join('') + '</ul>';
+    }
+    html += '</div>';
+
+    // Right side (photo)
+    html += '<div class="rp-header-right">';
+    if (data.profilePictureFile) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewContainer = document.getElementById('resumePreview');
+            const imgHolder = previewContainer.querySelector('.rp-photo');
+            if (imgHolder) {
+                imgHolder.innerHTML = `<img src="${e.target.result}" alt="Profile Picture">`;
+                imgHolder.classList.add('has-image');
+            }
+        };
+        reader.readAsDataURL(data.profilePictureFile);
+        html += '<div class="rp-photo"><i class="fas fa-spinner fa-spin"></i></div>';
+    } else {
+        html += '<div class="rp-photo"><i class="fas fa-user"></i></div>';
+    }
+    html += '</div>';
+
+    html += '</div>'; // end header
+
+    // Objective
+    if (data.objective) {
+        html += '<div class="rp-section">';
+        html += '<div class="rp-section-title">OBJECTIVE</div>';
+        html += `<div class="rp-paragraph">${data.objective}</div>`;
         html += '</div>';
     }
-    
-    // Double line divider
-    html += '<div class="preview-divider"></div>';
-    
-    // Personal Details Section
-    if (data.placeOfBirth || data.nationality) {
-        html += '<div class="preview-section">';
-        html += '<div class="preview-personal-details">';
-        
-        // Left column
-        html += '<div class="preview-personal-left">';
-        if (data.placeOfBirth) {
-            html += '<div class="preview-personal-item">';
-            html += '<span>Place of birth</span>';
-            html += '<span class="dotted-line"></span>';
-            html += `<span>${data.placeOfBirth}</span>`;
-            html += '</div>';
-        }
-        html += '</div>';
-        
-        // Right column
-        html += '<div class="preview-personal-right">';
-        if (data.nationality) {
-            html += '<div class="preview-personal-item">';
-            html += '<span>Nationality</span>';
-            html += '<span class="dotted-line"></span>';
-            html += `<span>${data.nationality}</span>`;
-            html += '</div>';
-        }
-        html += '</div>';
-        
-        html += '</div>';
-        html += '</div>';
-    }
-    
-    // Single line divider
-    html += '<div class="preview-divider-single"></div>';
-    
-    // Links Section
-    if (data.links) {
-        html += '<div class="preview-section">';
-        html += '<div class="preview-section-title">LINKS</div>';
-        html += `<div class="preview-links">${data.links}</div>`;
-        html += '</div>';
-        html += '<div class="preview-divider-single"></div>';
-    }
-    
-    // Profile Section
-    if (data.summary) {
-        html += '<div class="preview-section">';
-        html += '<div class="preview-section-title">PROFILE</div>';
-        html += `<div class="preview-profile">${data.summary}</div>`;
-        html += '</div>';
-        html += '<div class="preview-divider"></div>';
-    }
-    
-    // Experience Section
+
+    // Experience
     if (data.experiences.length > 0) {
-        html += '<div class="preview-section">';
-        html += '<div class="preview-section-title">EXPERIENCE</div>';
-        
+        html += '<div class="rp-section">';
+        html += '<div class="rp-section-title">EXPERIENCE</div>';
         data.experiences.forEach(exp => {
-            html += '<div class="preview-experience-item">';
-            html += '<div class="preview-experience-header">';
-            html += '<div>';
-            html += `<div class="preview-experience-title">♦ ${exp.jobTitle}</div>`;
-            if (exp.company) {
-                html += `<div class="preview-experience-company">, ${exp.company}</div>`;
+            const dateRange = exp.startDate && exp.endDate ? `${exp.startDate} – ${exp.endDate}` : (exp.startDate || exp.endDate || '');
+            html += '<div class="rp-exp-row">';
+            html += `<div class="rp-exp-dates">${dateRange}</div>`;
+            html += '<div class="rp-exp-content">';
+            const companyJob = [
+                exp.company ? `<span class="rp-company">${exp.company}</span>` : '',
+                exp.jobTitle ? `<span class="rp-sep"> – </span><em class="rp-job">${exp.jobTitle}</em>` : ''
+            ].join('');
+            if (companyJob) {
+                html += `<div class="rp-exp-head">${companyJob}</div>`;
             }
-            html += '</div>';
-            html += '<div>';
-            if (exp.startDate || exp.endDate) {
-                const dateRange = exp.startDate && exp.endDate ? `${exp.startDate} – ${exp.endDate}` : (exp.startDate || exp.endDate);
-                html += `<div class="preview-experience-dates">${dateRange}</div>`;
-            }
-            if (exp.location) {
-                html += `<div class="preview-experience-location">${exp.location}</div>`;
-            }
-            html += '</div>';
-            html += '</div>';
-            
             if (exp.intro) {
-                html += `<div class="preview-experience-intro">${exp.intro}</div>`;
+                html += `<div class="rp-exp-intro">${exp.intro}</div>`;
             }
-            
             if (exp.responsibilities) {
                 const responsibilities = exp.responsibilities.split('\n').filter(item => item.trim());
                 if (responsibilities.length > 0) {
-                    html += '<ul class="preview-experience-bullets">';
-                    responsibilities.forEach(resp => {
-                        if (resp.trim()) {
-                            html += `<li>${resp.trim()}</li>`;
-                        }
+                    html += '<ul class="rp-bullets">';
+                    responsibilities.forEach(item => {
+                        html += `<li>${item.trim()}</li>`;
                     });
                     html += '</ul>';
                 }
             }
-            
-            html += '</div>';
+            if (exp.location) {
+                html += `<div class="rp-exp-location">${exp.location}</div>`;
+            }
+            html += '</div>'; // exp-content
+            html += '</div>'; // exp-row
         });
-        
         html += '</div>';
     }
-    
-    // Education Section
+
+    // Certification
+    if (data.certifications.length > 0) {
+        html += '<div class="rp-section">';
+        html += '<div class="rp-section-title">CERTIFICATION</div>';
+        data.certifications.forEach(cert => {
+            html += '<div class="rp-cert-line">';
+            html += `<span class="rp-cert-name">${cert.name}</span>`;
+            if (cert.location) html += `<span class="rp-cert-loc"> — ${cert.location}</span>`;
+            html += '</div>';
+        });
+        html += '</div>';
+    }
+
+    // Two-column bottom: Education and Additional Skills
+    html += '<div class="rp-two-col">';
+
+    // Left: Education
+    html += '<div class="rp-col">';
+    html += '<div class="rp-section-title">EDUCATION</div>';
     if (data.educations.length > 0) {
-        html += '<div class="preview-section">';
-        html += '<div class="preview-section-title">EDUCATION</div>';
-        
+        html += '<ul class="rp-edu-list">';
         data.educations.forEach(edu => {
-            html += '<div class="preview-education-item">';
-            html += '<div class="preview-education-header">';
-            html += '<div>';
-            html += `<div class="preview-education-degree">♦ ${edu.degree}</div>`;
-            if (edu.school) {
-                html += `<div class="preview-education-school">, ${edu.school}</div>`;
-            }
-            html += '</div>';
-            html += '<div>';
-            if (edu.startDate || edu.endDate) {
-                const dateRange = edu.startDate && edu.endDate ? `${edu.startDate} – ${edu.endDate}` : (edu.startDate || edu.endDate);
-                html += `<div class="preview-education-dates">${dateRange}</div>`;
-            }
-            html += '</div>';
-            html += '</div>';
-            html += '</div>';
+            const dateRange = edu.startDate && edu.endDate ? `${edu.startDate} – ${edu.endDate}` : (edu.startDate || edu.endDate || '');
+            let line = '';
+            if (edu.school) line += `<strong>${edu.school}</strong>`;
+            if (edu.degree) line += (line ? ' — ' : '') + `${edu.degree}`;
+            if (dateRange) line += `<div class="rp-edu-dates">${dateRange}</div>`;
+            html += `<li>${line}</li>`;
         });
-        
-        html += '</div>';
+        html += '</ul>';
     }
-    
-    // Skills Section
+    html += '</div>';
+
+    // Right: Additional Skills
+    html += '<div class="rp-col">';
+    html += '<div class="rp-section-title">ADDITIONAL SKILLS</div>';
     if (data.skills.length > 0) {
-        html += '<div class="preview-section">';
-        html += '<div class="preview-section-title">SKILLS</div>';
-        html += '<div class="preview-skills">';
+        html += '<ul class="rp-bullets">';
         data.skills.forEach(skill => {
-            html += `<span class="preview-skill">${skill}</span>`;
+            if (skill && skill.trim()) html += `<li>${skill}</li>`;
         });
-        html += '</div>';
-        html += '</div>';
+        html += '</ul>';
     }
-    
+    html += '</div>';
+
+    html += '</div>'; // end two-col
+
     html += '</div>';
     return html;
 }
 
 // Generate PDF Function
 function generatePDF() {
-    // Get the resume preview content
     const previewContent = document.querySelector('.resume-preview');
     if (!previewContent) {
         alert('Please fill out the form first to generate a PDF');
         return;
     }
-    
-    // Create a new window for PDF generation
+
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
         <!DOCTYPE html>
@@ -459,177 +520,47 @@ function generatePDF() {
         <head>
             <title>Resume - ${document.getElementById('fullName').value || 'Professional Resume'}</title>
             <style>
-                body {
-                    font-family: 'Times New Roman', serif;
-                    margin: 0;
-                    padding: 2rem;
-                    font-size: 12px;
-                    line-height: 1.4;
-                    color: #000;
-                }
-                .resume-preview {
-                    font-family: 'Times New Roman', serif;
-                    padding: 0;
-                    background: white;
-                    color: #000;
-                    line-height: 1.4;
-                    font-size: 12px;
-                }
-                .preview-name {
-                    text-align: center;
-                    font-size: 24px;
-                    font-weight: bold;
-                    text-transform: uppercase;
-                    margin-bottom: 0.5rem;
-                    letter-spacing: 1px;
-                }
-                .preview-job-title {
-                    text-align: center;
-                    font-size: 16px;
-                    margin-bottom: 0.5rem;
-                }
-                .preview-contact {
-                    text-align: center;
-                    font-size: 12px;
-                    margin-bottom: 1rem;
-                }
-                .preview-contact div {
-                    margin-bottom: 0.25rem;
-                }
-                .preview-divider {
-                    border-top: 3px double #000;
-                    margin: 1rem 0;
-                }
-                .preview-divider-single {
-                    border-top: 1px solid #000;
-                    margin: 1rem 0;
-                }
-                .preview-section {
-                    margin-bottom: 1.5rem;
-                }
-                .preview-section-title {
-                    text-align: center;
-                    font-size: 14px;
-                    font-weight: bold;
-                    text-transform: uppercase;
-                    text-decoration: underline;
-                    margin-bottom: 1rem;
-                    letter-spacing: 1px;
-                }
-                .preview-personal-details {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 1rem;
-                }
-                .preview-personal-left, .preview-personal-right {
-                    flex: 1;
-                }
-                .preview-personal-item {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 0.5rem;
-                }
-                .preview-personal-item .dotted-line {
-                    border-bottom: 1px dotted #000;
-                    flex: 1;
-                    margin: 0 0.5rem;
-                }
-                .preview-links {
-                    text-align: center;
-                    margin-bottom: 1rem;
-                }
-                .preview-profile {
-                    text-align: justify;
-                    margin-bottom: 1rem;
-                    line-height: 1.6;
-                }
-                .preview-experience-item {
-                    margin-bottom: 1.5rem;
-                }
-                .preview-experience-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    margin-bottom: 0.5rem;
-                }
-                .preview-experience-title {
-                    font-weight: bold;
-                    font-size: 13px;
-                }
-                .preview-experience-company {
-                    font-weight: bold;
-                    font-size: 13px;
-                }
-                .preview-experience-dates {
-                    text-align: right;
-                    font-size: 12px;
-                }
-                .preview-experience-location {
-                    text-align: right;
-                    font-size: 12px;
-                    margin-top: 0.25rem;
-                }
-                .preview-experience-intro {
-                    font-style: italic;
-                    margin-bottom: 0.5rem;
-                    font-size: 12px;
-                }
-                .preview-experience-bullets {
-                    margin-left: 1rem;
-                }
-                .preview-experience-bullets li {
-                    margin-bottom: 0.25rem;
-                    font-size: 11px;
-                }
-                .preview-education-item {
-                    margin-bottom: 1rem;
-                }
-                .preview-education-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    margin-bottom: 0.5rem;
-                }
-                .preview-education-degree {
-                    font-weight: bold;
-                    font-size: 13px;
-                }
-                .preview-education-school {
-                    font-weight: bold;
-                    font-size: 13px;
-                }
-                .preview-education-dates {
-                    text-align: right;
-                    font-size: 12px;
-                }
-                .preview-skills {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 0.5rem;
-                }
-                .preview-skill {
-                    background: #f0f0f0;
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 4px;
-                    font-size: 11px;
-                    border: 1px solid #ddd;
-                }
-                @media print {
-                    body {
-                        margin: 0;
-                        padding: 1rem;
-                    }
-                }
+                body { font-family: 'Arial', sans-serif; margin: 0; padding: 24px; color: #000; font-size: 12px; }
+                .resume-preview-modern { font-family: 'Arial', sans-serif; }
+                .rp-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+                .rp-header-left { flex: 1; }
+                .rp-name { font-size: 22px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px; }
+                .rp-birthdate { font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+                .rp-contact-list { list-style: none; padding: 0; margin: 8px 0 0; }
+                .rp-contact-list li { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+                .rp-contact-list i { width: 16px; text-align: center; }
+                .rp-header-right { width: 120px; }
+                .rp-photo { width: 100%; aspect-ratio: 1 / 1; border: 3px solid #ccc; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+                .rp-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+                .rp-section { margin-top: 16px; }
+                .rp-section-title { font-weight: 800; text-transform: uppercase; margin: 0 0 8px; }
+                .rp-paragraph { text-align: justify; }
+
+                .rp-exp-row { display: grid; grid-template-columns: 160px 1fr; gap: 16px; margin: 10px 0; }
+                .rp-exp-dates { color: #000; }
+                .rp-exp-head { font-weight: 700; }
+                .rp-company { font-weight: 700; }
+                .rp-job { font-style: italic; }
+                .rp-bullets { padding-left: 18px; margin: 6px 0; }
+                .rp-bullets li { margin-bottom: 4px; }
+                .rp-exp-intro { font-style: italic; margin: 6px 0; }
+                .rp-exp-location { margin-top: 4px; }
+
+                .rp-cert-line { margin: 6px 0; }
+                .rp-cert-name { font-weight: 700; }
+
+                .rp-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 8px; }
+                .rp-edu-list { padding-left: 18px; }
+                .rp-edu-list li { margin-bottom: 4px; }
+                .rp-edu-dates { font-size: 11px; }
+
+                @media print { body { padding: 16px; } }
             </style>
         </head>
         <body>
             ${previewContent.outerHTML}
-            <script>
-                window.onload = function() {
-                    window.print();
-                    window.close();
-                };
-            </script>
+            <script>window.onload = function() { window.print(); window.close(); };</script>
         </body>
         </html>
     `);

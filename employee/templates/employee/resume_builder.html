@@ -45,64 +45,83 @@
                                     <p class="section-description">Basic information about yourself</p>
                                 </div>
                                 
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="fullName">Full Name *</label>
-                                            <input type="text" id="fullName" name="full_name" class="form-control" required>
+                                <!-- Profile Picture Section -->
+                                <div class="profile-picture-section">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="profilePicture">Profile Picture</label>
+                                                <div class="profile-picture-upload">
+                                                    <div class="profile-picture-preview" id="profilePicturePreview">
+                                                        <i class="fas fa-user-circle"></i>
+                                                        <span>No image selected</span>
+                                                    </div>
+                                                    <input type="file" id="profilePicture" name="profile_picture" class="form-control-file" accept="image/*" onchange="previewProfilePicture(this)">
+                                                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="document.getElementById('profilePicture').click()">
+                                                        <i class="fas fa-upload"></i>
+                                                        Choose Image
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="fullName">Full Name *</label>
+                                                        <input type="text" id="fullName" name="full_name" class="form-control" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="birthDate">Birth Date</label>
+                                                        <input type="date" id="birthDate" name="birth_date" class="form-control">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="email">Email *</label>
+                                                        <input type="email" id="email" name="email" class="form-control" value="{{ employee.email }}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="phone">Phone Number</label>
+                                                        <input type="tel" id="phone" name="phone" class="form-control" value="{{ employee.phone }}">
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="jobTitle">Job Title</label>
-                                            <input type="text" id="jobTitle" name="job_title" class="form-control" placeholder="e.g., English Teacher">
-                                        </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="address">Address</label>
+                                        <input type="text" id="address" name="address" class="form-control" placeholder="e.g., Salong, Bonbon, Calapan City Oriental Mindoro">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="linkedin">LinkedIn Profile</label>
+                                        <input type="url" id="linkedin" name="linkedin" class="form-control" placeholder="e.g., www.linkedin.com/in/yourprofile">
                                     </div>
                                 </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="email">Email *</label>
-                                            <input type="email" id="email" name="email" class="form-control" value="{{ employee.email }}" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="phone">Phone Number</label>
-                                            <input type="tel" id="phone" name="phone" class="form-control" value="{{ employee.phone }}">
-                                        </div>
-                                    </div>
+                            </div>
+
+                            <!-- Objective Section -->
+                            <div class="form-section" id="objectiveSection">
+                                <div class="section-header">
+                                    <h3 class="section-title">
+                                        <i class="fas fa-bullseye"></i>
+                                        Objective
+                                    </h3>
+                                    <p class="section-description">Your career goals and professional summary</p>
                                 </div>
                                 
                                 <div class="form-group">
-                                    <label for="address">Address</label>
-                                    <input type="text" id="address" name="address" class="form-control" placeholder="e.g., 1515 Pacific Ave, Los Angeles, CA 90291, United States">
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="placeOfBirth">Place of Birth</label>
-                                            <input type="text" id="placeOfBirth" name="place_of_birth" class="form-control" placeholder="e.g., San Antonio">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="nationality">Nationality</label>
-                                            <input type="text" id="nationality" name="nationality" class="form-control" placeholder="e.g., American">
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="links">Links</label>
-                                    <input type="text" id="links" name="links" class="form-control" placeholder="e.g., Facebook, LinkedIn">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="summary">Professional Summary</label>
-                                    <textarea id="summary" name="summary" class="form-control" rows="4" placeholder="Write a brief professional summary about yourself, your career goals, and what you bring to the table..."></textarea>
+                                    <label for="objective">Professional Objective</label>
+                                    <textarea id="objective" name="objective" class="form-control" rows="4" placeholder="Write your professional objective and career goals..."></textarea>
                                 </div>
                             </div>
 
@@ -122,6 +141,25 @@
                                 
                                 <div id="experienceContainer">
                                     <!-- Experience entries will be added here -->
+                                </div>
+                            </div>
+
+                            <!-- Certification Section -->
+                            <div class="form-section" id="certificationSection">
+                                <div class="section-header">
+                                    <h3 class="section-title">
+                                        <i class="fas fa-certificate"></i>
+                                        Certification
+                                    </h3>
+                                    <p class="section-description">Your professional certifications and training</p>
+                                    <button type="button" class="btn btn-sm btn-primary add-certification-btn" onclick="addCertification()">
+                                        <i class="fas fa-plus"></i>
+                                        Add Certification
+                                    </button>
+                                </div>
+                                
+                                <div id="certificationContainer">
+                                    <!-- Certification entries will be added here -->
                                 </div>
                             </div>
 
