@@ -597,26 +597,40 @@ def debug_job_applications(request):
 # Update the create_job view to handle work_setup
 @ensure_csrf_cookie
 def create_job(request):
+    # Check if user is logged in
     if not request.session.get('employer_username'):
-        return JsonResponse({'error': 'Not authenticated'}, status=403)
+        messages.error(request, "Please login to access this page.")
+        return redirect('employer_login')
     
-    if request.method == 'POST':
+    # Get the employer object
+    try:
+        employer = Employer.objects.get(username=request.session['employer_username'])
+    except Employer.DoesNotExist:
+        messages.error(request, "User not found.")
+        return redirect('employer_login')
+    
+    if request.method == 'GET':
+        # Render the create job page
+        return render(request, 'employer/create_job.html', {
+            'employer': employer
+        })
+    
+    elif request.method == 'POST':
         try:
-            employer = Employer.objects.get(username=request.session['employer_username'])
-            data = json.loads(request.body)
-            
+            # Handle form submission - match Supabase schema exactly
             job = Job.objects.create(
                 employer=employer,
-                title=data['jobTitle'],
-                location=data['location'],
-                latitude=data.get('latitude'),
-                longitude=data.get('longitude'),
-                job_type=data['jobType'],
-                work_setup=data['workSetup'],
-                description=data['description'],
-                salary_range=data['salary'],
-                experience_level=data['experience'],
-                requirements=data['requirements']
+                title=request.POST.get('title'),
+                location=request.POST.get('location'),
+                latitude=request.POST.get('latitude') or None,
+                longitude=request.POST.get('longitude') or None,
+                job_type=request.POST.get('job_type'),
+                work_setup=request.POST.get('work_setup'),
+                description=request.POST.get('description'),
+                salary_range=request.POST.get('salary_range', ''),
+                experience_level=request.POST.get('experience_level'),
+                status='active',
+                requirements=request.POST.get('requirements', '')
             )
 
             # Send notification to all active and approved employees
@@ -628,8 +642,10 @@ def create_job(request):
             ]
             Notification.objects.bulk_create(notifications)
             
+            # Always return JSON response for AJAX requests
             return JsonResponse({
                 'success': True,
+                'message': 'Job created successfully!',
                 'job': {
                     'id': job.id,
                     'title': job.title,
@@ -639,15 +655,20 @@ def create_job(request):
                     'job_type': job.get_job_type_display(),
                     'work_setup': job.get_work_setup_display(),
                     'description': job.description,
-                    'salary_range': job.salary_range,
-                    'experience_level': job.get_experience_level_display(),
-                    'requirements': job.requirements,
                     'status': 'Active',
                     'applications_count': 0
                 }
             })
+                
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            error_message = str(e)
+            print(f"Error creating job: {error_message}")
+            
+            # Always return JSON response for AJAX requests
+            return JsonResponse({
+                'success': False,
+                'message': error_message
+            }, status=400)
     
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 

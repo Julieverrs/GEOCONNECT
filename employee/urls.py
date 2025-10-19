@@ -41,6 +41,9 @@ urlpatterns += [
     path('submit-feedback/', views.submit_feedback, name='submit_feedback'),
     path('get-reviews/<int:job_id>/', views.get_reviews, name='get_reviews'),
     path('get-job-feedback-stats/<int:job_id>/', views.get_job_feedback_stats, name='get_job_feedback_stats'),
+    # Employer Review System URLs
+    path('submit-employer-review/', views.submit_employer_review, name='submit_employer_review'),
+    path('get-employer-reviews/<int:job_id>/', views.get_employer_reviews, name='get_employer_reviews'),
     # Messaging System URLs
     path('messages/', views.messages_list, name='messages_list'),
     path('messages/<int:conversation_id>/', views.conversation_detail, name='conversation_detail'),

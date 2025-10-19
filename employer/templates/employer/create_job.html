@@ -1,0 +1,1055 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/employer_home.css' %}">
+<!-- Leaflet CSS for interactive maps -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+<style>
+/* Ensure proper scrolling */
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Create Job Page Specific Styles - Full Screen */
+.create-job-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    position: relative;
+    overflow-y: auto;
+}
+
+.create-job-container {
+    max-width: 100%;
+    margin: 0;
+    padding: 20px;
+    width: 100%;
+}
+
+.create-job-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.create-job-title {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.create-job-subtitle {
+    color: rgba(255,255,255,0.9);
+    font-size: 1.1rem;
+    font-weight: 400;
+}
+
+.create-job-form-container {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-section {
+    margin-bottom: 40px;
+}
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title svg {
+    width: 24px;
+    height: 24px;
+    color: #667eea;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #4a5568;
+    font-size: 0.95rem;
+}
+
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Location Section Styles */
+.location-section {
+    background: #f8fafc;
+    border-radius: 15px;
+    padding: 30px;
+    border: 2px solid #e2e8f0;
+}
+
+.location-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.location-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+}
+
+.location-btn.search {
+    background: #667eea;
+    color: white;
+}
+
+.location-btn.search:hover {
+    background: #5a67d8;
+    transform: translateY(-2px);
+}
+
+.location-btn.current {
+    background: #48bb78;
+    color: white;
+}
+
+.location-btn.current:hover {
+    background: #38a169;
+    transform: translateY(-2px);
+}
+
+.map-container {
+    width: 100%;
+    height: 500px;
+    border-radius: 15px;
+    overflow: hidden;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    background: #f5f5f5;
+    position: relative;
+}
+
+#jobLocationMap {
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+}
+
+.leaflet-container {
+    background: #f5f5f5 !important;
+    border-radius: 15px;
+}
+
+.leaflet-tile {
+    border: none !important;
+}
+
+.leaflet-tile-pane {
+    z-index: 1;
+}
+
+.leaflet-control-container {
+    z-index: 2;
+}
+
+.selected-location {
+    margin-top: 20px;
+    padding: 15px;
+    background: #e6fffa;
+    border: 2px solid #38b2ac;
+    border-radius: 10px;
+}
+
+.selected-location-title {
+    font-weight: 600;
+    color: #234e52;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.selected-location-address {
+    color: #2d3748;
+    font-size: 0.95rem;
+}
+
+/* Submit Button */
+.submit-section {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 2px solid #e2e8f0;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .create-job-page {
+        padding: 0;
+    }
+    
+    .create-job-container {
+        padding: 10px;
+    }
+    
+    .create-job-title {
+        font-size: 2rem;
+    }
+    
+    .create-job-form-container {
+        padding: 20px;
+        border-radius: 15px;
+        min-height: auto;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .location-controls {
+        flex-direction: column;
+    }
+    
+    .location-btn {
+        justify-content: center;
+    }
+    
+    .map-container {
+        height: 400px;
+    }
+}
+
+/* Full Screen Enhancements */
+@media (min-width: 1200px) {
+    .create-job-form-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .map-container {
+        height: 600px;
+    }
+    
+    .form-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #667eea;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Notification Styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    z-index: 10000;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    background: #48bb78;
+}
+
+.notification.error {
+    background: #f56565;
+}
+
+.notification.info {
+    background: #4299e1;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="create-job-page">
+    <div class="create-job-container">
+        <!-- Header -->
+        <div class="create-job-header">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                <a href="{% url 'employer_home' %}" style="display: flex; align-items: center; gap: 10px; color: white; text-decoration: none; font-weight: 600; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Dashboard
+                </a>
+                <div></div>
+            </div>
+            <h1 class="create-job-title">Create New Job Posting</h1>
+            <p class="create-job-subtitle">Fill out the details below to create your job posting</p>
+        </div>
+
+        <!-- Main Form Container -->
+        <div class="create-job-form-container">
+            <form method="post" class="enhanced-job-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Job Type and Work Setup Section -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6"/>
+                        </svg>
+                        Job Type & Work Setup
+                    </h2>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="job_type">Job Type *</label>
+                            <select class="form-select" id="job_type" name="job_type" required>
+                                <option value="">Select Job Type</option>
+                                <option value="full-time">Full-time</option>
+                                <option value="part-time">Part-time</option>
+                                <option value="contract">Contract</option>
+                                <option value="internship">Internship</option>
+                                <option value="freelance">Freelance</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="work_setup">Work Setup *</label>
+                            <select class="form-select" id="work_setup" name="work_setup" required>
+                                <option value="">Select Work Setup</option>
+                                <option value="remote">Remote</option>
+                                <option value="on-site">On-site</option>
+                                <option value="hybrid">Hybrid</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Location Section -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Job Location
+                    </h2>
+                    
+                    <div class="location-section">
+                        <div class="form-group">
+                            <label class="form-label" for="location">Location Address</label>
+                            <input type="text" class="form-input" id="location" name="location" placeholder="Enter job location address">
+                        </div>
+                        
+                        <div class="location-controls">
+                            <button type="button" class="location-btn search" onclick="searchJobLocation()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                                Search Location
+                            </button>
+                            <button type="button" class="location-btn current" onclick="useCurrentLocation()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+                                </svg>
+                                Use My Location
+                            </button>
+                        </div>
+                        
+                        <!-- Interactive Map -->
+                        <div class="map-container">
+                            <div id="jobLocationMap"></div>
+                        </div>
+                        
+                        <!-- Selected Location Display -->
+                        <div class="selected-location" id="selectedLocation" style="display: none;">
+                            <div class="selected-location-title">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Selected Location
+                            </div>
+                            <div class="selected-location-address" id="selectedLocationAddress"></div>
+                        </div>
+                        
+                        <!-- Hidden fields for coordinates -->
+                        <input type="hidden" id="jobLatitude" name="latitude">
+                        <input type="hidden" id="jobLongitude" name="longitude">
+                    </div>
+                </div>
+
+                <!-- Job Content Section -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Job Content
+                    </h2>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="title">Job Title *</label>
+                            <input type="text" class="form-input" id="title" name="title" placeholder="e.g., Software Developer" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="experience_level">Experience Level *</label>
+                            <select class="form-select" id="experience_level" name="experience_level" required>
+                                <option value="">Select Experience Level</option>
+                                <option value="Entry Level">Entry Level</option>
+                                <option value="Junior">Junior</option>
+                                <option value="Mid Level">Mid Level</option>
+                                <option value="Senior">Senior</option>
+                                <option value="Lead">Lead</option>
+                                <option value="Expert">Expert</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="description">Job Description *</label>
+                        <textarea class="form-textarea" id="description" name="description" placeholder="Describe the role, responsibilities, and requirements..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="requirements">Requirements</label>
+                        <textarea class="form-textarea" id="requirements" name="requirements" placeholder="List the skills and qualifications required..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Compensation Section -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                        </svg>
+                        Compensation
+                    </h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="salary_range">Salary Range</label>
+                        <input type="text" class="form-input" id="salary_range" name="salary_range" placeholder="e.g., ₱25,000 - ₱35,000 or Negotiable">
+                    </div>
+                </div>
+
+                <!-- Submit Section -->
+                <div class="submit-section">
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Create Job Posting
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Container -->
+<div id="notification" class="notification"></div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS for interactive maps -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+
+<script>
+// Global variables
+let jobLocationMap = null;
+let jobLocationMarker = null;
+
+// Initialize Leaflet Map
+function initJobLocationMap() {
+    console.log('🗺️ Initializing Leaflet map with draggable marker...');
+    
+    const mapElement = document.getElementById('jobLocationMap');
+    
+    if (!mapElement) {
+        console.error('❌ Map element not found');
+        return;
+    }
+    
+    // Clear existing map if any
+    if (jobLocationMap) {
+        jobLocationMap.remove();
+        jobLocationMap = null;
+        jobLocationMarker = null;
+    }
+    
+    try {
+        // Create Leaflet map with proper options
+        jobLocationMap = L.map('jobLocationMap', {
+            center: [14.5995, 120.9842],
+            zoom: 12,
+            zoomControl: true,
+            attributionControl: true,
+            preferCanvas: false
+        });
+        
+        // Add tile layer with proper error handling and fallback
+        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19,
+            minZoom: 1,
+            subdomains: ['a', 'b', 'c'],
+            tileSize: 256,
+            zoomOffset: 0,
+            crossOrigin: true
+        });
+        
+        // Fallback tile layer
+        const fallbackTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19,
+            minZoom: 1,
+            tileSize: 256,
+            zoomOffset: 0,
+            crossOrigin: true
+        });
+        
+        // Add error handling for tiles
+        tileLayer.on('tileerror', function(e) {
+            console.warn('⚠️ Primary tile load error, trying fallback:', e);
+            jobLocationMap.removeLayer(tileLayer);
+            fallbackTileLayer.addTo(jobLocationMap);
+        });
+        
+        // Add draggable marker
+        jobLocationMarker = L.marker([14.5995, 120.9842], {
+            draggable: true,
+            title: 'Drag me to set job location'
+        }).addTo(jobLocationMap);
+        
+        // Add popup to marker
+        jobLocationMarker.bindPopup('<b>Job Location</b><br>Drag marker to adjust').openPopup();
+        
+        // Handle marker drag
+        jobLocationMarker.on('dragend', function(e) {
+            const position = e.target.getLatLng();
+            const lat = position.lat;
+            const lng = position.lng;
+            
+            console.log('📍 Marker dragged to:', lat, lng);
+            setJobLocationMarker(lat, lng);
+        });
+        
+        // Handle map click to move marker
+        jobLocationMap.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            console.log('🗺️ Map clicked at:', lat, lng);
+            
+            if (jobLocationMarker) {
+                jobLocationMarker.setLatLng([lat, lng]);
+            }
+            
+            setJobLocationMarker(lat, lng);
+        });
+        
+        // Try to add primary tile layer
+        tileLayer.addTo(jobLocationMap);
+        
+        // Set initial coordinates
+        window.currentJobLat = 14.5995;
+        window.currentJobLng = 120.9842;
+        setJobLocationMarker(14.5995, 120.9842);
+        
+        console.log('✅ Leaflet map initialized with draggable marker');
+        
+    } catch (error) {
+        console.error('❌ Error initializing map:', error);
+        
+        // Fallback: show error message
+        mapElement.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 400px; background: #f8f9fa; border-radius: 15px; border: 2px dashed #dee2e6;">
+                <div style="text-align: center; color: #6c757d;">
+                    <div style="font-size: 24px; margin-bottom: 10px;">🗺️</div>
+                    <div>Map loading failed</div>
+                    <div style="font-size: 12px; margin-top: 5px;">Please refresh the page</div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Set marker on job location map
+function setJobLocationMarker(lat, lng) {
+    console.log('📍 Setting job location marker at:', lat, lng);
+    
+    // Update coordinates directly
+    const latField = document.getElementById('jobLatitude');
+    const lngField = document.getElementById('jobLongitude');
+    
+    if (latField) latField.value = lat;
+    if (lngField) lngField.value = lng;
+    
+    // Update global coordinates
+    window.currentJobLat = lat;
+    window.currentJobLng = lng;
+    
+    // Move marker on map
+    if (jobLocationMarker) {
+        jobLocationMarker.setLatLng([lat, lng]);
+        jobLocationMarker.bindPopup(`<b>Job Location</b><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
+    }
+    
+    // Center map on new position
+    if (jobLocationMap) {
+        jobLocationMap.setView([lat, lng], 13);
+    }
+    
+    // Reverse geocode to get address
+    reverseGeocodeJobLocation(lat, lng);
+}
+
+// Update job location map
+function updateJobLocationMap(lat, lng, locationName) {
+    console.log('🗺️ Updating job location map to:', locationName, lat, lng);
+    
+    // Update global coordinates
+    window.currentJobLat = lat;
+    window.currentJobLng = lng;
+    
+    // Move marker and center map
+    if (jobLocationMarker && jobLocationMap) {
+        jobLocationMarker.setLatLng([lat, lng]);
+        jobLocationMap.setView([lat, lng], 13);
+        jobLocationMarker.bindPopup(`<b>${locationName}</b><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
+    }
+    
+    // Update hidden fields
+    const latField = document.getElementById('jobLatitude');
+    const lngField = document.getElementById('jobLongitude');
+    if (latField) latField.value = lat;
+    if (lngField) lngField.value = lng;
+    
+    // Reverse geocode to get address
+    reverseGeocodeJobLocation(lat, lng);
+}
+
+// Reverse geocode job location
+function reverseGeocodeJobLocation(lat, lng) {
+    console.log('🔄 Reverse geocoding:', lat, lng);
+    
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.display_name) {
+                console.log('✅ Reverse geocoded:', data.display_name);
+                
+                // Update location input
+                const locationInput = document.getElementById('location');
+                if (locationInput) {
+                    locationInput.value = data.display_name;
+                }
+                
+                // Show selected location
+                const selectedLocation = document.getElementById('selectedLocation');
+                const selectedLocationAddress = document.getElementById('selectedLocationAddress');
+                
+                if (selectedLocation && selectedLocationAddress) {
+                    selectedLocationAddress.textContent = data.display_name;
+                    selectedLocation.style.display = 'block';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('❌ Reverse geocoding failed:', error);
+        });
+}
+
+// Search job location
+function searchJobLocation() {
+    const locationInput = document.getElementById('location');
+    const query = locationInput.value.trim();
+    
+    if (!query) {
+        showNotification('Please enter a location to search', 'error');
+        return;
+    }
+    
+    console.log('🔍 Searching for location:', query);
+    
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=ph`)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                const result = data[0];
+                const lat = parseFloat(result.lat);
+                const lng = parseFloat(result.lon);
+                
+                console.log('✅ Location found:', result.display_name, lat, lng);
+                
+                setJobLocationMarker(lat, lng);
+                updateJobLocationMap(lat, lng, result.display_name);
+                
+                showNotification('Location found and updated!', 'success');
+            } else {
+                showNotification('Location not found. Please try a different search term.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('❌ Search failed:', error);
+            showNotification('Search failed. Please try again.', 'error');
+        });
+}
+
+// Use current location
+function useCurrentLocation() {
+    if (!navigator.geolocation) {
+        showNotification('Geolocation is not supported by this browser.', 'error');
+        return;
+    }
+    
+    console.log('📍 Getting current location...');
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            console.log('✅ Current location:', lat, lng);
+            
+            setJobLocationMarker(lat, lng);
+            updateJobLocationMap(lat, lng, 'My Current Location');
+            
+            showNotification('Current location set successfully!', 'success');
+        },
+        function(error) {
+            console.error('❌ Geolocation error:', error);
+            let message = 'Unable to get your location. ';
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message += 'Please allow location access.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message += 'Location information is unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    message += 'Location request timed out.';
+                    break;
+                default:
+                    message += 'An unknown error occurred.';
+                    break;
+            }
+            
+            showNotification(message, 'error');
+        }
+    );
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    if (!notification) return;
+    
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 4000);
+}
+
+// Clear job form function
+function clearJobForm() {
+    console.log('🧹 Clearing job form...');
+    
+    // Clear all form inputs
+    const form = document.querySelector('.enhanced-job-form');
+    if (form) {
+        form.reset();
+    }
+    
+    // Clear specific fields
+    const titleField = document.getElementById('title');
+    const locationField = document.getElementById('location');
+    const descriptionField = document.getElementById('description');
+    const requirementsField = document.getElementById('requirements');
+    const salaryRangeField = document.getElementById('salary_range');
+    
+    if (titleField) titleField.value = '';
+    if (locationField) locationField.value = '';
+    if (descriptionField) descriptionField.value = '';
+    if (requirementsField) requirementsField.value = '';
+    if (salaryRangeField) salaryRangeField.value = '';
+    
+    // Reset dropdowns to default values
+    const jobTypeField = document.getElementById('job_type');
+    const workSetupField = document.getElementById('work_setup');
+    const experienceLevelField = document.getElementById('experience_level');
+    
+    if (jobTypeField) jobTypeField.selectedIndex = 0;
+    if (workSetupField) workSetupField.selectedIndex = 0;
+    if (experienceLevelField) experienceLevelField.selectedIndex = 0;
+    
+    // Clear hidden coordinate fields
+    const latField = document.getElementById('jobLatitude');
+    const lngField = document.getElementById('jobLongitude');
+    
+    if (latField) latField.value = '';
+    if (lngField) lngField.value = '';
+    
+    // Reset map to default location (Manila)
+    if (jobLocationMap && jobLocationMarker) {
+        const defaultLat = 14.5995;
+        const defaultLng = 120.9842;
+        
+        // Move marker to default position
+        jobLocationMarker.setLatLng([defaultLat, defaultLng]);
+        jobLocationMap.setView([defaultLat, defaultLng], 12);
+        
+        // Update marker popup
+        jobLocationMarker.bindPopup('<b>Job Location</b><br>Drag marker to adjust').openPopup();
+        
+        // Update global coordinates
+        window.currentJobLat = defaultLat;
+        window.currentJobLng = defaultLng;
+    }
+    
+    // Hide selected location display
+    const selectedLocation = document.getElementById('selectedLocation');
+    if (selectedLocation) {
+        selectedLocation.style.display = 'none';
+    }
+    
+    // Clear selected location address
+    const selectedLocationAddress = document.getElementById('selectedLocationAddress');
+    if (selectedLocationAddress) {
+        selectedLocationAddress.textContent = '';
+    }
+    
+    console.log('✅ Job form cleared successfully');
+}
+
+// Form submission
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map when page loads
+    setTimeout(() => {
+        initJobLocationMap();
+    }, 500);
+    
+    // Handle form submission
+    const form = document.querySelector('.enhanced-job-form');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate required fields
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.style.borderColor = '#f56565';
+                } else {
+                    field.style.borderColor = '#e2e8f0';
+                }
+            });
+            
+            if (!isValid) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Check if location is set (optional fields)
+            const lat = document.getElementById('jobLatitude').value;
+            const lng = document.getElementById('jobLongitude').value;
+            
+            // Location is optional, but if provided, both lat and lng should be set
+            if ((lat && !lng) || (!lat && lng)) {
+                showNotification('Please provide both latitude and longitude for the location', 'error');
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <div class="loading"></div>
+                Creating Job...
+            `;
+            
+            // Submit form
+            const formData = new FormData(form);
+            
+            fetch('{% url "create_job" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    // If response is not JSON, get text and log it
+                    return response.text().then(text => {
+                        console.error('Non-JSON response received:', text);
+                        throw new Error('Server returned non-JSON response');
+                    });
+                }
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    showNotification('Job created successfully!', 'success');
+                    
+                    // Clear form fields after successful creation
+                    setTimeout(() => {
+                        clearJobForm();
+                        showNotification('Form cleared. Ready to create another job!', 'info');
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Failed to create job. Please try again.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Form submission error:', error);
+                showNotification('An error occurred while creating the job. Please try again.', 'error');
+            })
+            .finally(() => {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Create Job Posting
+                `;
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

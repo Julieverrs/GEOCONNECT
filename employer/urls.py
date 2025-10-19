@@ -21,6 +21,7 @@ urlpatterns = [
     path('candidate-recommendations/', views.candidate_recommendations, name='candidate_recommendations'),
     path('send-contact-message/', views.send_contact_message, name='employer_send_contact_message'),
     path('employee-profile/<int:employee_id>/', views.employee_profile, name='employee_profile'),
+    
     # Messaging System URLs
     path('messages/', views.messages_list, name='employer_messages_list'),
     path('messages/<int:conversation_id>/', views.conversation_detail, name='employer_conversation_detail'),

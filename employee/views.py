@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib import messages
 from .forms import EmployeeSignupForm, EmployeeLoginForm, PasswordResetForm, SetPasswordForm
-from .models import Employee, Notification, SavedJob, EmployeeFeedback
+from .models import Employee, Notification, SavedJob, EmployeeFeedback, EmployerFeedback
 from employer.models import Job, Employer, JobApplication
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -1437,7 +1437,16 @@ def submit_feedback(request):
         
         # Get form data - use the fields that match your model
         rating = int(request.POST.get('overall_rating', 5))  # Use overall_rating as the main rating
+        work_environment = int(request.POST.get('work_environment', 5))
+        management = int(request.POST.get('management', 5))
+        compensation = int(request.POST.get('compensation', 5))
+        work_life_balance = int(request.POST.get('work_life_balance', 5))
         comment = request.POST.get('comment', '').strip()
+        recommend_employer = request.POST.get('recommend') == 'yes'
+        
+        # If no overall rating is provided, calculate average from categories
+        if not rating or rating == 0:
+            rating = round((work_environment + management + compensation + work_life_balance) / 4)
         
         # Validate required fields
         if not comment:
@@ -1446,12 +1455,17 @@ def submit_feedback(request):
         if rating < 1 or rating > 5:
             return JsonResponse({'success': False, 'message': 'Invalid rating value.'}, status=400)
         
-        # Create feedback with only the fields your model has
+        # Create feedback with all the category fields
         feedback = EmployeeFeedback.objects.create(
             employee=employee,
             job=job,
             rating=rating,
-            comment=comment
+            work_environment=work_environment,
+            management=management,
+            compensation=compensation,
+            work_life_balance=work_life_balance,
+            comment=comment,
+            recommend_employer=recommend_employer
         )
         
         return JsonResponse({
@@ -1481,11 +1495,30 @@ def get_reviews(request, job_id):
         
         reviews = []
         for feedback in feedback_list:
+            # Calculate overall rating if missing
+            overall_rating = feedback.rating
+            if not overall_rating:
+                category_ratings = [
+                    feedback.work_environment or 0,
+                    feedback.management or 0,
+                    feedback.compensation or 0,
+                    feedback.work_life_balance or 0
+                ]
+                if any(category_ratings):
+                    overall_rating = round(sum(category_ratings) / len(category_ratings))
+                else:
+                    overall_rating = 0
+            
             reviews.append({
                 'id': feedback.id,
                 'reviewer_name': feedback.employee.username,  # Use employee username
-                'rating': feedback.rating,  # Use the rating field from your model
+                'rating': overall_rating,  # Use calculated or existing rating
+                'work_environment': feedback.work_environment or 0,
+                'management': feedback.management or 0,
+                'compensation': feedback.compensation or 0,
+                'work_life_balance': feedback.work_life_balance or 0,
                 'comment': feedback.comment,
+                'recommend_employer': feedback.recommend_employer,
                 'created_at': feedback.created_at.isoformat(),
             })
         
@@ -1653,3 +1686,114 @@ def mark_messages_read(request, conversation_id):
         return JsonResponse({'success': True})
     
     return JsonResponse({'success': False})
+
+
+# ===== EMPLOYER REVIEW VIEWS =====
+
+@employee_login_required
+@require_http_methods(["POST"])
+def submit_employer_review(request):
+    """Submit employee review for an employer/company."""
+    try:
+        employee = Employee.objects.get(username=request.session.get('employee_username'))
+        job_id = request.POST.get('job_id')
+        employer_id = request.POST.get('employer_id')
+        
+        if not job_id or not employer_id:
+            return JsonResponse({'success': False, 'message': 'Job ID and Employer ID are required.'}, status=400)
+        
+        job = Job.objects.get(id=job_id)
+        employer = Employer.objects.get(id=employer_id)
+        
+        # Check if employee has already submitted a review for this employer/job combination
+        existing_review = EmployerFeedback.objects.filter(
+            employee=employee, 
+            employer=employer, 
+            job=job
+        ).first()
+        
+        if existing_review:
+            return JsonResponse({
+                'success': False, 
+                'message': 'You have already submitted a review for this company/job combination.'
+            }, status=400)
+        
+        # Get form data
+        overall_rating = int(request.POST.get('overall_rating', 5))
+        work_environment = int(request.POST.get('work_environment', 5))
+        communication = int(request.POST.get('communication', 5))
+        work_life_balance = int(request.POST.get('work_life_balance', 5))
+        comment = request.POST.get('comment', '').strip()
+        recommend_employer = request.POST.get('recommend_employer') == 'true'
+        
+        # Validate required fields
+        if not comment:
+            return JsonResponse({'success': False, 'message': 'Comment is required.'}, status=400)
+        
+        if overall_rating < 1 or overall_rating > 5:
+            return JsonResponse({'success': False, 'message': 'Invalid overall rating value.'}, status=400)
+        
+        # Create employer review
+        employer_review = EmployerFeedback.objects.create(
+            employee=employee,
+            employer=employer,
+            job=job,
+            overall_rating=overall_rating,
+            work_environment=work_environment,
+            communication=communication,
+            work_life_balance=work_life_balance,
+            comment=comment,
+            recommend_employer=recommend_employer
+        )
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Thank you for your company review!'
+        })
+        
+    except Employee.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Employee not found.'}, status=404)
+    except Job.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Job not found.'}, status=404)
+    except Employer.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Employer not found.'}, status=404)
+    except ValueError:
+        return JsonResponse({'success': False, 'message': 'Invalid rating values.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'}, status=500)
+
+
+@employee_login_required
+@require_http_methods(["GET"])
+def get_employer_reviews(request, job_id):
+    """Get all employer reviews for a specific job."""
+    try:
+        job = Job.objects.get(id=job_id)
+        
+        # Get all employer reviews for this job
+        employer_reviews = EmployerFeedback.objects.filter(job=job).order_by('-created_at')
+        
+        reviews = []
+        for review in employer_reviews:
+            reviews.append({
+                'id': review.id,
+                'employee_name': review.employee.username,
+                'overall_rating': review.overall_rating,
+                'work_environment': review.work_environment,
+                'communication': review.communication,
+                'work_life_balance': review.work_life_balance,
+                'comment': review.comment,
+                'recommend_employer': review.recommend_employer,
+                'created_at': review.created_at.isoformat(),
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'reviews': reviews,
+            'total_reviews': len(reviews)
+        })
+        
+    except Job.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Job not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'}, status=500)

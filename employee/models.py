@@ -150,7 +150,12 @@ class EmployeeFeedback(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='feedbacks')
     job = models.ForeignKey('employer.Job', on_delete=models.CASCADE)
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    work_environment = models.IntegerField(choices=[(i, i) for i in range(1, 6)], null=True, blank=True)
+    management = models.IntegerField(choices=[(i, i) for i in range(1, 6)], null=True, blank=True)
+    compensation = models.IntegerField(choices=[(i, i) for i in range(1, 6)], null=True, blank=True)
+    work_life_balance = models.IntegerField(choices=[(i, i) for i in range(1, 6)], null=True, blank=True)
     comment = models.TextField()
+    recommend_employer = models.BooleanField(default=True, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -159,6 +164,29 @@ class EmployeeFeedback(models.Model):
     
     def __str__(self):
         return f"{self.employee.username} - {self.job.title} - {self.rating} stars"
+
+
+class EmployerFeedback(models.Model):
+    """
+    Model to store employee feedback and ratings for employers (company reviews)
+    """
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='employer_feedbacks')
+    employer = models.ForeignKey('employer.Employer', on_delete=models.CASCADE, related_name='employee_reviews')
+    job = models.ForeignKey('employer.Job', on_delete=models.CASCADE, related_name='employer_reviews')
+    overall_rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    work_environment = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    communication = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    work_life_balance = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    comment = models.TextField()
+    recommend_employer = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('employee', 'employer', 'job')
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.employee.username} - {self.employer.company_name} - {self.overall_rating} stars"
 
 # Messaging System Models
 class Conversation(models.Model):

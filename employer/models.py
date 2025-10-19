@@ -137,17 +137,17 @@ class Employer(models.Model):
 
 class Job(models.Model):
     WORK_SETUP_CHOICES = [
-        ('On-site', 'On-site'),
-        ('Hybrid', 'Hybrid'),
-        ('Remote', 'Remote'),
+        ('on-site', 'On-site'),
+        ('hybrid', 'Hybrid'),
+        ('remote', 'Remote'),
     ]
     
     JOB_TYPES = [
-        ('Full-time', 'Full-time'),
-        ('Part-time', 'Part-time'),
-        ('Contract', 'Contract'),
-        ('Temporary', 'Temporary'),
-        ('Internship', 'Internship'),
+        ('full-time', 'Full-time'),
+        ('part-time', 'Part-time'),
+        ('contract', 'Contract'),
+        ('internship', 'Internship'),
+        ('freelance', 'Freelance'),
     ]
     
     EXPERIENCE_LEVELS = [
