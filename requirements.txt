@@ -4,6 +4,8 @@ django-crispy-forms
 Pillow
 django-cors-headers
 django-bootstrap5
+gunicorn
+psycopg2-binary
 # NLP and ML libraries
 nltk>=3.6.5
 scikit-learn>=1.3.0
