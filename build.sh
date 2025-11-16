@@ -4,7 +4,7 @@
 set -e
 
 # Run Python build steps
-python -m nltk.downloader -d /opt/nltk_data punkt stopwords
+python3 -m nltk.downloader -d /opt/nltk_data punkt stopwords
 
 # Run Node.js build steps
 npm install --ignore-scripts
