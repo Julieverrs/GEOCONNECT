@@ -1,5 +1,9 @@
 [phases.build]
 cmds = [
+    # Install Python NLP models
+    "python3 -m spacy download en_core_web_sm",
+    "python3 -m nltk.downloader -d /opt/nltk_data punkt stopwords",
+    # Clean install of Node.js dependencies and build
     "npm ci",
     "npm run build"
 ]
