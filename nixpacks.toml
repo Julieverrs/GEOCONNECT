@@ -1,0 +1,10 @@
+[phases.build]
+cmds = [
+    # Install node dependencies and fix permissions
+    "npm install",
+    "chmod -R +x node_modules/.bin",
+    "npm run build",
+    # Download Python NLP models
+    "python3 -m spacy download en_core_web_sm",
+    "python3 -m nltk.downloader -d /opt/nltk_data punkt stopwords"
+]
