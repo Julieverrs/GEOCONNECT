@@ -156,9 +156,8 @@ CORS_ALLOWED_ORIGINS = [
 
 # In production, you'll need to allow your Railway app's domain.
 # You can add this to your environment variables on Railway.
-cors_deploy_origins = os.environ.get('CORS_ALLOWED_ORIGINS_DEPLOY')
-if cors_deploy_origins:
-    CORS_ALLOWED_ORIGINS.extend(cors_deploy_origins.split(','))
+if 'CORS_ALLOWED_ORIGINS_DEPLOY' in os.environ:
+    CORS_ALLOWED_ORIGINS.extend(os.environ.get('CORS_ALLOWED_ORIGINS_DEPLOY', '').split(','))
 
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:8080').split(',')
 
