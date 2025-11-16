@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Source the Nixpacks environment variables to make tools like `python3` and `npm` available.
+. /etc/profile.d/nix.sh
+
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
