@@ -90,7 +90,12 @@ WSGI_APPLICATION = 'capstoneforever.wsgi.application'
 # Database configuration for Railway
 # Railway provides the DATABASE_URL environment variable automatically.
 # dj-database-url will parse it and configure the database for you.
-DATABASES = {}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+    }
+}
+
 if 'DATABASE_URL' in os.environ:
     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 
