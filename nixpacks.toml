@@ -1,7 +1,0 @@
-[phases.build]
-cmds = [
-    "npm install --ignore-scripts",
-    "chmod +x ./node_modules/.bin/vite",
-    "npm run build",
-    "python -m nltk.downloader -d /opt/nltk_data punkt stopwords"
-]
