@@ -1,4 +1,6 @@
 [phases.build]
 cmds = [
-    "npm install"
+    "npm install --ignore-scripts",
+    "chmod +x ./node_modules/.bin/vite",
+    "npm run build"
 ]
