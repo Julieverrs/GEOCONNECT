@@ -1,5 +1,4 @@
 [phases.build]
 cmds = [
-    "npm install",
-    "npx vite build"
+    "npm install"
 ]
