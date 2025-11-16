@@ -1,1 +1,1 @@
-web: gunicorn capstoneforever.wsgi:application --bind 0.0.0.0:$PORT
+web: chmod +x ./build.sh && ./build.sh && gunicorn capstoneforever.wsgi:application
