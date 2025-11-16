@@ -1,1 +1,0 @@
-web: chmod +x ./build.sh && ./build.sh && gunicorn capstoneforever.wsgi:application
