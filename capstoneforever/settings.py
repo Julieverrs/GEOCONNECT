@@ -156,9 +156,15 @@ CORS_ALLOWED_ORIGINS = [
 
 # In production, you'll need to allow your Railway app's domain.
 # You can add this to your environment variables on Railway.
-CORS_ALLOWED_ORIGINS.extend(os.environ.get('CORS_ALLOWED_ORIGINS_DEPLOY', '').split(','))
+cors_deploy_origins = os.environ.get('CORS_ALLOWED_ORIGINS_DEPLOY')
+if cors_deploy_origins:
+    CORS_ALLOWED_ORIGINS.extend([origin.strip() for origin in cors_deploy_origins.split(',') if origin.strip()])
 
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:8080').split(',')
+csrf_trusted_origins_str = os.environ.get('CSRF_TRUSTED_ORIGINS')
+if csrf_trusted_origins_str:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted_origins_str.split(',') if origin.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = ['http://localhost:8080']
 
 # Allow iframe embedding for document viewing in admin panel
 X_FRAME_OPTIONS = 'SAMEORIGIN'
