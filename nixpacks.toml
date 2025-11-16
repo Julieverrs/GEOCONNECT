@@ -3,5 +3,5 @@ cmds = [
     "npm install --ignore-scripts",
     "chmod +x ./node_modules/.bin/vite",
     "npm run build",
-    "python3 -m nltk.downloader -d /opt/nltk_data punkt stopwords"
+    "python -m nltk.downloader -d /opt/nltk_data punkt stopwords"
 ]
