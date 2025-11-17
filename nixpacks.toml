@@ -1,8 +1,24 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "python312", "python312Packages.pip"]
+nixPkgs = [
+  "nodejs_20",
+  "python312",
+  "python312Packages.pip",
+  "gcc",
+  "gfortran",
+  "lapack",
+  "blas",
+  "libxml2",
+  "libxslt",
+  "zlib",
+  "libjpeg",
+  "pkg-config",
+  "postgresql"
+]
 
 [phases.install]
 commands = [
+  "npm install --include=dev",
+  "npm run build",
   "pip install --no-cache-dir --break-system-packages -r requirements.txt"
 ]
 
