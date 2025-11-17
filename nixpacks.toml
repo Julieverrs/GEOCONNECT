@@ -4,13 +4,15 @@ nixPkgs = [
   "python312",
   "python312Packages.pip",
   "gcc",
-  "gcc.libcxx",
+  "libcxx",
   "lapack",
   "blas",
   "libxml2",
   "libxslt",
-  "zlib",
-  "libjpeg",
+  "zlib.out",
+  "libjpeg_turbo",
+  "libpng",
+  "libtiff",
   "pkg-config",
   "postgresql"
 ]
