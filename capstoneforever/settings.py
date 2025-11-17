@@ -70,7 +70,10 @@ ROOT_URLCONF = 'capstoneforever.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # Check this line if you have global templates
+        'DIRS': [
+            BASE_DIR / 'templates',
+            os.path.join(BASE_DIR, 'dist') # Tell Django where to find the Vue app's index.html
+        ],
         'APP_DIRS': True,  # This should be True to allow loading templates from app directories
         'OPTIONS': {
             'context_processors': [
@@ -141,7 +144,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'dist/assets') # Tell Django where to find Vue's compiled JS and CSS
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
