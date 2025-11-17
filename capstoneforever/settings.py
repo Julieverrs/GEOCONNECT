@@ -96,53 +96,34 @@ WSGI_APPLICATION = 'capstoneforever.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 # Database configuration
-DATABASE_URL = (
-    os.environ.get('DATABASE_URL')
-    or os.environ.get('SUPABASE_DB_URL')
-    or os.environ.get('POSTGRES_URL')
-    or os.environ.get('PGDATABASE_URL')
-)
-if DEBUG:
-    # Use SQLite for local development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
-    # Use PostgreSQL for production
-    DATABASE_URL = (
+def build_database_url():
+    url = (
         os.environ.get('DATABASE_URL')
         or os.environ.get('SUPABASE_DB_URL')
         or os.environ.get('POSTGRES_URL')
         or os.environ.get('PGDATABASE_URL')
     )
 
-if not DATABASE_URL:
+    if url:
+        return url
+
     db_name = os.environ.get('DB_NAME')
     db_user = os.environ.get('DB_USER')
     db_password = os.environ.get('DB_PASSWORD')
     db_host = os.environ.get('DB_HOST')
     db_port = os.environ.get('DB_PORT', '5432')
-    if not DATABASE_URL:
-        raise ImproperlyConfigured(
-            "DATABASE_URL environment variable is not set for production."
-        )
 
     if all([db_name, db_user, db_password, db_host]):
-        DATABASE_URL = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-    DATABASES = {
-        'default': dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=os.environ.get('DATABASE_SSL_REQUIRE', 'True').lower() == 'true'
-        )
-    }
+        return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+
+    return None
+
+
+DATABASE_URL = build_database_url()
 
 if not DATABASE_URL:
     raise ImproperlyConfigured(
-        "DATABASE configuration is missing. Set DATABASE_URL or DB_NAME/DB_USER/DB_PASSWORD/DB_HOST."
+        "DATABASE configuration is missing. Provide DATABASE_URL or DB_NAME/DB_USER/DB_PASSWORD/DB_HOST."
     )
 
 DATABASES = {
