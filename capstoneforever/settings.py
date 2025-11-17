@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -94,17 +95,26 @@ WSGI_APPLICATION = 'capstoneforever.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# Database configuration for Railway
-# Railway provides the DATABASE_URL environment variable automatically.
-# dj-database-url will parse it and configure the database for you.
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-    }
-}
+# Database configuration
+DATABASE_URL = (
+    os.environ.get('DATABASE_URL')
+    or os.environ.get('SUPABASE_DB_URL')
+    or os.environ.get('POSTGRES_URL')
+    or os.environ.get('PGDATABASE_URL')
+)
 
-if 'DATABASE_URL' in os.environ:
-    DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+if not DATABASE_URL:
+    raise ImproperlyConfigured(
+        "DATABASE_URL (or SUPABASE_DB_URL/POSTGRES_URL) is required to connect to PostgreSQL."
+    )
+
+DATABASES = {
+    'default': dj_database_url.parse(
+        DATABASE_URL,
+        conn_max_age=600,
+        ssl_require=os.environ.get('DATABASE_SSL_REQUIRE', 'True').lower() == 'true'
+    )
+}
 
 
 # Password validation
