@@ -21,6 +21,7 @@ nixPkgs = [
 commands = [
   "npm install --include=dev",
   "npm run build",
+  "mkdir -p /usr/lib && LIBSTDCPP=$(find /nix/store -name 'libstdc++.so.6' | head -n 1) && ln -sf $LIBSTDCPP /usr/lib/libstdc++.so.6",
   "pip install --no-cache-dir --break-system-packages -r requirements.txt"
 ]
 
