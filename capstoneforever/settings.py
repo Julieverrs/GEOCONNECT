@@ -145,7 +145,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
-    os.path.join(BASE_DIR, 'dist/assets') # Tell Django where to find Vue's compiled JS and CSS
+    os.path.join(BASE_DIR, 'employee/static/dist'),
+    os.path.join(BASE_DIR, 'employee/static/dist/assets')
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
