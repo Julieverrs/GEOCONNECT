@@ -4,7 +4,6 @@ nixPkgs = [
   "python312",
   "python312Packages.pip",
   "gcc",
-  "gfortran",
   "lapack",
   "blas",
   "libxml2",
