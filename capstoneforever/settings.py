@@ -212,7 +212,7 @@ MESSAGE_TAGS = {
     messages.ERROR: 'error',
 }
 
-LOGIN_URL = 'employee_login'  # This should match the name of your login URL pattern
+LOGIN_URL = 'admin_panel:login'  # Redirect protected admin routes to the custom admin login
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
