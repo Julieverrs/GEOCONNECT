@@ -1003,10 +1003,10 @@ def search_jobs(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 # Helper function to send email with timeout and proper error handling
-def send_email_with_timeout(subject, message, from_email, recipient_list, html_message=None, timeout=8):
+def send_email_with_timeout(subject, message, from_email, recipient_list, html_message=None, timeout=12):
     """Send email with timeout to prevent blocking too long"""
-    import signal
     import time
+    import socket
     
     result_container = {'success': False, 'error': None}
     
@@ -1021,6 +1021,26 @@ def send_email_with_timeout(subject, message, from_email, recipient_list, html_m
             print(f"[EMAIL] EMAIL_PORT: {settings.EMAIL_PORT}")
             print(f"[EMAIL] EMAIL_TIMEOUT: {getattr(settings, 'EMAIL_TIMEOUT', 'Not set')}")
             
+            # Test connection first
+            print(f"[EMAIL] Testing connection to {settings.EMAIL_HOST}:{settings.EMAIL_PORT}...")
+            try:
+                test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                test_socket.settimeout(5)
+                result = test_socket.connect_ex((settings.EMAIL_HOST, settings.EMAIL_PORT))
+                test_socket.close()
+                if result != 0:
+                    raise Exception(f"Cannot connect to {settings.EMAIL_HOST}:{settings.EMAIL_PORT} (error code: {result})")
+                print(f"[EMAIL] ✓ Connection test successful")
+            except Exception as conn_error:
+                error_msg = f"Connection test failed: {str(conn_error)}"
+                print(f"[EMAIL] ✗ {error_msg}")
+                result_container['error'] = error_msg
+                result_container['success'] = False
+                return False
+            
+            print(f"[EMAIL] Attempting to send email...")
+            start_time = time.time()
+            
             result = send_mail(
                 subject,
                 message,
@@ -1029,10 +1049,19 @@ def send_email_with_timeout(subject, message, from_email, recipient_list, html_m
                 html_message=html_message,
                 fail_silently=False,  # Raise exception to see errors
             )
+            
+            elapsed_time = time.time() - start_time
             print(f"[EMAIL] ✓ Email sent successfully! Result: {result}")
+            print(f"[EMAIL] Time taken: {elapsed_time:.2f} seconds")
             print(f"[EMAIL] ===== Email send process completed =====")
             result_container['success'] = True
             return True
+        except socket.timeout:
+            error_msg = "Connection to email server timed out"
+            print(f"[EMAIL] ✗ {error_msg}")
+            result_container['error'] = error_msg
+            result_container['success'] = False
+            return False
         except Exception as e:
             import traceback
             error_trace = traceback.format_exc()
@@ -1053,7 +1082,7 @@ def send_email_with_timeout(subject, message, from_email, recipient_list, html_m
     
     if thread.is_alive():
         print(f"[EMAIL] ✗ Email sending TIMED OUT after {timeout} seconds!")
-        result_container['error'] = f"Email sending timed out after {timeout} seconds"
+        result_container['error'] = f"Email sending timed out after {timeout} seconds. This may indicate network issues or Railway blocking SMTP connections."
         return False, result_container['error']
     
     return result_container['success'], result_container['error']
@@ -1112,7 +1141,7 @@ def employer_password_reset(request):
                     settings.DEFAULT_FROM_EMAIL,
                     [email],
                     html_message=email_html,
-                    timeout=8
+                    timeout=12
                 )
                 
                 if success:
