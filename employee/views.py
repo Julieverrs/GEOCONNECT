@@ -181,16 +181,24 @@ def send_email_async(subject, message, from_email, recipient_list, html_message=
     """Send email in a separate thread to prevent blocking the request"""
     def send():
         try:
-            send_mail(
+            print(f"[EMAIL] Attempting to send email from: {from_email}")
+            print(f"[EMAIL] To: {recipient_list}")
+            print(f"[EMAIL] Subject: {subject}")
+            print(f"[EMAIL] EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
+            
+            result = send_mail(
                 subject,
                 message,
                 from_email,
                 recipient_list,
                 html_message=html_message,
-                fail_silently=True,  # Don't crash if email fails
+                fail_silently=False,  # Raise exception to see errors
             )
+            print(f"[EMAIL] Email sent successfully! Result: {result}")
         except Exception as e:
-            print(f"Email sending error: {str(e)}")
+            import traceback
+            print(f"[EMAIL] Email sending error: {str(e)}")
+            print(f"[EMAIL] Traceback: {traceback.format_exc()}")
     
     thread = threading.Thread(target=send)
     thread.daemon = True
@@ -226,7 +234,15 @@ def password_reset(request):
                 email_html = render_to_string('employee/email/password_reset_email.html', context)
                 email_text = render_to_string('employee/email/password_reset_email.txt', context)
                 
+                # Verify email configuration before sending
+                if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
+                    print(f"[EMAIL ERROR] Email configuration missing! EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}, EMAIL_HOST_PASSWORD: {'SET' if settings.EMAIL_HOST_PASSWORD else 'NOT SET'}")
+                    messages.error(request, "Email service is not configured. Please contact support.")
+                    return redirect('employee_login')
+                
                 # Send email asynchronously to prevent blocking/timeout
+                print(f"[EMAIL] Sending password reset email to: {email}")
+                print(f"[EMAIL] From: {settings.DEFAULT_FROM_EMAIL}")
                 send_email_async(
                     'Reset your GEOCONNECT password',
                     email_text,

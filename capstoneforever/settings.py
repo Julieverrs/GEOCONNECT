@@ -224,14 +224,32 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 # Set DEFAULT_FROM_EMAIL from environment variable, or construct from EMAIL_HOST_USER
+# IMPORTANT: Gmail requires the "from" address to match the authenticated EMAIL_HOST_USER
 # Format: 'Display Name <email@example.com>' or just 'email@example.com'
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 if not DEFAULT_FROM_EMAIL and EMAIL_HOST_USER:
     # If DEFAULT_FROM_EMAIL is not set, use EMAIL_HOST_USER with app name
+    # Gmail requires the email address to match EMAIL_HOST_USER
     DEFAULT_FROM_EMAIL = f'Geoconnect <{EMAIL_HOST_USER}>'
 elif not DEFAULT_FROM_EMAIL:
     # Fallback if neither is set
     DEFAULT_FROM_EMAIL = 'Geoconnect <geoconnect071704@gmail.com>'
+
+# Ensure DEFAULT_FROM_EMAIL uses the same email as EMAIL_HOST_USER for Gmail compatibility
+if EMAIL_HOST_USER and DEFAULT_FROM_EMAIL:
+    # Extract email from DEFAULT_FROM_EMAIL if it's in format "Name <email>"
+    import re
+    email_match = re.search(r'<(.+?)>', DEFAULT_FROM_EMAIL)
+    if email_match:
+        from_email_addr = email_match.group(1)
+    else:
+        from_email_addr = DEFAULT_FROM_EMAIL
+    
+    # If the email doesn't match EMAIL_HOST_USER, update it
+    if from_email_addr != EMAIL_HOST_USER:
+        print(f"[EMAIL CONFIG] Warning: DEFAULT_FROM_EMAIL ({from_email_addr}) doesn't match EMAIL_HOST_USER ({EMAIL_HOST_USER})")
+        print(f"[EMAIL CONFIG] Updating DEFAULT_FROM_EMAIL to use EMAIL_HOST_USER for Gmail compatibility")
+        DEFAULT_FROM_EMAIL = f'Geoconnect <{EMAIL_HOST_USER}>'
 
 # Password Reset Settings
 PASSWORD_RESET_TIMEOUT = 86400  # 24 hours in seconds
