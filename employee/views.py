@@ -26,36 +26,6 @@ from .resume_analyzer import ResumeAnalyzer
 import logging
 import re
 from django.db import models
-import os
-
-
-def send_via_resend(subject, text, from_email, to_list, html_message=None):
-    """Try sending an email via Resend API. Returns (success: bool, error_msg or None)."""
-    try:
-        resend_api_key = os.environ.get('RESEND_API_KEY')
-        if not resend_api_key:
-            return False, "RESEND_API_KEY not set"
-
-        try:
-            from resend import Resend
-        except ImportError as ie:
-            return False, "Resend package not installed"
-
-        client = Resend(api_key=resend_api_key)
-        params = {
-            "from": from_email,
-            "to": to_list,
-            "subject": subject,
-            "text": text,
-        }
-        if html_message:
-            params["html"] = html_message
-
-        resp = client.emails.send(params)
-        # Consider success if API returns an id or no exception raised
-        return True, None
-    except Exception as e:
-        return False, str(e)
 
 # Messaging System Views
 from .models import Conversation, Message
@@ -235,44 +205,20 @@ def password_reset(request):
                 email_html = render_to_string('employee/email/password_reset_email.html', context)
                 email_text = render_to_string('employee/email/password_reset_email.txt', context)
                 
-                # Try Resend first (Railway-friendly), then fallback to SMTP
-                sent = False
-                send_error = None
+                # Send email
                 try:
-                    success, err = send_via_resend(
+                    send_mail(
                         'Reset your GEOCONNECT password',
                         email_text,
                         settings.DEFAULT_FROM_EMAIL,
                         [email],
                         html_message=email_html,
+                        fail_silently=False,
                     )
-                    if success:
-                        sent = True
-                        messages.success(request, "Password reset instructions have been sent to your email.")
-                    else:
-                        send_error = err
+                    messages.success(request, "Password reset instructions have been sent to your email.")
                 except Exception as e:
-                    send_error = str(e)
-
-                if not sent:
-                    # Attempt SMTP fallback
-                    try:
-                        send_mail(
-                            'Reset your GEOCONNECT password',
-                            email_text,
-                            settings.DEFAULT_FROM_EMAIL,
-                            [email],
-                            html_message=email_html,
-                            fail_silently=False,
-                        )
-                        sent = True
-                        messages.success(request, "Password reset instructions have been sent to your email.")
-                    except Exception as e:
-                        # Log and inform user
-                        print(f"Email error (fallback): {str(e)}")
-                        messages.error(request, "There was an error sending the password reset email. Please try again later.")
-                        if send_error:
-                            print(f"Resend attempt error: {send_error}")
+                    messages.error(request, "There was an error sending the password reset email. Please try again later.")
+                    print(f"Email error: {str(e)}")  # Log the error
                 return redirect('employee_login')
             else:
                 # Use a vague message for security
@@ -775,28 +721,13 @@ def send_contact_message(request):
             """
             
             # Send email
-            # Try Resend first, then fallback to SMTP
-            success, err = send_via_resend(
+            send_mail(
                 email_subject,
                 email_message,
                 from_email,
                 [recipient],
+                fail_silently=False,
             )
-            if not success:
-                try:
-                    send_mail(
-                        email_subject,
-                        email_message,
-                        from_email,
-                        [recipient],
-                        fail_silently=False,
-                    )
-                except Exception as e:
-                    print(f"Error sending contact email (both methods): Resend err={err}, SMTP err={str(e)}")
-                    return JsonResponse({
-                        'success': False,
-                        'error': 'Failed to send email. Please try again later.'
-                    })
             
             return JsonResponse({
                 'success': True,
