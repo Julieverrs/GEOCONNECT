@@ -1007,10 +1007,14 @@ def send_email_async(subject, message, from_email, recipient_list, html_message=
     """Send email in a separate thread to prevent blocking the request"""
     def send():
         try:
-            print(f"[EMAIL] Attempting to send email from: {from_email}")
+            print(f"[EMAIL] ===== Starting email send process =====")
+            print(f"[EMAIL] From: {from_email}")
             print(f"[EMAIL] To: {recipient_list}")
             print(f"[EMAIL] Subject: {subject}")
             print(f"[EMAIL] EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
+            print(f"[EMAIL] EMAIL_HOST: {settings.EMAIL_HOST}")
+            print(f"[EMAIL] EMAIL_PORT: {settings.EMAIL_PORT}")
+            print(f"[EMAIL] EMAIL_TIMEOUT: {getattr(settings, 'EMAIL_TIMEOUT', 'Not set')}")
             
             result = send_mail(
                 subject,
@@ -1020,15 +1024,26 @@ def send_email_async(subject, message, from_email, recipient_list, html_message=
                 html_message=html_message,
                 fail_silently=False,  # Raise exception to see errors
             )
-            print(f"[EMAIL] Email sent successfully! Result: {result}")
+            print(f"[EMAIL] ✓ Email sent successfully! Result: {result}")
+            print(f"[EMAIL] ===== Email send process completed =====")
+            return True
         except Exception as e:
             import traceback
-            print(f"[EMAIL] Email sending error: {str(e)}")
-            print(f"[EMAIL] Traceback: {traceback.format_exc()}")
+            error_trace = traceback.format_exc()
+            print(f"[EMAIL] ✗ Email sending FAILED!")
+            print(f"[EMAIL] Error: {str(e)}")
+            print(f"[EMAIL] Full traceback:\n{error_trace}")
+            print(f"[EMAIL] ===== Email send process failed =====")
+            return False
     
+    # Use non-daemon thread and wait a bit to ensure it starts
     thread = threading.Thread(target=send)
-    thread.daemon = True
+    thread.daemon = False  # Non-daemon so it won't be killed immediately
     thread.start()
+    
+    # Give the thread a moment to start (but don't wait for completion to avoid blocking)
+    import time
+    time.sleep(0.1)  # Small delay to let thread start
 
 def employer_password_reset(request):
     if request.method == "POST":
@@ -1062,9 +1077,18 @@ def employer_password_reset(request):
                 
                 # Verify email configuration before sending
                 if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
-                    print(f"[EMAIL ERROR] Email configuration missing! EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}, EMAIL_HOST_PASSWORD: {'SET' if settings.EMAIL_HOST_PASSWORD else 'NOT SET'}")
+                    print(f"[EMAIL ERROR] Email configuration missing!")
+                    print(f"[EMAIL ERROR] EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
+                    print(f"[EMAIL ERROR] EMAIL_HOST_PASSWORD: {'SET' if settings.EMAIL_HOST_PASSWORD else 'NOT SET'}")
                     messages.error(request, "Email service is not configured. Please contact support.")
                     return redirect('employer_login')
+                
+                # Log email configuration for debugging
+                print(f"[EMAIL] Email configuration check:")
+                print(f"[EMAIL]   EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
+                print(f"[EMAIL]   DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
+                print(f"[EMAIL]   EMAIL_HOST: {settings.EMAIL_HOST}")
+                print(f"[EMAIL]   EMAIL_PORT: {settings.EMAIL_PORT}")
                 
                 # Send email asynchronously to prevent blocking/timeout
                 print(f"[EMAIL] Sending password reset email to: {email}")
