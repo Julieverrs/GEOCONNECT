@@ -7,6 +7,7 @@ from .forms import EmployerSignupForm, EmployerLoginForm, JobPostForm
 from django.http import HttpResponse
 from django.core.paginator import Paginator
 import json
+import threading
 from django.db.models import Q, Count
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
@@ -1000,7 +1001,26 @@ def search_jobs(request):
         return JsonResponse({'error': 'Employer not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+# Helper function to send email asynchronously to prevent blocking
+def send_email_async(subject, message, from_email, recipient_list, html_message=None):
+    """Send email in a separate thread to prevent blocking the request"""
+    def send():
+        try:
+            send_mail(
+                subject,
+                message,
+                from_email,
+                recipient_list,
+                html_message=html_message,
+                fail_silently=True,  # Don't crash if email fails
+            )
+        except Exception as e:
+            print(f"Email sending error: {str(e)}")
     
+    thread = threading.Thread(target=send)
+    thread.daemon = True
+    thread.start()
 
 def employer_password_reset(request):
     if request.method == "POST":
@@ -1032,20 +1052,15 @@ def employer_password_reset(request):
                 email_html = render_to_string('employer/email/password_reset_email.html', context)
                 email_text = render_to_string('employer/email/password_reset_email.txt', context)
                 
-                # Send email
-                try:
-                    send_mail(
-                        'Reset your GEOCONNECT Employer password',
-                        email_text,
-                        settings.DEFAULT_FROM_EMAIL,
-                        [email],
-                        html_message=email_html,
-                        fail_silently=False,
-                    )
-                    messages.success(request, "Password reset instructions have been sent to your email.")
-                except Exception as e:
-                    messages.error(request, "There was an error sending the password reset email. Please try again later.")
-                    print(f"Email error: {str(e)}")  # Log the error
+                # Send email asynchronously to prevent blocking/timeout
+                send_email_async(
+                    'Reset your GEOCONNECT Employer password',
+                    email_text,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    html_message=email_html
+                )
+                messages.success(request, "Password reset instructions have been sent to your email.")
                 return redirect('employer_login')
             else:
                 # Use a vague message for security
@@ -1283,7 +1298,7 @@ def update_application_status(request, application_id):
                 settings.DEFAULT_FROM_EMAIL,
                 [employee.email],
                 html_message=email_html,
-                fail_silently=False,
+                fail_silently=True,  # Don't crash if email fails
             )
             
             print(f"Email notification sent to {employee.email}")
@@ -1353,7 +1368,7 @@ def send_contact_message(request):
                 email_message,
                 from_email,
                 [recipient],
-                fail_silently=False,
+                fail_silently=True,  # Don't crash if email fails
             )
             
             return JsonResponse({

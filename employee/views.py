@@ -15,6 +15,7 @@ from django.http import JsonResponse
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 import json
+import threading
 from django.core.files.storage import default_storage
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
@@ -174,6 +175,26 @@ def employee_logout(request):
         # Remove toast prefix
         messages.error(request, "An error occurred during logout.")
         return redirect('employee_login')
+
+# Helper function to send email asynchronously to prevent blocking
+def send_email_async(subject, message, from_email, recipient_list, html_message=None):
+    """Send email in a separate thread to prevent blocking the request"""
+    def send():
+        try:
+            send_mail(
+                subject,
+                message,
+                from_email,
+                recipient_list,
+                html_message=html_message,
+                fail_silently=True,  # Don't crash if email fails
+            )
+        except Exception as e:
+            print(f"Email sending error: {str(e)}")
+    
+    thread = threading.Thread(target=send)
+    thread.daemon = True
+    thread.start()
         
 # Add these new views
 def password_reset(request):
@@ -205,20 +226,15 @@ def password_reset(request):
                 email_html = render_to_string('employee/email/password_reset_email.html', context)
                 email_text = render_to_string('employee/email/password_reset_email.txt', context)
                 
-                # Send email
-                try:
-                    send_mail(
-                        'Reset your GEOCONNECT password',
-                        email_text,
-                        settings.DEFAULT_FROM_EMAIL,
-                        [email],
-                        html_message=email_html,
-                        fail_silently=False,
-                    )
-                    messages.success(request, "Password reset instructions have been sent to your email.")
-                except Exception as e:
-                    messages.error(request, "There was an error sending the password reset email. Please try again later.")
-                    print(f"Email error: {str(e)}")  # Log the error
+                # Send email asynchronously to prevent blocking/timeout
+                send_email_async(
+                    'Reset your GEOCONNECT password',
+                    email_text,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    html_message=email_html
+                )
+                messages.success(request, "Password reset instructions have been sent to your email.")
                 return redirect('employee_login')
             else:
                 # Use a vague message for security
@@ -726,7 +742,7 @@ def send_contact_message(request):
                 email_message,
                 from_email,
                 [recipient],
-                fail_silently=False,
+                fail_silently=True,  # Don't crash if email fails
             )
             
             return JsonResponse({
