@@ -176,9 +176,14 @@ def employee_logout(request):
         messages.error(request, "An error occurred during logout.")
         return redirect('employee_login')
 
-# Helper function to send email asynchronously to prevent blocking
-def send_email_async(subject, message, from_email, recipient_list, html_message=None):
-    """Send email in a separate thread to prevent blocking the request"""
+# Helper function to send email with timeout and proper error handling
+def send_email_with_timeout(subject, message, from_email, recipient_list, html_message=None, timeout=8):
+    """Send email with timeout to prevent blocking too long"""
+    import signal
+    import time
+    
+    result_container = {'success': False, 'error': None}
+    
     def send():
         try:
             print(f"[EMAIL] ===== Starting email send process =====")
@@ -200,24 +205,32 @@ def send_email_async(subject, message, from_email, recipient_list, html_message=
             )
             print(f"[EMAIL] ✓ Email sent successfully! Result: {result}")
             print(f"[EMAIL] ===== Email send process completed =====")
+            result_container['success'] = True
             return True
         except Exception as e:
             import traceback
             error_trace = traceback.format_exc()
+            error_msg = str(e)
             print(f"[EMAIL] ✗ Email sending FAILED!")
-            print(f"[EMAIL] Error: {str(e)}")
+            print(f"[EMAIL] Error: {error_msg}")
             print(f"[EMAIL] Full traceback:\n{error_trace}")
             print(f"[EMAIL] ===== Email send process failed =====")
+            result_container['error'] = error_msg
+            result_container['success'] = False
             return False
     
-    # Use non-daemon thread and wait a bit to ensure it starts
+    # Run in a thread with timeout
     thread = threading.Thread(target=send)
-    thread.daemon = False  # Non-daemon so it won't be killed immediately
+    thread.daemon = False
     thread.start()
+    thread.join(timeout=timeout)  # Wait up to timeout seconds
     
-    # Give the thread a moment to start (but don't wait for completion to avoid blocking)
-    import time
-    time.sleep(0.1)  # Small delay to let thread start
+    if thread.is_alive():
+        print(f"[EMAIL] ✗ Email sending TIMED OUT after {timeout} seconds!")
+        result_container['error'] = f"Email sending timed out after {timeout} seconds"
+        return False, result_container['error']
+    
+    return result_container['success'], result_container['error']
         
 # Add these new views
 def password_reset(request):
@@ -264,17 +277,25 @@ def password_reset(request):
                 print(f"[EMAIL]   EMAIL_HOST: {settings.EMAIL_HOST}")
                 print(f"[EMAIL]   EMAIL_PORT: {settings.EMAIL_PORT}")
                 
-                # Send email asynchronously to prevent blocking/timeout
+                # Send email with timeout
                 print(f"[EMAIL] Sending password reset email to: {email}")
                 print(f"[EMAIL] From: {settings.DEFAULT_FROM_EMAIL}")
-                send_email_async(
+                success, error = send_email_with_timeout(
                     'Reset your GEOCONNECT password',
                     email_text,
                     settings.DEFAULT_FROM_EMAIL,
                     [email],
-                    html_message=email_html
+                    html_message=email_html,
+                    timeout=8
                 )
-                messages.success(request, "Password reset instructions have been sent to your email.")
+                
+                if success:
+                    messages.success(request, "Password reset instructions have been sent to your email.")
+                else:
+                    error_msg = error or "Unknown error occurred"
+                    print(f"[EMAIL] Failed to send password reset email. Error: {error_msg}")
+                    messages.error(request, f"Failed to send email. Error: {error_msg}. Please try again or contact support.")
+                
                 return redirect('employee_login')
             else:
                 # Use a vague message for security
