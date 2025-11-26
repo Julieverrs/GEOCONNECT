@@ -15,7 +15,6 @@ from django.http import JsonResponse
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 import json
-import threading
 from django.core.files.storage import default_storage
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
@@ -27,10 +26,36 @@ from .resume_analyzer import ResumeAnalyzer
 import logging
 import re
 from django.db import models
-import time
-import traceback
-from datetime import timedelta
-# ... rest of existing imports ...
+import os
+
+
+def send_via_resend(subject, text, from_email, to_list, html_message=None):
+    """Try sending an email via Resend API. Returns (success: bool, error_msg or None)."""
+    try:
+        resend_api_key = os.environ.get('RESEND_API_KEY')
+        if not resend_api_key:
+            return False, "RESEND_API_KEY not set"
+
+        try:
+            from resend import Resend
+        except ImportError as ie:
+            return False, "Resend package not installed"
+
+        client = Resend(api_key=resend_api_key)
+        params = {
+            "from": from_email,
+            "to": to_list,
+            "subject": subject,
+            "text": text,
+        }
+        if html_message:
+            params["html"] = html_message
+
+        resp = client.emails.send(params)
+        # Consider success if API returns an id or no exception raised
+        return True, None
+    except Exception as e:
+        return False, str(e)
 
 # Messaging System Views
 from .models import Conversation, Message
@@ -179,102 +204,6 @@ def employee_logout(request):
         # Remove toast prefix
         messages.error(request, "An error occurred during logout.")
         return redirect('employee_login')
-
-# Helper function to send email using Resend API (bypasses Railway SMTP blocking)
-def send_email_with_timeout(subject, message, from_email, recipient_list, html_message=None, timeout=12):
-    """Send email using Resend API (works on Railway)"""
-    import time
-    import os
-    import re
-    
-    result_container = {'success': False, 'error': None}
-    
-    def send():
-        try:
-            print(f"[EMAIL] ===== Starting email send process (Resend API) =====")
-            print(f"[EMAIL] From: {from_email}")
-            print(f"[EMAIL] To: {recipient_list}")
-            print(f"[EMAIL] Subject: {subject}")
-            
-            # Get Resend API key from environment
-            resend_api_key = os.environ.get('RESEND_API_KEY')
-            if not resend_api_key:
-                error_msg = "RESEND_API_KEY environment variable is not set. Please configure it in Railway."
-                print(f"[EMAIL] ✗ {error_msg}")
-                result_container['error'] = error_msg
-                result_container['success'] = False
-                return False
-            
-            # Extract email address from from_email (handle "Name <email>" format)
-            email_match = re.search(r'<(.+?)>', from_email)
-            if email_match:
-                from_email_addr = email_match.group(1)
-            else:
-                from_email_addr = from_email
-            
-            print(f"[EMAIL] Using Resend API to send email...")
-            print(f"[EMAIL] From address: {from_email_addr}")
-            
-            # Import Resend
-            try:
-                from resend import Resend
-            except ImportError:
-                error_msg = "Resend package not installed. Please add 'resend' to requirements.txt and redeploy."
-                print(f"[EMAIL] ✗ {error_msg}")
-                result_container['error'] = error_msg
-                result_container['success'] = False
-                return False
-            
-            print(f"[EMAIL] Attempting to send email via Resend API...")
-            start_time = time.time()
-            
-            # Initialize Resend client
-            resend = Resend(api_key=resend_api_key)
-            
-            # Send email via Resend API
-            params = {
-                "from": from_email_addr,
-                "to": recipient_list,
-                "subject": subject,
-                "text": message,
-            }
-            
-            if html_message:
-                params["html"] = html_message
-            
-            result = resend.emails.send(params)
-            
-            elapsed_time = time.time() - start_time
-            print(f"[EMAIL] ✓ Email sent successfully via Resend!")
-            print(f"[EMAIL] Resend response: {result}")
-            print(f"[EMAIL] Time taken: {elapsed_time:.2f} seconds")
-            print(f"[EMAIL] ===== Email send process completed =====")
-            result_container['success'] = True
-            return True
-        except Exception as e:
-            import traceback
-            error_trace = traceback.format_exc()
-            error_msg = str(e)
-            print(f"[EMAIL] ✗ Email sending FAILED!")
-            print(f"[EMAIL] Error: {error_msg}")
-            print(f"[EMAIL] Full traceback:\n{error_trace}")
-            print(f"[EMAIL] ===== Email send process failed =====")
-            result_container['error'] = error_msg
-            result_container['success'] = False
-            return False
-    
-    # Run in a thread with timeout
-    thread = threading.Thread(target=send)
-    thread.daemon = False
-    thread.start()
-    thread.join(timeout=timeout)  # Wait up to timeout seconds
-    
-    if thread.is_alive():
-        print(f"[EMAIL] ✗ Email sending TIMED OUT after {timeout} seconds!")
-        result_container['error'] = f"Email sending timed out after {timeout} seconds."
-        return False, result_container['error']
-    
-    return result_container['success'], result_container['error']
         
 # Add these new views
 def password_reset(request):
@@ -306,40 +235,44 @@ def password_reset(request):
                 email_html = render_to_string('employee/email/password_reset_email.html', context)
                 email_text = render_to_string('employee/email/password_reset_email.txt', context)
                 
-                # Verify email configuration before sending
-                if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
-                    print(f"[EMAIL ERROR] Email configuration missing!")
-                    print(f"[EMAIL ERROR] EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
-                    print(f"[EMAIL ERROR] EMAIL_HOST_PASSWORD: {'SET' if settings.EMAIL_HOST_PASSWORD else 'NOT SET'}")
-                    messages.error(request, "Email service is not configured. Please contact support.")
-                    return redirect('employee_login')
-                
-                # Log email configuration for debugging
-                print(f"[EMAIL] Email configuration check:")
-                print(f"[EMAIL]   EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
-                print(f"[EMAIL]   DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
-                print(f"[EMAIL]   EMAIL_HOST: {settings.EMAIL_HOST}")
-                print(f"[EMAIL]   EMAIL_PORT: {settings.EMAIL_PORT}")
-                
-                # Send email with timeout
-                print(f"[EMAIL] Sending password reset email to: {email}")
-                print(f"[EMAIL] From: {settings.DEFAULT_FROM_EMAIL}")
-                success, error = send_email_with_timeout(
-                    'Reset your GEOCONNECT password',
-                    email_text,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [email],
-                    html_message=email_html,
-                    timeout=12
-                )
-                
-                if success:
-                    messages.success(request, "Password reset instructions have been sent to your email.")
-                else:
-                    error_msg = error or "Unknown error occurred"
-                    print(f"[EMAIL] Failed to send password reset email. Error: {error_msg}")
-                    messages.error(request, f"Failed to send email. Error: {error_msg}. Please try again or contact support.")
-                
+                # Try Resend first (Railway-friendly), then fallback to SMTP
+                sent = False
+                send_error = None
+                try:
+                    success, err = send_via_resend(
+                        'Reset your GEOCONNECT password',
+                        email_text,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [email],
+                        html_message=email_html,
+                    )
+                    if success:
+                        sent = True
+                        messages.success(request, "Password reset instructions have been sent to your email.")
+                    else:
+                        send_error = err
+                except Exception as e:
+                    send_error = str(e)
+
+                if not sent:
+                    # Attempt SMTP fallback
+                    try:
+                        send_mail(
+                            'Reset your GEOCONNECT password',
+                            email_text,
+                            settings.DEFAULT_FROM_EMAIL,
+                            [email],
+                            html_message=email_html,
+                            fail_silently=False,
+                        )
+                        sent = True
+                        messages.success(request, "Password reset instructions have been sent to your email.")
+                    except Exception as e:
+                        # Log and inform user
+                        print(f"Email error (fallback): {str(e)}")
+                        messages.error(request, "There was an error sending the password reset email. Please try again later.")
+                        if send_error:
+                            print(f"Resend attempt error: {send_error}")
                 return redirect('employee_login')
             else:
                 # Use a vague message for security
@@ -842,13 +775,28 @@ def send_contact_message(request):
             """
             
             # Send email
-            send_mail(
+            # Try Resend first, then fallback to SMTP
+            success, err = send_via_resend(
                 email_subject,
                 email_message,
                 from_email,
                 [recipient],
-                fail_silently=True,  # Don't crash if email fails
             )
+            if not success:
+                try:
+                    send_mail(
+                        email_subject,
+                        email_message,
+                        from_email,
+                        [recipient],
+                        fail_silently=False,
+                    )
+                except Exception as e:
+                    print(f"Error sending contact email (both methods): Resend err={err}, SMTP err={str(e)}")
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Failed to send email. Please try again later.'
+                    })
             
             return JsonResponse({
                 'success': True,
