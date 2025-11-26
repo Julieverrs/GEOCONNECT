@@ -221,7 +221,16 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = 'JOBCONNECT <your-Jobconnect@gmail.com>'
+
+# Set DEFAULT_FROM_EMAIL from environment variable, or construct from EMAIL_HOST_USER
+# Format: 'Display Name <email@example.com>' or just 'email@example.com'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
+if not DEFAULT_FROM_EMAIL and EMAIL_HOST_USER:
+    # If DEFAULT_FROM_EMAIL is not set, use EMAIL_HOST_USER with app name
+    DEFAULT_FROM_EMAIL = f'Geoconnect <{EMAIL_HOST_USER}>'
+elif not DEFAULT_FROM_EMAIL:
+    # Fallback if neither is set
+    DEFAULT_FROM_EMAIL = 'Geoconnect <geoconnect071704@gmail.com>'
 
 # Password Reset Settings
 PASSWORD_RESET_TIMEOUT = 86400  # 24 hours in seconds
