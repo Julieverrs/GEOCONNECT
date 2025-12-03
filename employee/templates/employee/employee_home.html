@@ -3555,9 +3555,18 @@ body {
     padding-top: 110px;
 }
 
+/* Home section should start at top, no body padding needed for it */
+.home-section {
+    margin-top: -110px !important;
+}
+
 @media (max-width: 992px) {
     body {
         padding-top: 80px;
+    }
+    
+    .home-section {
+        margin-top: -80px !important;
     }
 }
 
@@ -3565,11 +3574,19 @@ body {
     body {
         padding-top: 70px;
     }
+    
+    .home-section {
+        margin-top: -70px !important;
+    }
 }
 
 @media (max-width: 576px) {
     body {
         padding-top: 65px;
+    }
+    
+    .home-section {
+        margin-top: -65px !important;
     }
 }
 </style>
@@ -3588,6 +3605,7 @@ body {
     overflow: hidden;
     background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
     color: white;
+    top: 0;
 }
 
 .home-background {
@@ -3914,6 +3932,7 @@ body {
         min-height: calc(100vh - 80px);
         padding-top: 80px;
         margin-top: -80px;
+        top: 0;
     }
     
     .scroll-indicator {
@@ -3972,6 +3991,7 @@ body {
         min-height: calc(100vh - 70px);
         padding-top: 70px;
         margin-top: -70px;
+        top: 0;
     }
     
     .scroll-indicator {
@@ -4035,6 +4055,7 @@ body {
         min-height: calc(100vh - 65px);
         padding-top: 65px;
         margin-top: -65px;
+        top: 0;
     }
     
     .scroll-indicator {
@@ -5392,6 +5413,8 @@ document.addEventListener('DOMContentLoaded', function() {
         left: auto !important;
         transform: translateX(0) !important;
     }
+    
+    .enhanced-dropdown {
         position: fixed !important;
         top: 110px !important;
         right: 10px !important;
@@ -6314,6 +6337,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Auto-refresh message badge every 30 seconds
     setInterval(updateMessageBadge, 30000);
+});
 </script>
-</style>
 
