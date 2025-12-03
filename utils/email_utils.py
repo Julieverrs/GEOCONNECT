@@ -28,7 +28,10 @@ def send_email_with_timeout(
             if not resend_api_key:
                 result['error'] = 'RESEND_API_KEY not set'
                 result['success'] = False
+                print("[RESEND] ❌ RESEND_API_KEY not found in environment variables")
                 return
+
+            print(f"[RESEND] ✅ Using Resend API (API Key: {resend_api_key[:10]}...)")
 
             # Normalize from_email to plain address
             m = re.search(r'<(.+?)>', from_email)
@@ -37,11 +40,16 @@ def send_email_with_timeout(
             else:
                 from_addr = from_email
 
+            print(f"[RESEND] 📧 Sending email from: {from_addr}")
+            print(f"[RESEND] 📧 Sending email to: {', '.join(recipient_list)}")
+            print(f"[RESEND] 📧 Subject: {subject}")
+
             try:
                 from resend import Resend
             except Exception as e:
                 result['error'] = f'Resend package import failed: {e}'
                 result['success'] = False
+                print(f"[RESEND] ❌ Failed to import Resend package: {e}")
                 return
 
             client = Resend(api_key=resend_api_key)
@@ -55,12 +63,22 @@ def send_email_with_timeout(
                 payload['html'] = html_message
 
             resp = client.emails.send(payload)
+            
+            # Log success with email ID
+            email_id = resp.get('id', 'N/A')
+            print(f"[RESEND] ✅ Email sent successfully via Resend!")
+            print(f"[RESEND] ✅ Email ID: {email_id}")
+            print(f"[RESEND] ✅ Check Resend Dashboard: https://resend.com/emails")
+            
             result['success'] = True
             result['error'] = None
             return
         except Exception as e:
             result['success'] = False
-            result['error'] = f'Resend send failed: {e}\n{traceback.format_exc()}'
+            error_msg = f'Resend send failed: {e}\n{traceback.format_exc()}'
+            result['error'] = error_msg
+            print(f"[RESEND] ❌ Error sending email: {e}")
+            print(f"[RESEND] ❌ Full error: {traceback.format_exc()}")
 
     def _send_via_django():
         try:
@@ -80,14 +98,21 @@ def send_email_with_timeout(
 
     # Prefer Resend when API key exists, otherwise fall back to Django smtp
     if os.environ.get('RESEND_API_KEY'):
+        print("[RESEND] 🚀 Using Resend API for email sending")
         thread = threading.Thread(target=_send_via_resend)
         thread.daemon = False
         thread.start()
         thread.join(timeout=timeout)
         if thread.is_alive():
+            print(f"[RESEND] ❌ Email sending timed out after {timeout} seconds")
             return False, f'Email sending timed out after {timeout} seconds.'
+        if result['success']:
+            print(f"[RESEND] ✅ Email sent successfully!")
+        else:
+            print(f"[RESEND] ❌ Email failed: {result['error']}")
         return result['success'], result['error']
     else:
         # No Resend API key -> use Django send_mail (SMTP)
+        print("[EMAIL] ⚠️ RESEND_API_KEY not set, falling back to SMTP")
         _send_via_django()
         return result['success'], result['error']
