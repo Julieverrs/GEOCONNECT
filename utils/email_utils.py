@@ -77,6 +77,21 @@ def send_email_with_timeout(
             print(f"[RESEND] 📤 Sending email via Resend API...")
             print(f"[RESEND] 📤 From: {from_addr}, To: {', '.join(recipient_list)}")
             
+            # Check if using default domain and sending to non-owner email
+            # Resend free tier restriction: can only send to your own email with default domain
+            default_domain_emails = ['onboarding@resend.dev']
+            is_default_domain = any(domain in from_addr for domain in default_domain_emails)
+            
+            if is_default_domain:
+                # Get the account owner email from API key or environment
+                account_owner_email = os.environ.get('RESEND_ACCOUNT_EMAIL', '')
+                if account_owner_email and recipient_list and recipient_list[0] != account_owner_email:
+                    warning_msg = (
+                        f"⚠️ WARNING: Using default domain (onboarding@resend.dev) can only send to your own email address. "
+                        f"To send to other recipients, verify a domain at resend.com/domains"
+                    )
+                    print(f"[RESEND] {warning_msg}")
+            
             # Use Resend API directly via requests (more reliable)
             try:
                 headers = {
@@ -86,6 +101,17 @@ def send_email_with_timeout(
                 api_url = 'https://api.resend.com/emails'
                 
                 response = requests.post(api_url, json=payload, headers=headers, timeout=timeout)
+                
+                # Check for 403 error (domain verification required)
+                if response.status_code == 403:
+                    error_data = response.json()
+                    error_msg = error_data.get('message', 'Domain verification required')
+                    result['error'] = f'Resend API error (403): {error_msg}. To send to other recipients, verify a domain at resend.com/domains'
+                    result['success'] = False
+                    print(f"[RESEND] ❌ 403 Error: {error_msg}")
+                    print(f"[RESEND] ❌ Solution: Verify a domain in Resend dashboard to send to other recipients")
+                    return
+                
                 response.raise_for_status()
                 resp = response.json()
                 

@@ -20,20 +20,27 @@
             <span class="logo-text">GeoConnect</span>
         </div>
         
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        
         <!-- Navigation links in header -->
-        <div class="header-nav">
+        <div class="header-nav" id="headerNav">
             <ul class="nav-links">
                 <li><a href="#home" class="active">
-                    <i class="fas fa-home"></i> Home
+                    <i class="fas fa-home"></i> <span class="nav-text">Home</span>
                 </a></li>
                 <li><a href="#jobs">
-                    <i class="fas fa-briefcase"></i> Jobs
+                    <i class="fas fa-briefcase"></i> <span class="nav-text">Jobs</span>
                 </a></li>
                 <li><a href="#contact">
-                    <i class="fas fa-envelope"></i> Contact
+                    <i class="fas fa-envelope"></i> <span class="nav-text">Contact</span>
                 </a></li>
                 <li><a href="#about">
-                    <i class="fas fa-info-circle"></i> About
+                    <i class="fas fa-info-circle"></i> <span class="nav-text">About</span>
                 </a></li>
             </ul>
         </div>
@@ -185,7 +192,7 @@
 
 <!-- Inside the jobs section -->
 <section id="jobs" class="section">
-    <div class="container-fluid px-5">
+    <div class="container-fluid jobs-section-container">
         <div class="section-header text-center mb-4">
             <h2>Available Jobs</h2>
             <p class="text-muted">Discover opportunities that match your skills and experience</p>
@@ -194,13 +201,13 @@
         
 <div class="jobs-filter mb-4">
     <div class="row g-3">
-        <div class="col-md-5">
+        <div class="col-12 col-sm-12 col-md-5">
             <div class="search-input">
                 <i class="fas fa-search"></i>
                 <input type="text" id="jobSearch" class="form-control" placeholder="Search jobs...">
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-sm-6 col-md-4">
             <select id="jobCategory" class="form-select">
                 <option value="">All Categories</option>
                 <option value="Full-time">Full-time</option>
@@ -210,16 +217,16 @@
                 <option value="Temporary">Temporary</option>
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-md-3">
             <select id="jobLocation" class="form-select">
                 <option value="">Work-Setups</option>
                 <option value="On-site">On-site</option>
                 <option value="Remote">Remote</option>
             </select>
         </div>
-        <div class="col-md-2 d-flex align-items-center">
+        <div class="col-12 col-sm-12 col-md-2 d-flex align-items-center">
             <button id="savedJobsFilter" class="btn btn-outline-secondary w-100" type="button" style="height: 100%;">
-                <i class="fas fa-heart"></i> Saved Jobs
+                <i class="fas fa-heart"></i> <span class="d-none d-sm-inline">Saved Jobs</span><span class="d-sm-none">Saved</span>
             </button>
         </div>
     </div>
@@ -230,7 +237,7 @@
         <div class="row jobs-container">
             {% with total_jobs=jobs.count %}
             {% for job in jobs %}
-            <div class="col-md-6 col-lg-4 mb-4" data-job-id="{{ job.id }}">
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4 mb-4" data-job-id="{{ job.id }}">
                 <!-- Job Card Structure - Update the structure to improve visibility -->
 <div class="job-card tappable-job-card" 
      data-job-id="{{ job.id }}" 
@@ -1334,6 +1341,36 @@
 </style>
 
 <script>
+// Mobile Menu Toggle Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const headerNav = document.getElementById('headerNav');
+    
+    if (mobileMenuToggle && headerNav) {
+        mobileMenuToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+            headerNav.classList.toggle('active');
+        });
+        
+        // Close menu when clicking on a nav link
+        const navLinks = headerNav.querySelectorAll('.nav-links a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenuToggle.classList.remove('active');
+                headerNav.classList.remove('active');
+            });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!headerNav.contains(event.target) && !mobileMenuToggle.contains(event.target)) {
+                mobileMenuToggle.classList.remove('active');
+                headerNav.classList.remove('active');
+            }
+        });
+    }
+});
+
 // Enhanced Messages Icon Functionality
 document.addEventListener('DOMContentLoaded', function() {
     // Enhanced message icon interactions
@@ -2105,6 +2142,34 @@ body.modal-open {
 }
 
 /* Responsive adjustments for job actions */
+@media (max-width: 768px) {
+    .job-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .job-card-header h3 {
+        font-size: 1.25rem;
+    }
+    
+    .job-card-body {
+        padding: 1rem;
+    }
+    
+    .job-details {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .job-detail-item {
+        font-size: 0.9rem;
+    }
+    
+    .job-description {
+        font-size: 0.9rem;
+        margin-top: 0.75rem;
+    }
+}
+
 @media (max-width: 576px) {
     .job-actions {
         flex-direction: column;
@@ -2114,6 +2179,39 @@ body.modal-open {
     
     .job-actions .btn {
         width: 100%;
+        font-size: 0.9rem;
+        padding: 8px 16px;
+    }
+    
+    .job-card {
+        padding: 1rem;
+    }
+    
+    .job-card-header {
+        padding-bottom: 0.75rem;
+    }
+    
+    .job-card-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .company-name {
+        font-size: 0.85rem;
+    }
+    
+    .job-badges .badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+    
+    .job-card-footer {
+        padding-top: 0.75rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .job-posted {
+        font-size: 0.8rem;
     }
 }
 
@@ -2995,58 +3093,286 @@ body {
     font-weight: 500;
 }
 
+/* Mobile Menu Toggle Button */
+.mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 30px;
+    height: 30px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1001;
+}
+
+.mobile-menu-toggle span {
+    width: 100%;
+    height: 3px;
+    background-color: #ffffff;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
 /* Responsive adjustments */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .header-container {
-        flex-wrap: wrap;
-        height: auto;
-        padding: 15px 20px;
-    }
-
-    .header-nav {
-        order: 3;
-        width: 100%;
-        margin: 15px 0 5px;
-    }
-
-    .nav-links {
-        width: 100%;
-        justify-content: space-between;
-        border-radius: 8px;
-    }
-
-    .nav-links a {
-        padding: 8px 12px;
-        font-size: 14px;
+        padding: 0 20px;
     }
     
-    body {
-        padding-top: 160px;
+    .logo-text {
+        font-size: 1.6rem;
+    }
+    
+    .nav-links a {
+        padding: 10px 20px;
+        font-size: 1rem;
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
+    .dashboard-header {
+        height: auto;
+        min-height: 80px;
+    }
+    
+    .header-container {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 12px 15px;
+        min-height: 80px;
+    }
+    
+    .mobile-menu-toggle {
+        display: flex;
+        order: 2;
+    }
+    
+    .header-nav {
+        order: 4;
+        width: 100%;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        margin: 0;
+    }
+    
+    .header-nav.active {
+        max-height: 300px;
+        margin-top: 15px;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        width: 100%;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 10px;
+        gap: 5px;
+    }
+    
+    .nav-links li {
+        width: 100%;
+    }
+
+    .nav-links a {
+        width: 100%;
+        padding: 12px 15px;
+        font-size: 1rem;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+    
+    .nav-text {
+        margin-left: 10px;
+    }
+    
     .header-actions {
-        gap: 10px;
+        order: 3;
+        gap: 8px;
     }
     
     .profile-name {
         display: none;
     }
     
-    .nav-links {
-        padding: 3px;
+    body {
+        padding-top: 80px;
+    }
+    
+    .jobs-section-container {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        min-height: 70px;
+    }
+    
+    .header-container {
+        padding: 10px 12px;
+        min-height: 70px;
+    }
+    
+    .logo-text {
+        font-size: 1.4rem;
+    }
+    
+    .header-logo {
+        height: 35px;
+        margin-right: 10px;
+    }
+    
+    .header-actions {
+        gap: 6px;
+    }
+    
+    .enhanced-message-icon,
+    .notification-bell {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .enhanced-message-icon .message-icon-symbol,
+    .notification-bell i {
+        font-size: 1.4rem !important;
+    }
+    
+    .profile-avatar {
+        width: 35px;
+        height: 35px;
     }
     
     .nav-links a {
-        padding: 6px 8px;
-        font-size: 13px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+    }
+    
+    body {
+        padding-top: 70px;
+    }
+    
+    .jobs-section-container {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    
+    .jobs-filter .row {
+        margin: 0;
+    }
+    
+    .jobs-filter .col-12,
+    .jobs-filter .col-sm-6 {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-header {
+        min-height: 65px;
+    }
+    
+    .header-container {
+        padding: 8px 10px;
+        min-height: 65px;
+    }
+    
+    .logo-text {
+        font-size: 1.2rem;
+    }
+    
+    .header-logo {
+        height: 30px;
+        margin-right: 8px;
+    }
+    
+    .header-actions {
+        gap: 5px;
+    }
+    
+    .enhanced-message-icon,
+    .notification-bell {
+        width: 36px !important;
+        height: 36px !important;
+        margin-right: 5px !important;
+    }
+    
+    .enhanced-message-icon .message-icon-symbol,
+    .notification-bell i {
+        font-size: 1.2rem !important;
+    }
+    
+    .profile-avatar {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .nav-links {
+        padding: 8px;
+    }
+    
+    .nav-links a {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+    
+    body {
+        padding-top: 65px;
+    }
+    
+    .jobs-section-container {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+    
+    .section-header h2 {
+        font-size: 1.75rem;
+    }
+    
+    .section-header p {
+        font-size: 0.9rem;
     }
 }
 
 /* Update body padding for fixed header */
 body {
     padding-top: 110px;
+}
+
+@media (max-width: 992px) {
+    body {
+        padding-top: 80px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 70px;
+    }
+}
+
+@media (max-width: 576px) {
+    body {
+        padding-top: 65px;
+    }
 }
 </style>
 
@@ -3383,6 +3709,11 @@ body {
 
 /* Responsive adjustments for home section */
 @media (max-width: 992px) {
+    .home-section {
+        min-height: calc(100vh - 80px);
+        padding-top: 80px;
+    }
+    
     .welcome-title {
         font-size: 2.5rem;
     }
@@ -3394,12 +3725,15 @@ body {
     .welcome-actions {
         flex-direction: column;
         align-items: center;
+        gap: 1rem;
     }
     
     .action-button {
         width: 100%;
         max-width: 300px;
-        margin-bottom: 1rem;
+        margin-bottom: 0;
+        padding: 12px 24px;
+        font-size: 1rem;
     }
     
     .avatar-circle {
@@ -3412,13 +3746,58 @@ body {
     }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
+    .home-section {
+        min-height: calc(100vh - 70px);
+        padding-top: 70px;
+    }
+    
     .welcome-title {
         font-size: 2rem;
+        line-height: 1.2;
     }
     
     .welcome-subtitle {
-        font-size: 1rem;
+        font-size: 1.1rem;
+        padding: 0 15px;
+    }
+    
+    .welcome-actions {
+        padding: 0 15px;
+    }
+    
+    .action-button {
+        max-width: 100%;
+        font-size: 0.95rem;
+        padding: 10px 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .home-section {
+        min-height: calc(100vh - 65px);
+        padding-top: 65px;
+    }
+    
+    .welcome-title {
+        font-size: 1.75rem;
+        line-height: 1.3;
+        padding: 0 10px;
+    }
+    
+    .welcome-subtitle {
+        font-size: 0.95rem;
+        padding: 0 10px;
+    }
+    
+    .welcome-actions {
+        padding: 0 10px;
+        gap: 0.75rem;
+    }
+    
+    .action-button {
+        font-size: 0.9rem;
+        padding: 10px 18px;
     }
     
     .stats-container {
@@ -3587,6 +3966,33 @@ body {
     }
     100% {
         transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Jobs Section Container Responsive */
+.jobs-section-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+@media (max-width: 992px) {
+    .jobs-section-container {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .jobs-section-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .jobs-section-container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
     }
 }
 
@@ -4641,8 +5047,62 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: rgba(244, 67, 54, 0.1);
 }
 
+/* Enhanced Dropdown Responsive */
+@media (max-width: 768px) {
+    .enhanced-dropdown {
+        min-width: 200px;
+        max-width: 90vw;
+        font-size: 0.9rem;
+    }
+    
+    .dropdown-header-content {
+        padding: 0.75rem;
+    }
+    
+    .dropdown-item {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .item-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+}
+
 /* Make sure dropdown doesn't get cut off on mobile */
 @media (max-width: 576px) {
+    .enhanced-dropdown {
+        min-width: 180px;
+        max-width: 85vw;
+        font-size: 0.85rem;
+    }
+    
+    .dropdown-header-content {
+        padding: 0.5rem;
+    }
+    
+    .dropdown-item {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .item-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
+    }
+    
+    .profile-dropdown {
+        position: static;
+    }
+    
+    .dropdown-menu-end {
+        right: 0;
+        left: auto;
+        transform: translateX(0);
+    }
     .enhanced-dropdown {
         position: fixed !important;
         top: 110px !important;
