@@ -58,7 +58,7 @@ def send_email_with_timeout(
             print(f"[RESEND] 📧 Sending email to: {', '.join(recipient_list)}")
             print(f"[RESEND] 📧 Subject: {subject}")
 
-            # Prepare payload
+            # Prepare payload with better deliverability settings
             payload = {
                 'from': from_addr,
                 'to': recipient_list,
@@ -67,8 +67,15 @@ def send_email_with_timeout(
             }
             if html_message:
                 payload['html'] = html_message
-
+            
+            # Add reply-to header for better deliverability
+            # Extract reply-to from from_email if available
+            reply_to_match = re.search(r'<(.+?)>', from_email)
+            if reply_to_match:
+                payload['reply_to'] = reply_to_match.group(1)
+            
             print(f"[RESEND] 📤 Sending email via Resend API...")
+            print(f"[RESEND] 📤 From: {from_addr}, To: {', '.join(recipient_list)}")
             
             # Use Resend API directly via requests (more reliable)
             try:
@@ -81,6 +88,9 @@ def send_email_with_timeout(
                 response = requests.post(api_url, json=payload, headers=headers, timeout=timeout)
                 response.raise_for_status()
                 resp = response.json()
+                
+                # Log response for debugging
+                print(f"[RESEND] 📥 API Response: {resp}")
                 
                 # Log success with email ID
                 email_id = resp.get('id', 'N/A')
