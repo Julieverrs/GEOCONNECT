@@ -215,10 +215,12 @@ MESSAGE_TAGS = {
 LOGIN_URL = 'admin_panel:login'  # Redirect protected admin routes to the custom admin login
 
 # Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+# Priority: Resend API (for Railway/production) > SMTP (fallback for local development)
+# Resend is used when RESEND_API_KEY is set in environment variables
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Fallback for local dev
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_TIMEOUT = 15  # 15 seconds timeout for SMTP connection
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
@@ -229,11 +231,12 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 if not DEFAULT_FROM_EMAIL:
     # Use Resend's default domain for testing (no verification needed)
-    # You can change this to your verified domain later
+    # For production, verify your domain in Resend dashboard and use: 'Geoconnect <noreply@yourdomain.com>'
     DEFAULT_FROM_EMAIL = 'Geoconnect <onboarding@resend.dev>'
 
-# Ensure DEFAULT_FROM_EMAIL uses the same email as EMAIL_HOST_USER for Gmail compatibility
-if EMAIL_HOST_USER and DEFAULT_FROM_EMAIL:
+# Only override DEFAULT_FROM_EMAIL for SMTP (Gmail) if RESEND_API_KEY is NOT set
+# When using Resend, we should use Resend's domain, not Gmail
+if not os.environ.get('RESEND_API_KEY') and EMAIL_HOST_USER and DEFAULT_FROM_EMAIL:
     # Extract email from DEFAULT_FROM_EMAIL if it's in format "Name <email>"
     import re
     email_match = re.search(r'<(.+?)>', DEFAULT_FROM_EMAIL)
@@ -242,11 +245,24 @@ if EMAIL_HOST_USER and DEFAULT_FROM_EMAIL:
     else:
         from_email_addr = DEFAULT_FROM_EMAIL
     
-    # If the email doesn't match EMAIL_HOST_USER, update it
+    # If the email doesn't match EMAIL_HOST_USER, update it (only for SMTP/Gmail)
     if from_email_addr != EMAIL_HOST_USER:
-        print(f"[EMAIL CONFIG] Warning: DEFAULT_FROM_EMAIL ({from_email_addr}) doesn't match EMAIL_HOST_USER ({EMAIL_HOST_USER})")
-        print(f"[EMAIL CONFIG] Updating DEFAULT_FROM_EMAIL to use EMAIL_HOST_USER for Gmail compatibility")
+        print(f"[EMAIL CONFIG] Using SMTP: Updating DEFAULT_FROM_EMAIL to use EMAIL_HOST_USER for Gmail compatibility")
         DEFAULT_FROM_EMAIL = f'Geoconnect <{EMAIL_HOST_USER}>'
+elif os.environ.get('RESEND_API_KEY'):
+    # When using Resend, ensure we're using Resend's domain
+    import re
+    if DEFAULT_FROM_EMAIL:
+        email_match = re.search(r'<(.+?)>', DEFAULT_FROM_EMAIL)
+        if email_match:
+            from_email_addr = email_match.group(1)
+        else:
+            from_email_addr = DEFAULT_FROM_EMAIL
+        
+        # If DEFAULT_FROM_EMAIL is using Gmail domain, switch to Resend default
+        if '@gmail.com' in from_email_addr or '@googlemail.com' in from_email_addr:
+            print(f"[EMAIL CONFIG] Using Resend: Switching from Gmail to Resend default domain")
+            DEFAULT_FROM_EMAIL = 'Geoconnect <onboarding@resend.dev>'
 
 # Password Reset Settings
 PASSWORD_RESET_TIMEOUT = 86400  # 24 hours in seconds

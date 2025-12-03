@@ -11,6 +11,7 @@ import json
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db import models
+from utils.email_utils import send_email_with_timeout
 
 # Update these imports to use the correct model locations
 from employer.models import Employer  # Changed from .models
@@ -214,13 +215,15 @@ Your employer account has been approved. You can now log in to GEOCONNECT and st
 Best regards,
 The GEOCONNECT Team'''
             
-            send_mail(
+            success, error = send_email_with_timeout(
                 subject,
                 message,
                 settings.DEFAULT_FROM_EMAIL,
                 [employer.email],
-                fail_silently=True,
+                timeout=12
             )
+            if not success:
+                print(f"Email error: {error}")  # Log email errors but don't fail the request
         except Exception as e:
             print(f"Email error: {str(e)}")  # Log email errors but don't fail the request
         
@@ -331,13 +334,15 @@ We will review your application again and notify you of our decision.
 Best regards,
 The GEOCONNECT Team'''
             
-            send_mail(
+            success, error = send_email_with_timeout(
                 subject,
                 message,
                 settings.DEFAULT_FROM_EMAIL,
                 [employer.email],
-                fail_silently=True,
+                timeout=12
             )
+            if not success:
+                print(f"Email error: {error}")  # Log the error but continue processing
         except Exception as e:
             print(f"Email error: {str(e)}")  # Log the error but continue processing
         
@@ -533,13 +538,15 @@ Your GEOCONNECT account has been approved. You can now log in and start applying
 Best regards,
 The GEOCONNECT Team'''
             
-            send_mail(
+            success, error = send_email_with_timeout(
                 subject,
                 message,
                 settings.DEFAULT_FROM_EMAIL,
                 [employee.email],
-                fail_silently=True,
+                timeout=12
             )
+            if not success:
+                print(f"Email error: {error}")
         except Exception as e:
             print(f"Email error: {str(e)}")
         
@@ -593,13 +600,15 @@ Please address the issues mentioned and try again.
 Best regards,
 The GEOCONNECT Team'''
             
-            send_mail(
+            success, error = send_email_with_timeout(
                 subject,
                 message,
                 settings.DEFAULT_FROM_EMAIL,
                 [employee.email],
-                fail_silently=True,
+                timeout=12
             )
+            if not success:
+                print(f"Email error: {error}")
         except Exception as e:
             print(f"Email error: {str(e)}")
         
@@ -647,13 +656,15 @@ We will review your application again and notify you of our decision.
 Best regards,
 The GEOCONNECT Team'''
             
-            send_mail(
+            success, error = send_email_with_timeout(
                 subject,
                 message,
                 settings.DEFAULT_FROM_EMAIL,
                 [employee.email],
-                fail_silently=True,
+                timeout=12
             )
+            if not success:
+                print(f"Email error: {error}")
         except Exception as e:
             print(f"Email error: {str(e)}")
         

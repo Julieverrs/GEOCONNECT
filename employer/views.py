@@ -1002,101 +1002,7 @@ def search_jobs(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-# Helper function to send email using Resend API (bypasses Railway SMTP blocking)
-def send_email_with_timeout(subject, message, from_email, recipient_list, html_message=None, timeout=12):
-    """Send email using Resend API (works on Railway)"""
-    import time
-    import os
-    import re
-    
-    result_container = {'success': False, 'error': None}
-    
-    def send():
-        try:
-            print(f"[EMAIL] ===== Starting email send process (Resend API) =====")
-            print(f"[EMAIL] From: {from_email}")
-            print(f"[EMAIL] To: {recipient_list}")
-            print(f"[EMAIL] Subject: {subject}")
-            
-            # Get Resend API key from environment
-            resend_api_key = os.environ.get('RESEND_API_KEY')
-            if not resend_api_key:
-                error_msg = "RESEND_API_KEY environment variable is not set. Please configure it in Railway."
-                print(f"[EMAIL] ✗ {error_msg}")
-                result_container['error'] = error_msg
-                result_container['success'] = False
-                return False
-            
-            # Extract email address from from_email (handle "Name <email>" format)
-            email_match = re.search(r'<(.+?)>', from_email)
-            if email_match:
-                from_email_addr = email_match.group(1)
-            else:
-                from_email_addr = from_email
-            
-            print(f"[EMAIL] Using Resend API to send email...")
-            print(f"[EMAIL] From address: {from_email_addr}")
-            
-            # Import Resend
-            try:
-                from resend import Resend
-            except ImportError:
-                error_msg = "Resend package not installed. Please add 'resend' to requirements.txt and redeploy."
-                print(f"[EMAIL] ✗ {error_msg}")
-                result_container['error'] = error_msg
-                result_container['success'] = False
-                return False
-            
-            print(f"[EMAIL] Attempting to send email via Resend API...")
-            start_time = time.time()
-            
-            # Initialize Resend client
-            resend = Resend(api_key=resend_api_key)
-            
-            # Send email via Resend API
-            params = {
-                "from": from_email_addr,
-                "to": recipient_list,
-                "subject": subject,
-                "text": message,
-            }
-            
-            if html_message:
-                params["html"] = html_message
-            
-            result = resend.emails.send(params)
-            
-            elapsed_time = time.time() - start_time
-            print(f"[EMAIL] ✓ Email sent successfully via Resend!")
-            print(f"[EMAIL] Resend response: {result}")
-            print(f"[EMAIL] Time taken: {elapsed_time:.2f} seconds")
-            print(f"[EMAIL] ===== Email send process completed =====")
-            result_container['success'] = True
-            return True
-        except Exception as e:
-            import traceback
-            error_trace = traceback.format_exc()
-            error_msg = str(e)
-            print(f"[EMAIL] ✗ Email sending FAILED!")
-            print(f"[EMAIL] Error: {error_msg}")
-            print(f"[EMAIL] Full traceback:\n{error_trace}")
-            print(f"[EMAIL] ===== Email send process failed =====")
-            result_container['error'] = error_msg
-            result_container['success'] = False
-            return False
-    
-    # Run in a thread with timeout
-    thread = threading.Thread(target=send)
-    thread.daemon = False
-    thread.start()
-    thread.join(timeout=timeout)  # Wait up to timeout seconds
-    
-    if thread.is_alive():
-        print(f"[EMAIL] ✗ Email sending TIMED OUT after {timeout} seconds!")
-        result_container['error'] = f"Email sending timed out after {timeout} seconds."
-        return False, result_container['error']
-    
-    return result_container['success'], result_container['error']
+from utils.email_utils import send_email_with_timeout
 
 def employer_password_reset(request):
     if request.method == "POST":
@@ -1393,16 +1299,19 @@ def update_application_status(request, application_id):
             email_text = render_to_string(f'employer/email/{template_name}.txt', context)
             
             # Send the email
-            send_mail(
+            success, error = send_email_with_timeout(
                 subject,
                 email_text,
                 settings.DEFAULT_FROM_EMAIL,
                 [employee.email],
                 html_message=email_html,
-                fail_silently=True,  # Don't crash if email fails
+                timeout=12
             )
             
-            print(f"Email notification sent to {employee.email}")
+            if success:
+                print(f"Email notification sent to {employee.email}")
+            else:
+                print(f"Error sending email notification: {error}")
             
         except Exception as e:
             # Log the error but don't fail the status update
@@ -1464,13 +1373,20 @@ def send_contact_message(request):
             """
             
             # Send email
-            send_mail(
+            success, error = send_email_with_timeout(
                 email_subject,
                 email_message,
                 from_email,
                 [recipient],
-                fail_silently=True,  # Don't crash if email fails
+                timeout=12
             )
+            
+            if not success:
+                print(f"Error sending employer contact email: {error}")
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Failed to send email: {error}'
+                })
             
             return JsonResponse({
                 'success': True,

@@ -5,6 +5,7 @@ from .forms import EmployeeSignupForm, EmployeeLoginForm, PasswordResetForm, Set
 from .models import Employee, Notification, SavedJob, EmployeeFeedback, EmployerFeedback
 from employer.models import Job, Employer, JobApplication
 from django.core.mail import send_mail
+from utils.email_utils import send_email_with_timeout
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
@@ -205,20 +206,20 @@ def password_reset(request):
                 email_html = render_to_string('employee/email/password_reset_email.html', context)
                 email_text = render_to_string('employee/email/password_reset_email.txt', context)
                 
-                # Send email
-                try:
-                    send_mail(
-                        'Reset your GEOCONNECT password',
-                        email_text,
-                        settings.DEFAULT_FROM_EMAIL,
-                        [email],
-                        html_message=email_html,
-                        fail_silently=False,
-                    )
+                # Send email (use Resend API if configured; otherwise fallback to SMTP)
+                success, error = send_email_with_timeout(
+                    'Reset your GEOCONNECT password',
+                    email_text,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    html_message=email_html,
+                    timeout=12,
+                )
+                if success:
                     messages.success(request, "Password reset instructions have been sent to your email.")
-                except Exception as e:
+                else:
                     messages.error(request, "There was an error sending the password reset email. Please try again later.")
-                    print(f"Email error: {str(e)}")  # Log the error
+                    print(f"Email error: {error}")  # Log the error
                 return redirect('employee_login')
             else:
                 # Use a vague message for security
@@ -469,14 +470,16 @@ def apply_job(request):
                 <p>You can view this application in your employer dashboard.</p>
                 '''
                 
-                send_mail(
+                success, error = send_email_with_timeout(
                     subject,
                     message,
                     settings.DEFAULT_FROM_EMAIL,
                     [employer_email],
                     html_message=html_message,
-                    fail_silently=True
+                    timeout=12
                 )
+                if not success:
+                    print(f"Error sending notification email: {error}")
         except Exception as e:
             # Log the error but don't fail the application
             print(f"Error sending notification email: {str(e)}")
@@ -721,13 +724,19 @@ def send_contact_message(request):
             """
             
             # Send email
-            send_mail(
+            success, error = send_email_with_timeout(
                 email_subject,
                 email_message,
                 from_email,
                 [recipient],
-                fail_silently=False,
+                timeout=12
             )
+            if not success:
+                print(f"Error sending contact email: {error}")
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Failed to send email: {error}'
+                })
             
             return JsonResponse({
                 'success': True,
