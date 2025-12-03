@@ -1069,8 +1069,16 @@ def employer_password_reset(request):
                     messages.success(request, "Password reset instructions have been sent to your email.")
                 else:
                     error_msg = error or "Unknown error occurred"
-                    print(f"[EMAIL] Failed to send password reset email. Error: {error_msg}")
-                    messages.error(request, f"Failed to send email. Error: {error_msg}. Please try again or contact support.")
+                    print(f"[EMAIL ERROR] Failed to send password reset email:")
+                    print(f"[EMAIL ERROR] Error details: {error_msg}")
+                    print(f"[EMAIL ERROR] DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
+                    print(f"[EMAIL ERROR] RESEND_API_KEY set: {bool(os.environ.get('RESEND_API_KEY'))}")
+                    
+                    # Show detailed error message
+                    if settings.DEBUG:
+                        messages.error(request, f"Email error: {error_msg}")
+                    else:
+                        messages.error(request, f"Failed to send email. Error: {error_msg[:150]}. Please try again or contact support.")
                 
                 return redirect('employer_login')
             else:

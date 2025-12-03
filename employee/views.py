@@ -6,6 +6,7 @@ from .models import Employee, Notification, SavedJob, EmployeeFeedback, Employer
 from employer.models import Job, Employer, JobApplication
 from django.core.mail import send_mail
 from utils.email_utils import send_email_with_timeout
+import os
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
@@ -218,8 +219,18 @@ def password_reset(request):
                 if success:
                     messages.success(request, "Password reset instructions have been sent to your email.")
                 else:
-                    messages.error(request, "There was an error sending the password reset email. Please try again later.")
-                    print(f"Email error: {error}")  # Log the error
+                    # Show detailed error for debugging
+                    error_msg = error or "Unknown error occurred"
+                    print(f"[EMAIL ERROR] Failed to send password reset email:")
+                    print(f"[EMAIL ERROR] Error details: {error_msg}")
+                    print(f"[EMAIL ERROR] DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
+                    print(f"[EMAIL ERROR] RESEND_API_KEY set: {bool(os.environ.get('RESEND_API_KEY'))}")
+                    
+                    # Show error message to user (for debugging - you can remove this in production)
+                    if settings.DEBUG:
+                        messages.error(request, f"Email error: {error_msg}")
+                    else:
+                        messages.error(request, f"There was an error sending the password reset email. Error: {error_msg[:100]}")
                 return redirect('employee_login')
             else:
                 # Use a vague message for security
