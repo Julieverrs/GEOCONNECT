@@ -7,6 +7,7 @@ from .forms import EmployerSignupForm, EmployerLoginForm, JobPostForm
 from django.http import HttpResponse
 from django.core.paginator import Paginator
 import json
+import os
 import threading
 from django.db.models import Q, Count
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -1034,20 +1035,23 @@ def employer_password_reset(request):
                 email_html = render_to_string('employer/email/password_reset_email.html', context)
                 email_text = render_to_string('employer/email/password_reset_email.txt', context)
                 
-                # Verify email configuration before sending
-                if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
-                    print(f"[EMAIL ERROR] Email configuration missing!")
-                    print(f"[EMAIL ERROR] EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
-                    print(f"[EMAIL ERROR] EMAIL_HOST_PASSWORD: {'SET' if settings.EMAIL_HOST_PASSWORD else 'NOT SET'}")
-                    messages.error(request, "Email service is not configured. Please contact support.")
-                    return redirect('employer_login')
+                # Check if using Resend (preferred) or SMTP
+                resend_api_key = os.environ.get('RESEND_API_KEY')
+                if not resend_api_key:
+                    # Only check SMTP config if not using Resend
+                    if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
+                        print(f"[EMAIL ERROR] Email configuration missing!")
+                        print(f"[EMAIL ERROR] RESEND_API_KEY not set and SMTP not configured")
+                        messages.error(request, "Email service is not configured. Please contact support.")
+                        return redirect('employer_login')
                 
                 # Log email configuration for debugging
                 print(f"[EMAIL] Email configuration check:")
-                print(f"[EMAIL]   EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
+                if resend_api_key:
+                    print(f"[EMAIL]   Using Resend API")
+                else:
+                    print(f"[EMAIL]   Using SMTP")
                 print(f"[EMAIL]   DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
-                print(f"[EMAIL]   EMAIL_HOST: {settings.EMAIL_HOST}")
-                print(f"[EMAIL]   EMAIL_PORT: {settings.EMAIL_PORT}")
                 
                 # Send email with timeout
                 print(f"[EMAIL] Sending password reset email to: {email}")

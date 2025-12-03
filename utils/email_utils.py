@@ -34,11 +34,24 @@ def send_email_with_timeout(
             print(f"[RESEND] ✅ Using Resend API (API Key: {resend_api_key[:10]}...)")
 
             # Normalize from_email to plain address
+            if not from_email:
+                result['error'] = 'from_email is required'
+                result['success'] = False
+                print(f"[RESEND] ❌ from_email is empty or None")
+                return
+                
             m = re.search(r'<(.+?)>', from_email)
             if m:
                 from_addr = m.group(1)
             else:
                 from_addr = from_email
+
+            # Validate from address
+            if not from_addr or '@' not in from_addr:
+                result['error'] = f'Invalid from_email address: {from_addr}'
+                result['success'] = False
+                print(f"[RESEND] ❌ Invalid from_email address: {from_addr}")
+                return
 
             print(f"[RESEND] 📧 Sending email from: {from_addr}")
             print(f"[RESEND] 📧 Sending email to: {', '.join(recipient_list)}")
@@ -62,13 +75,20 @@ def send_email_with_timeout(
             if html_message:
                 payload['html'] = html_message
 
+            print(f"[RESEND] 📤 Sending email payload: from={from_addr}, to={recipient_list}, subject={subject[:50]}...")
+            
             resp = client.emails.send(payload)
             
             # Log success with email ID
-            email_id = resp.get('id', 'N/A')
-            print(f"[RESEND] ✅ Email sent successfully via Resend!")
-            print(f"[RESEND] ✅ Email ID: {email_id}")
-            print(f"[RESEND] ✅ Check Resend Dashboard: https://resend.com/emails")
+            # Resend API returns {'id': '...'} on success
+            if isinstance(resp, dict) and 'id' in resp:
+                email_id = resp['id']
+                print(f"[RESEND] ✅ Email sent successfully via Resend!")
+                print(f"[RESEND] ✅ Email ID: {email_id}")
+                print(f"[RESEND] ✅ Check Resend Dashboard: https://resend.com/emails")
+            else:
+                print(f"[RESEND] ⚠️ Unexpected response format: {resp}")
+                print(f"[RESEND] ✅ Email sent (but response format unexpected)")
             
             result['success'] = True
             result['error'] = None
