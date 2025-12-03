@@ -2948,6 +2948,33 @@ body.modal-open {
 </style>
 
 <style>
+/* Global responsive styles */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Ensure all sections are responsive */
+.section, .contact-us-section, .about-us-section {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Ensure containers don't overflow */
+.container, .container-fluid {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 /* Header Styles - Copied from employer_home.html */
 body {
     padding-top: 110px; /* Space for fixed header */
@@ -2974,10 +3001,11 @@ body {
     padding: 0 30px;
     height: 100%;
     width: 100%;
-    max-width: 2200px;
+    max-width: 100%;
     margin: 0 auto;
     gap: 20px;
     overflow: visible;
+    box-sizing: border-box;
 }
 
 /* Logo section improvements */
@@ -3146,6 +3174,8 @@ body {
 @media (max-width: 1200px) {
     .header-container {
         padding: 0 20px;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     
     .logo-text {
@@ -3172,6 +3202,8 @@ body {
         min-height: 80px;
         gap: 12px;
         overflow: visible;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     
     .logo-section {
@@ -3285,6 +3317,8 @@ body {
         padding: 10px 15px;
         min-height: 70px;
         gap: 12px;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     
     .logo-section {
@@ -3396,6 +3430,8 @@ body {
         gap: 6px;
         overflow: visible;
         position: relative;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     
     .logo-section {
@@ -3547,7 +3583,7 @@ body {
     flex-direction: column;
     justify-content: center;
     padding: 0;
-    margin-top: 0;
+    margin-top: -110px;
     padding-top: 110px;
     overflow: hidden;
     background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
@@ -3877,7 +3913,7 @@ body {
     .home-section {
         min-height: calc(100vh - 80px);
         padding-top: 80px;
-        margin-top: 0;
+        margin-top: -80px;
     }
     
     .scroll-indicator {
@@ -3935,7 +3971,7 @@ body {
     .home-section {
         min-height: calc(100vh - 70px);
         padding-top: 70px;
-        margin-top: 0;
+        margin-top: -70px;
     }
     
     .scroll-indicator {
@@ -3998,7 +4034,7 @@ body {
     .home-section {
         min-height: calc(100vh - 65px);
         padding-top: 65px;
-        margin-top: 0;
+        margin-top: -65px;
     }
     
     .scroll-indicator {
