@@ -4,6 +4,7 @@ import os
 import re
 import traceback
 from typing import List, Optional, Tuple
+import requests
 
 from django.core.mail import send_mail as django_send_mail
 
@@ -57,15 +58,7 @@ def send_email_with_timeout(
             print(f"[RESEND] 📧 Sending email to: {', '.join(recipient_list)}")
             print(f"[RESEND] 📧 Subject: {subject}")
 
-            try:
-                from resend import Resend
-            except Exception as e:
-                result['error'] = f'Resend package import failed: {e}'
-                result['success'] = False
-                print(f"[RESEND] ❌ Failed to import Resend package: {e}")
-                return
-
-            client = Resend(api_key=resend_api_key)
+            # Prepare payload
             payload = {
                 'from': from_addr,
                 'to': recipient_list,
@@ -75,24 +68,41 @@ def send_email_with_timeout(
             if html_message:
                 payload['html'] = html_message
 
-            print(f"[RESEND] 📤 Sending email payload: from={from_addr}, to={recipient_list}, subject={subject[:50]}...")
+            print(f"[RESEND] 📤 Sending email via Resend API...")
             
-            resp = client.emails.send(payload)
-            
-            # Log success with email ID
-            # Resend API returns {'id': '...'} on success
-            if isinstance(resp, dict) and 'id' in resp:
-                email_id = resp['id']
+            # Use Resend API directly via requests (more reliable)
+            try:
+                headers = {
+                    'Authorization': f'Bearer {resend_api_key}',
+                    'Content-Type': 'application/json'
+                }
+                api_url = 'https://api.resend.com/emails'
+                
+                response = requests.post(api_url, json=payload, headers=headers, timeout=timeout)
+                response.raise_for_status()
+                resp = response.json()
+                
+                # Log success with email ID
+                email_id = resp.get('id', 'N/A')
                 print(f"[RESEND] ✅ Email sent successfully via Resend!")
                 print(f"[RESEND] ✅ Email ID: {email_id}")
                 print(f"[RESEND] ✅ Check Resend Dashboard: https://resend.com/emails")
-            else:
-                print(f"[RESEND] ⚠️ Unexpected response format: {resp}")
-                print(f"[RESEND] ✅ Email sent (but response format unexpected)")
-            
-            result['success'] = True
-            result['error'] = None
-            return
+                
+                result['success'] = True
+                result['error'] = None
+                return
+            except requests.exceptions.RequestException as e:
+                error_msg = f'Resend API request failed: {str(e)}'
+                if hasattr(e, 'response') and e.response is not None:
+                    try:
+                        error_detail = e.response.json()
+                        error_msg += f" - {error_detail}"
+                    except:
+                        error_msg += f" - Status: {e.response.status_code}"
+                result['error'] = error_msg
+                result['success'] = False
+                print(f"[RESEND] ❌ API request failed: {error_msg}")
+                return
         except Exception as e:
             result['success'] = False
             error_msg = f'Resend send failed: {e}\n{traceback.format_exc()}'
