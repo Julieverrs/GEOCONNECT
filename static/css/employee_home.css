@@ -1876,14 +1876,18 @@ body.modal-open {
 
 @media (max-width: 768px) {
   .contact-us-section {
-    min-height: 100vh;
-    max-height: none;
+    min-height: auto;
+    padding: 2rem 0;
+    margin: 0;
   }
 
   .contact-us-content {
+    width: 95%;
+    padding: 1.5rem;
     height: auto;
-    min-height: 90vh;
-    padding: 1rem;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
   .contact-header h2 {
@@ -1894,9 +1898,222 @@ body.modal-open {
     font-size: 1rem;
   }
 
+  .contact-main-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    height: auto;
+    overflow: visible;
+  }
+
+  .contact-form-section {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    height: auto;
+    overflow: visible;
+  }
+
+  .form-visual {
+    display: none; /* Hide visual on mobile to save space */
+  }
+
+  .contact-form-wrapper {
+    height: auto;
+    overflow: visible;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-info-section {
+    overflow: visible;
+  }
+
+  .contact-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .social-connect-section {
+    margin-top: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .contact-us-section {
+    min-height: auto;
+    padding: 1.5rem 0;
+    margin: 0;
+  }
+
+  .contact-us-content {
+    width: 98%;
+    padding: 1rem;
+    border-radius: 15px;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .contact-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .contact-header h2 {
+    font-size: 1.75rem;
+  }
+
+  .contact-subtitle {
+    font-size: 0.9rem;
+    padding: 0 0.5rem;
+  }
+
+  .contact-main-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    height: auto;
+    overflow: visible;
+  }
+
+  .contact-form-section {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    height: auto;
+    overflow: visible;
+  }
+
+  .form-visual {
+    display: none;
+  }
+
+  .contact-form-wrapper {
+    height: auto;
+    overflow: visible;
+    width: 100%;
+  }
+
+  .enhanced-contact-form {
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .form-group {
+    width: 100%;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .enhanced-submit-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .contact-info-section {
+    overflow: visible;
+    width: 100%;
+  }
+
+  .contact-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .enhanced-contact-card {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .social-connect-section {
+    margin-top: 1rem;
+    width: 100%;
+  }
+
+  .social-connect-section h3 {
+    font-size: 1rem;
+  }
+
+  .enhanced-social-icons {
+    gap: 0.75rem;
+  }
+
+  .enhanced-social-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .contact-us-section {
+    min-height: auto;
+    padding: 2rem 0;
+    margin: 0;
+  }
+
+  .contact-us-content {
+    width: 95%;
+    padding: 1.5rem;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .contact-header h2 {
+    font-size: 2rem;
+  }
+
+  .contact-subtitle {
+    font-size: 1rem;
+  }
+
+  .contact-main-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    height: auto;
+    overflow: visible;
+  }
+
+  .contact-form-section {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    height: auto;
+    overflow: visible;
+  }
+
+  .form-visual {
+    display: none; /* Hide visual on mobile to save space */
+  }
+
+  .contact-form-wrapper {
+    height: auto;
+    overflow: visible;
+  }
+
   .form-row {
     grid-template-columns: 1fr;
     gap: 0.8rem;
+  }
+
+  .contact-info-section {
+    overflow: visible;
+  }
+
+  .contact-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .enhanced-contact-card {
@@ -1904,6 +2121,10 @@ body.modal-open {
     flex-direction: column;
     text-align: center;
     gap: 0.8rem;
+  }
+
+  .social-connect-section {
+    margin-top: 1.5rem;
   }
 
   .enhanced-social-icons {
@@ -1918,31 +2139,98 @@ body.modal-open {
 }
 
 @media (max-width: 576px) {
+  .contact-us-section {
+    min-height: auto;
+    padding: 1.5rem 0;
+    margin: 0;
+  }
+
   .contact-us-content {
-    width: 95%;
-    padding: 0.8rem;
+    width: 98%;
+    padding: 1rem;
+    border-radius: 15px;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
   .contact-header {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   .contact-header h2 {
-    font-size: 1.8rem;
+    font-size: 1.75rem;
   }
 
-  .contact-icon-container {
-    width: 100px;
-    height: 100px;
+  .contact-subtitle {
+    font-size: 0.9rem;
+    padding: 0 0.5rem;
   }
 
-  .animated-contact-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 1.2rem;
+  .contact-main-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    height: auto;
+    overflow: visible;
+  }
+
+  .contact-form-section {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    height: auto;
+    overflow: visible;
+  }
+
+  .form-visual {
+    display: none;
+  }
+
+  .contact-form-wrapper {
+    height: auto;
+    overflow: visible;
+    width: 100%;
+  }
+
+  .enhanced-contact-form {
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .form-group {
+    width: 100%;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .enhanced-submit-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .contact-info-section {
+    overflow: visible;
+    width: 100%;
+  }
+
+  .contact-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    width: 100%;
   }
 
   .enhanced-contact-card {
+    width: 100%;
     padding: 0.8rem;
   }
 
@@ -1953,7 +2241,23 @@ body.modal-open {
   }
 
   .social-connect-section {
-    padding: 1rem;
+    margin-top: 1rem;
+    width: 100%;
+    padding: 1rem 0;
+  }
+
+  .social-connect-section h3 {
+    font-size: 1rem;
+  }
+
+  .enhanced-social-icons {
+    gap: 0.75rem;
+  }
+
+  .enhanced-social-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
   }
 }
 

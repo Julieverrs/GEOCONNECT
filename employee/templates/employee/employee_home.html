@@ -2997,13 +2997,15 @@ body {
     align-items: center;
     flex: 0 0 auto;
     min-width: 0;
-    overflow: hidden;
+    overflow: visible;
+    gap: 8px;
 }
 
 .header-logo {
     height: 45px;
     width: auto;
-    margin-right: 15px;
+    margin-right: 0;
+    flex-shrink: 0;
 }
 
 .logo-text {
@@ -3012,9 +3014,10 @@ body {
     color: #ffffff;
     letter-spacing: 0.5px;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+    overflow: visible;
+    text-overflow: clip;
+    max-width: none;
+    flex-shrink: 0;
 }
 
 
@@ -3113,19 +3116,21 @@ body {
     .logo-section {
         flex: 0 0 auto;
         min-width: 0;
-        max-width: 140px;
+        max-width: none;
+        gap: 6px;
     }
     
     .logo-text {
-        font-size: 1.3rem;
+        font-size: 1.1rem;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        overflow: visible;
+        text-overflow: clip;
     }
     
     .header-logo {
-        height: 36px;
-        margin-right: 8px;
+        height: 32px;
+        margin-right: 0;
+        flex-shrink: 0;
     }
     
     .header-actions {
@@ -3181,19 +3186,20 @@ body {
     .logo-section {
         flex-shrink: 0;
         min-width: 0;
+        gap: 5px;
     }
     
     .logo-text {
-        font-size: 1.3rem;
+        font-size: 0.95rem;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        overflow: visible;
+        text-overflow: clip;
     }
     
     .header-logo {
-        height: 32px;
+        height: 28px;
         width: auto;
-        margin-right: 8px;
+        margin-right: 0;
         flex-shrink: 0;
     }
     
@@ -3286,21 +3292,22 @@ body {
     .logo-section {
         flex: 0 0 auto;
         min-width: 0;
-        max-width: 90px;
-        overflow: hidden;
+        max-width: none;
+        overflow: visible;
+        gap: 4px;
     }
     
     .logo-text {
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        overflow: visible;
+        text-overflow: clip;
     }
     
     .header-logo {
-        height: 26px;
+        height: 24px;
         width: auto;
-        margin-right: 5px;
+        margin-right: 0;
         flex-shrink: 0;
     }
     
@@ -3715,6 +3722,10 @@ body {
     transform: translateX(-50%);
     z-index: 2;
     animation: bounce 2s infinite;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .scroll-down {
@@ -3764,6 +3775,10 @@ body {
     
     .scroll-indicator {
         bottom: 25px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     
     .welcome-content {
@@ -3823,6 +3838,10 @@ body {
     
     .scroll-indicator {
         bottom: 20px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     
     .scroll-text {
@@ -3887,6 +3906,19 @@ body {
     
     .scroll-indicator {
         bottom: 15px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        left: 0;
+        transform: none;
+    }
+    
+    .scroll-down {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     
     .scroll-text {
@@ -5565,25 +5597,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 
-@media (max-width: 768px) {
-    .contact-us-form form {
-        grid-template-columns: 1fr;
-    }
-
-    .contact-us-form .form-group:nth-child(3),
-    .contact-us-form .form-group:nth-child(4),
-    .contact-us-form button {
-        grid-column: span 1;
-    }
-
-    .contact-us-content h2 {
-        font-size: 2rem;
-    }
-
-    .contact-us-content p {
-        font-size: 1rem;
-    }
-}
+/* Contact Us responsive styles are now in employee_home.css */
 </style>
 
 <script>
