@@ -2364,4 +2364,88 @@ body {
   margin-top: var(--spacing-xs);
 }
 
+/* Stats Section with Month Filter */
+.stats-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--sidebar-border);
+}
+
+.stats-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--sidebar-text);
+}
+
+.month-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.month-filter-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--sidebar-text);
+}
+
+.month-filter-label i {
+  color: var(--primary-blue);
+}
+
+.month-select {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 2px solid var(--sidebar-border);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: var(--surface);
+  color: var(--sidebar-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 200px;
+}
+
+.month-select:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.month-select:hover {
+  border-color: var(--primary-blue);
+}
+
+/* Responsive adjustments for stats header */
+@media (max-width: 768px) {
+  .stats-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-md);
+  }
+  
+  .month-filter {
+    width: 100%;
+  }
+  
+  .month-select {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
 

@@ -88,7 +88,23 @@
         </div>
 
         <!-- Statistics Cards -->
-        <div class="stats-grid">
+        <div class="stats-section">
+            <div class="stats-header">
+                <h2>Statistics Overview</h2>
+                <div class="month-filter">
+                    <label for="monthFilter" class="month-filter-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        Filter by Month:
+                    </label>
+                    <select id="monthFilter" class="month-select">
+                        <option value="all">All Months (Last 12 Months)</option>
+                        {% for month in monthly_stats.month_options %}
+                        <option value="{{ month.value }}">{{ month.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="stats-grid">
             <div class="stat-card employer-card">
                 <div class="stat-content">
                     <div class="stat-icon">
@@ -144,6 +160,7 @@
                 <div class="stat-progress">
                     <div class="progress-bar job-progress"></div>
                 </div>
+            </div>
             </div>
         </div>
 
@@ -431,7 +448,7 @@ setInterval(updateCurrentTime, 1000);
 document.addEventListener('DOMContentLoaded', function() {
     updateCurrentTime();
     
-    // Initialize monthly chart
+    // Initialize monthly chart and month filter
     {% if monthly_stats %}
     const monthlyData = {
         months: {{ monthly_stats.months_json|safe }},
@@ -441,9 +458,12 @@ document.addEventListener('DOMContentLoaded', function() {
         applications: {{ monthly_stats.applications_json|safe }}
     };
     
+    const monthData = {{ monthly_stats.month_data_json|safe }};
+    let monthlyChart = null;
+    
     const ctx = document.getElementById('monthlyChart');
     if (ctx) {
-        new Chart(ctx, {
+        monthlyChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: monthlyData.months,
@@ -506,6 +526,87 @@ document.addEventListener('DOMContentLoaded', function() {
                             stepSize: 1
                         }
                     }
+                }
+            }
+        });
+    }
+    
+    // Handle month filter change
+    const monthFilter = document.getElementById('monthFilter');
+    // Find stat numbers by looking for specific icons in stat cards
+    const statCards = document.querySelectorAll('.stat-card');
+    const statNumbers = {};
+    
+    statCards.forEach(card => {
+        const icon = card.querySelector('.stat-icon i');
+        const number = card.querySelector('.stat-number');
+        if (icon && number) {
+            if (icon.classList.contains('fa-briefcase')) {
+                statNumbers.totalJobs = number;
+            } else if (icon.classList.contains('fa-check-circle')) {
+                statNumbers.activeJobs = number;
+            } else if (icon.classList.contains('fa-times-circle')) {
+                statNumbers.closedJobs = number;
+            }
+        }
+    });
+    
+    if (monthFilter) {
+        monthFilter.addEventListener('change', function() {
+            const selectedMonth = this.value;
+            
+            if (selectedMonth === 'all') {
+                // Show all months data
+                if (monthlyChart) {
+                    monthlyChart.data.labels = monthlyData.months;
+                    monthlyChart.data.datasets[0].data = monthlyData.employees;
+                    monthlyChart.data.datasets[1].data = monthlyData.employers;
+                    monthlyChart.data.datasets[2].data = monthlyData.jobs;
+                    monthlyChart.data.datasets[3].data = monthlyData.applications;
+                    monthlyChart.update();
+                }
+                
+                // Reset stat numbers to total
+                if (statNumbers.totalJobs) {
+                    statNumbers.totalJobs.textContent = '{{ total_jobs }}';
+                }
+                if (statNumbers.activeJobs) {
+                    statNumbers.activeJobs.textContent = '{{ active_jobs }}';
+                }
+                if (statNumbers.closedJobs) {
+                    statNumbers.closedJobs.textContent = '{{ closed_jobs }}';
+                }
+            } else {
+                // Show selected month data
+                const monthInfo = monthData[selectedMonth];
+                if (monthInfo && monthlyChart) {
+                    // Find the month index
+                    const monthIndex = monthlyData.months.findIndex(m => {
+                        const monthKey = selectedMonth.split('-');
+                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        const monthName = monthNames[parseInt(monthKey[1]) - 1];
+                        return m.includes(monthName) && m.includes(monthKey[0]);
+                    });
+                    
+                    if (monthIndex !== -1) {
+                        // Show only selected month
+                        monthlyChart.data.labels = [monthlyData.months[monthIndex]];
+                        monthlyChart.data.datasets[0].data = [monthlyData.employees[monthIndex]];
+                        monthlyChart.data.datasets[1].data = [monthlyData.employers[monthIndex]];
+                        monthlyChart.data.datasets[2].data = [monthlyData.jobs[monthIndex]];
+                        monthlyChart.data.datasets[3].data = [monthlyData.applications[monthIndex]];
+                        monthlyChart.update();
+                    }
+                }
+                
+                // Update stat numbers for selected month
+                if (statNumbers.totalJobs && monthInfo) {
+                    statNumbers.totalJobs.textContent = monthInfo.jobs;
+                }
+                if (statNumbers.activeJobs && monthInfo) {
+                    // For active jobs, we'd need to calculate from the month's data
+                    // For now, just show jobs created that month
+                    statNumbers.activeJobs.textContent = monthInfo.jobs;
                 }
             }
         });

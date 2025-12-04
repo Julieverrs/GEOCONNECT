@@ -89,6 +89,9 @@ def get_monthly_statistics():
     jobs_dict = {item['month'].strftime('%Y-%m'): item['count'] for item in jobs_monthly}
     applications_dict = {item['month'].strftime('%Y-%m'): item['count'] for item in applications_monthly}
     
+    # Build month options for dropdown
+    month_options = [{'value': m['key'], 'label': m['label']} for m in months_list]
+    
     # Build the final data structure
     monthly_data = {
         'months': [m['label'] for m in months_list],
@@ -101,6 +104,26 @@ def get_monthly_statistics():
         'employers_json': json.dumps([employers_dict.get(m['key'], 0) for m in months_list]),
         'jobs_json': json.dumps([jobs_dict.get(m['key'], 0) for m in months_list]),
         'applications_json': json.dumps([applications_dict.get(m['key'], 0) for m in months_list]),
+        'month_options': month_options,
+        'month_options_json': json.dumps(month_options),
+        'month_data': {
+            m['key']: {
+                'employees': employees_dict.get(m['key'], 0),
+                'employers': employers_dict.get(m['key'], 0),
+                'jobs': jobs_dict.get(m['key'], 0),
+                'applications': applications_dict.get(m['key'], 0)
+            }
+            for m in months_list
+        },
+        'month_data_json': json.dumps({
+            m['key']: {
+                'employees': employees_dict.get(m['key'], 0),
+                'employers': employers_dict.get(m['key'], 0),
+                'jobs': jobs_dict.get(m['key'], 0),
+                'applications': applications_dict.get(m['key'], 0)
+            }
+            for m in months_list
+        })
     }
     
     return monthly_data
