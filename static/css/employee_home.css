@@ -1969,6 +1969,7 @@ body.modal-open {
   overflow: hidden;
   padding: 0;
   margin: 0;
+  scroll-margin-top: 110px; /* Account for fixed header */
 }
 
 .about-us-section::before {

@@ -2976,6 +2976,26 @@ body {
     max-width: 100vw;
     overflow-x: hidden;
     position: relative;
+    scroll-margin-top: 110px; /* Account for fixed header */
+}
+
+/* Responsive scroll-margin-top for different screen sizes */
+@media (max-width: 992px) {
+    .section, .contact-us-section, .about-us-section {
+        scroll-margin-top: 80px;
+    }
+}
+
+@media (max-width: 768px) {
+    .section, .contact-us-section, .about-us-section {
+        scroll-margin-top: 70px;
+    }
+}
+
+@media (max-width: 576px) {
+    .section, .contact-us-section, .about-us-section {
+        scroll-margin-top: 65px;
+    }
 }
 
 /* Ensure containers don't overflow */
@@ -4786,11 +4806,13 @@ document.addEventListener('DOMContentLoaded', function() {
         function updateActiveNavLink() {
             const sections = document.querySelectorAll('section.section');
             const navLinks = document.querySelectorAll('.nav-links a');
+            const header = document.querySelector('.dashboard-header');
+            const headerHeight = header ? header.offsetHeight : 110;
             
             let currentSectionId = '';
             
             sections.forEach(section => {
-                const sectionTop = section.offsetTop - 120;
+                const sectionTop = section.offsetTop - headerHeight;
                 const sectionHeight = section.offsetHeight;
                 const sectionId = section.getAttribute('id');
                 
@@ -4820,8 +4842,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 const targetElement = document.getElementById(targetId);
                 
                 if (targetElement) {
+                    // Get the current header height dynamically
+                    const header = document.querySelector('.dashboard-header');
+                    const headerHeight = header ? header.offsetHeight : 110;
+                    
+                    // Calculate scroll position accounting for header
+                    const scrollPosition = targetElement.offsetTop - headerHeight;
+                    
                     window.scrollTo({
-                        top: targetElement.offsetTop - 110,
+                        top: Math.max(0, scrollPosition),
                         behavior: 'smooth'
                     });
                     
@@ -5523,6 +5552,7 @@ document.addEventListener('DOMContentLoaded', function() {
     overflow: hidden;
     padding: 0;
     margin: 20px 0; /* Add space between sections */
+    scroll-margin-top: 110px; /* Account for fixed header */
 }
 
 .contact-us-section::before {
