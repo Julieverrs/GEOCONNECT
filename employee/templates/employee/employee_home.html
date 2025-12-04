@@ -20,31 +20,6 @@
             <span class="logo-text">GeoConnect</span>
         </div>
         
-        <!-- Mobile Menu Toggle -->
-        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        
-        <!-- Navigation links in header -->
-        <div class="header-nav" id="headerNav">
-            <ul class="nav-links">
-                <li><a href="#home" class="active">
-                    <i class="fas fa-home"></i> <span class="nav-text">Home</span>
-                </a></li>
-                <li><a href="#jobs">
-                    <i class="fas fa-briefcase"></i> <span class="nav-text">Jobs</span>
-                </a></li>
-                <li><a href="#contact">
-                    <i class="fas fa-envelope"></i> <span class="nav-text">Contact</span>
-                </a></li>
-                <li><a href="#about">
-                    <i class="fas fa-info-circle"></i> <span class="nav-text">About</span>
-                </a></li>
-            </ul>
-        </div>
-        
         <div class="header-actions">
             <!-- Enhanced Messages Icon with Badge -->
             <a href="{% url 'messages_list' %}" class="enhanced-message-icon position-relative me-2" id="messageIcon" title="Messages">
@@ -1341,35 +1316,6 @@
 </style>
 
 <script>
-// Mobile Menu Toggle Functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const headerNav = document.getElementById('headerNav');
-    
-    if (mobileMenuToggle && headerNav) {
-        mobileMenuToggle.addEventListener('click', function() {
-            this.classList.toggle('active');
-            headerNav.classList.toggle('active');
-        });
-        
-        // Close menu when clicking on a nav link
-        const navLinks = headerNav.querySelectorAll('.nav-links a');
-        navLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                mobileMenuToggle.classList.remove('active');
-                headerNav.classList.remove('active');
-            });
-        });
-        
-        // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!headerNav.contains(event.target) && !mobileMenuToggle.contains(event.target)) {
-                mobileMenuToggle.classList.remove('active');
-                headerNav.classList.remove('active');
-            }
-        });
-    }
-});
 
 // Enhanced Messages Icon Functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -3071,52 +3017,6 @@ body {
     max-width: 100%;
 }
 
-/* Improved navigation styles */
-.header-nav {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    margin: 0 20px;
-    position: relative;
-}
-
-.nav-links {
-    display: flex;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 30px;
-    padding: 5px;
-}
-
-.nav-links li {
-    margin: 0;
-    padding: 0;
-}
-
-.nav-links a {
-    display: block;
-    padding: 12px 28px;
-    color: #ffffff;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 1.1rem;
-    transition: all 0.3s ease;
-    position: relative;
-    border-radius: 25px;
-}
-
-.nav-links a:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-}
-
-.nav-links a.active {
-    background-color: #ffffff;
-    color: #283593;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
 
 /* Profile dropdown enhancements */
 .header-actions {
@@ -3175,39 +3075,6 @@ body {
     font-weight: 500;
 }
 
-/* Mobile Menu Toggle Button */
-.mobile-menu-toggle {
-    display: none;
-    flex-direction: column;
-    justify-content: space-around;
-    width: 30px;
-    height: 30px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    z-index: 1001;
-}
-
-.mobile-menu-toggle span {
-    width: 100%;
-    height: 3px;
-    background-color: #ffffff;
-    border-radius: 3px;
-    transition: all 0.3s ease;
-}
-
-.mobile-menu-toggle.active span:nth-child(1) {
-    transform: rotate(45deg) translate(8px, 8px);
-}
-
-.mobile-menu-toggle.active span:nth-child(2) {
-    opacity: 0;
-}
-
-.mobile-menu-toggle.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -7px);
-}
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
@@ -3219,11 +3086,6 @@ body {
     
     .logo-text {
         font-size: 1.6rem;
-    }
-    
-    .nav-links a {
-        padding: 10px 20px;
-        font-size: 1rem;
     }
 }
 
@@ -3266,57 +3128,7 @@ body {
         margin-right: 8px;
     }
     
-    .mobile-menu-toggle {
-        display: flex;
-        order: 2;
-        margin-left: auto;
-        margin-right: 8px;
-        flex-shrink: 0;
-    }
-    
-    .header-nav {
-        order: 4;
-        width: 100%;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-        margin: 0;
-    }
-    
-    .header-nav.active {
-        max-height: 300px;
-        margin-top: 15px;
-    }
-
-    .nav-links {
-        flex-direction: column;
-        width: 100%;
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        padding: 10px;
-        gap: 5px;
-    }
-    
-    .nav-links li {
-        width: 100%;
-    }
-
-    .nav-links a {
-        width: 100%;
-        padding: 12px 15px;
-        font-size: 1rem;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-    }
-    
-    .nav-text {
-        margin-left: 10px;
-    }
-    
     .header-actions {
-        order: 3;
         gap: 10px;
         flex-shrink: 0;
         margin-left: auto;
@@ -3385,12 +3197,6 @@ body {
         flex-shrink: 0;
     }
     
-    .mobile-menu-toggle {
-        margin-left: auto;
-        margin-right: 8px;
-        flex-shrink: 0;
-    }
-    
     .header-actions {
         gap: 10px;
         flex-shrink: 0;
@@ -3435,11 +3241,6 @@ body {
     .dropdown-arrow {
         font-size: 0.8rem;
         margin-left: 4px;
-    }
-    
-    .nav-links a {
-        padding: 10px 12px;
-        font-size: 0.95rem;
     }
     
     body {
@@ -3503,19 +3304,6 @@ body {
         flex-shrink: 0;
     }
     
-    .mobile-menu-toggle {
-        width: 26px;
-        height: 26px;
-        margin-left: auto;
-        margin-right: 5px;
-        flex-shrink: 0;
-        order: 2;
-    }
-    
-    .mobile-menu-toggle span {
-        height: 2.5px;
-    }
-    
     .header-actions {
         gap: 6px;
         flex-shrink: 0;
@@ -3569,15 +3357,6 @@ body {
     .dropdown-arrow {
         font-size: 0.7rem;
         margin-left: 2px;
-    }
-    
-    .nav-links {
-        padding: 8px;
-    }
-    
-    .nav-links a {
-        padding: 10px;
-        font-size: 0.9rem;
     }
     
     body {
@@ -4802,39 +4581,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Highlight active navigation link based on scroll position
-        function updateActiveNavLink() {
-            const sections = document.querySelectorAll('section.section');
-            const navLinks = document.querySelectorAll('.nav-links a');
-            const header = document.querySelector('.dashboard-header');
-            const headerHeight = header ? header.offsetHeight : 110;
-            
-            let currentSectionId = '';
-            
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop - headerHeight;
-                const sectionHeight = section.offsetHeight;
-                const sectionId = section.getAttribute('id');
-                
-                if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
-                    currentSectionId = sectionId;
-                }
-            });
-            
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                const href = link.getAttribute('href').substring(1);
-                if (href === currentSectionId) {
-                    link.classList.add('active');
-                }
-            });
-        }
-        
-        window.addEventListener('scroll', updateActiveNavLink);
-        updateActiveNavLink();
-        
-        // Add smooth scrolling to navigation links
-        document.querySelectorAll('.nav-links a, .scroll-btn, .scroll-down').forEach(anchor => {
+        // Add smooth scrolling to scroll buttons (scroll-btn and scroll-down)
+        document.querySelectorAll('.scroll-btn, .scroll-down').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 
@@ -4853,12 +4601,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         top: Math.max(0, scrollPosition),
                         behavior: 'smooth'
                     });
-                    
-                    // Update active link manually
-                    document.querySelectorAll('.nav-links a').forEach(link => {
-                        link.classList.remove('active');
-                    });
-                    this.classList.add('active');
                 }
             });
         });
