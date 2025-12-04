@@ -27,6 +27,17 @@ html, body {
   position: relative;
 }
 
+/* Add spacing for fixed header */
+.section:first-child {
+  margin-top: 80px;
+  padding-top: 0;
+}
+
+.welcome-section {
+  margin-top: 0;
+  padding-top: 0;
+}
+
 /* Fixed Header Styles */
 .dashboard-header {
   position: fixed;
@@ -302,10 +313,11 @@ html, body {
   padding-top: 0;
 }
 
-/* Ensure first section has proper spacing */
+/* Ensure first section has proper spacing for fixed header */
 .dashboard-main > section:first-child {
-  margin-top: 0;
+  margin-top: 80px;
   padding-top: 0;
+  scroll-margin-top: 80px;
 }
 
 /* Add extra spacing for the first content element */
@@ -586,6 +598,12 @@ button:disabled {
     padding: 0 !important;
   }
   
+  /* Adjust section spacing for smaller header */
+  .dashboard-main > section:first-child {
+    margin-top: 70px;
+    scroll-margin-top: 70px;
+  }
+  
   .header-container {
     padding: 0 12px;
     height: 60px;
@@ -769,6 +787,12 @@ button:disabled {
     padding: 0 !important;
   }
   
+  /* Adjust section spacing for smaller header */
+  .dashboard-main > section:first-child {
+    margin-top: 65px;
+    scroll-margin-top: 65px;
+  }
+  
   .header-container {
     padding: 0 10px;
     height: 55px;
@@ -851,6 +875,12 @@ button:disabled {
     top: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
+  }
+  
+  /* Adjust section spacing for smaller header */
+  .dashboard-main > section:first-child {
+    margin-top: 60px;
+    scroll-margin-top: 60px;
   }
   
   .header-container {
