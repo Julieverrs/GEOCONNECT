@@ -2343,4 +2343,25 @@ body {
   margin-bottom: 16px;
 }
 
+/* Chart Container Styles */
+.chart-container {
+  padding: var(--spacing-xl);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  margin: var(--spacing-lg) 0;
+  min-height: 400px;
+  position: relative;
+}
+
+.chart-container canvas {
+  max-height: 500px;
+}
+
+/* Monthly Monitoring Section */
+.tabs-section .tabs-header p {
+  color: var(--sidebar-text-light);
+  font-size: 0.875rem;
+  margin-top: var(--spacing-xs);
+}
+
 

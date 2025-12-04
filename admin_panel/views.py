@@ -11,6 +11,10 @@ import json
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db import models
+from django.db.models import Count, Value
+from django.db.models.functions import TruncMonth, Coalesce
+from datetime import datetime, timedelta
+from collections import OrderedDict
 from utils.email_utils import send_email_with_timeout
 
 # Update these imports to use the correct model locations
@@ -18,6 +22,88 @@ from employer.models import Employer  # Changed from .models
 from employee.models import Employee  # Changed from .models
 from .forms import AdminLoginForm
 from .models import AdminUser
+
+
+def get_monthly_statistics():
+    """
+    Helper function to get monthly statistics for employees, employers, jobs, and applications.
+    Returns data for the last 12 months.
+    """
+    from employer.models import Job, JobApplication
+    
+    # Get current date and calculate 12 months ago
+    now = timezone.now()
+    twelve_months_ago = now - timedelta(days=365)
+    
+    # Get monthly employee registrations
+    employees_monthly = Employee.objects.filter(
+        date_joined__gte=twelve_months_ago
+    ).annotate(
+        month=TruncMonth('date_joined')
+    ).values('month').annotate(
+        count=Count('id')
+    ).order_by('month')
+    
+    # Get monthly employer registrations
+    employers_monthly = Employer.objects.filter(
+        date_joined__gte=twelve_months_ago
+    ).annotate(
+        month=TruncMonth('date_joined')
+    ).values('month').annotate(
+        count=Count('id')
+    ).order_by('month')
+    
+    # Get monthly job creations
+    jobs_monthly = Job.objects.filter(
+        created_at__gte=twelve_months_ago
+    ).annotate(
+        month=TruncMonth('created_at')
+    ).values('month').annotate(
+        count=Count('id')
+    ).order_by('month')
+    
+    # Get monthly applications
+    applications_monthly = JobApplication.objects.filter(
+        application_date__gte=twelve_months_ago
+    ).annotate(
+        month=TruncMonth('application_date')
+    ).values('month').annotate(
+        count=Count('id')
+    ).order_by('month')
+    
+    # Create a dictionary with all months from the last 12 months
+    months_list = []
+    for i in range(11, -1, -1):
+        month_date = now - timedelta(days=30*i)
+        month_key = month_date.strftime('%Y-%m')
+        month_label = month_date.strftime('%b %Y')
+        months_list.append({
+            'key': month_key,
+            'label': month_label,
+            'date': month_date.replace(day=1)
+        })
+    
+    # Convert querysets to dictionaries for easier lookup
+    employees_dict = {item['month'].strftime('%Y-%m'): item['count'] for item in employees_monthly}
+    employers_dict = {item['month'].strftime('%Y-%m'): item['count'] for item in employers_monthly}
+    jobs_dict = {item['month'].strftime('%Y-%m'): item['count'] for item in jobs_monthly}
+    applications_dict = {item['month'].strftime('%Y-%m'): item['count'] for item in applications_monthly}
+    
+    # Build the final data structure
+    monthly_data = {
+        'months': [m['label'] for m in months_list],
+        'employees': [employees_dict.get(m['key'], 0) for m in months_list],
+        'employers': [employers_dict.get(m['key'], 0) for m in months_list],
+        'jobs': [jobs_dict.get(m['key'], 0) for m in months_list],
+        'applications': [applications_dict.get(m['key'], 0) for m in months_list],
+        'months_json': json.dumps([m['label'] for m in months_list]),
+        'employees_json': json.dumps([employees_dict.get(m['key'], 0) for m in months_list]),
+        'employers_json': json.dumps([employers_dict.get(m['key'], 0) for m in months_list]),
+        'jobs_json': json.dumps([jobs_dict.get(m['key'], 0) for m in months_list]),
+        'applications_json': json.dumps([applications_dict.get(m['key'], 0) for m in months_list]),
+    }
+    
+    return monthly_data
 
 
 def is_admin(user):
@@ -88,11 +174,15 @@ def admin_dashboard(request):
         employees = employees.order_by('-date_joined')
         employers = employers.order_by('-date_joined')
         
+        # Get monthly statistics
+        monthly_stats = get_monthly_statistics()
+        
         context = {
             'employees': employees,
             'employers': employers,
             'search_query': search_query,
             'status_filter': status_filter,
+            'monthly_stats': monthly_stats,
         }
         return render(request, 'admin_panel/dashboard.html', context)
     except Exception as e:
@@ -739,6 +829,9 @@ def user_monitoring_dashboard(request):
         from employer.models import JobApplication
         total_applications = JobApplication.objects.count()
         
+        # Get monthly statistics
+        monthly_stats = get_monthly_statistics()
+        
         context = {
             'total_employees': total_employees,
             'total_employers': total_employers,
@@ -751,6 +844,7 @@ def user_monitoring_dashboard(request):
             'total_jobs': total_jobs,
             'active_jobs': active_jobs,
             'total_applications': total_applications,
+            'monthly_stats': monthly_stats,
         }
         return render(request, 'admin_panel/user_monitoring.html', context)
     except Exception as e:
@@ -849,6 +943,9 @@ def jobs_monitoring(request):
         jobs_list = list(jobs)
         print(f"DEBUG: Final jobs list length: {len(jobs_list)}")
         
+        # Get monthly statistics
+        monthly_stats = get_monthly_statistics()
+        
         context = {
             'jobs': jobs_list,
             'search_query': search_query,
@@ -860,6 +957,7 @@ def jobs_monitoring(request):
             'total_jobs': total_jobs,
             'active_jobs': active_jobs,
             'closed_jobs': closed_jobs,
+            'monthly_stats': monthly_stats,
         }
         
         return render(request, 'admin_panel/jobs_monitoring.html', context)
@@ -1024,6 +1122,9 @@ def applications_monitoring(request):
         accepted_applications = applications.filter(status='hired').count()
         rejected_applications = applications.filter(status='rejected').count()
         
+        # Get monthly statistics
+        monthly_stats = get_monthly_statistics()
+        
         context = {
             'applications': applications,
             'search_query': search_query,
@@ -1033,6 +1134,7 @@ def applications_monitoring(request):
             'pending_applications': pending_applications,
             'accepted_applications': accepted_applications,
             'rejected_applications': rejected_applications,
+            'monthly_stats': monthly_stats,
         }
         return render(request, 'admin_panel/applications_monitoring.html', context)
     except Exception as e:
@@ -1154,6 +1256,8 @@ def export_report(request):
         
         elif report_type == 'jobs':
             from employer.models import Job
+            from django.db.models import Count, Value
+            from django.db.models.functions import Coalesce
             writer.writerow(['Job Title', 'Employer', 'Location', 'Status', 'Created Date', 'Applications'])
             
             for job in Job.objects.select_related('employer').annotate(

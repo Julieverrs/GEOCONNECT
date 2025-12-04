@@ -341,9 +341,23 @@
                 </div>
             </div>
         </div>
+
+        <!-- Monthly Monitoring Section -->
+        <div class="tabs-section">
+            <div class="tabs-header">
+                <h2>Monthly Monitoring</h2>
+                <p>Track registrations and activities over the last 12 months</p>
+            </div>
+            <div class="table-card">
+                <div class="chart-container">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+        </div>
     </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="{% static 'js/admin-dashboard.js' %}"></script>
 
 <script>
@@ -375,6 +389,87 @@ setInterval(updateCurrentTime, 1000);
 // Initialize time display when page loads
 document.addEventListener('DOMContentLoaded', function() {
     updateCurrentTime();
+    
+    // Initialize monthly chart
+    {% if monthly_stats %}
+    const monthlyData = {
+        months: {{ monthly_stats.months_json|safe }},
+        employees: {{ monthly_stats.employees_json|safe }},
+        employers: {{ monthly_stats.employers_json|safe }},
+        jobs: {{ monthly_stats.jobs_json|safe }},
+        applications: {{ monthly_stats.applications_json|safe }}
+    };
+    
+    const ctx = document.getElementById('monthlyChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: monthlyData.months,
+                datasets: [
+                    {
+                        label: 'Employees',
+                        data: monthlyData.employees,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Employers',
+                        data: monthlyData.employers,
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Jobs Created',
+                        data: monthlyData.jobs,
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Applications',
+                        data: monthlyData.applications,
+                        borderColor: 'rgb(255, 206, 86)',
+                        backgroundColor: 'rgba(255, 206, 86, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Monthly Statistics Overview',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
 });
 </script>
 {% endblock %}
