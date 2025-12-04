@@ -1115,28 +1115,26 @@
             <div class="feedback-stats mb-3">
                 <div class="feedback-stats-grid">
                     <div class="stat-card text-center">
-                        <div class="stat-number">{{ job.average_rating|default:"0"|floatformat:1 }}</div>
+                        <div class="stat-number" id="averageRatingStat">0.0</div>
                         <div class="stat-label">Average Rating</div>
-                        <div class="stars-display">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= job.average_rating|default:0 %}
-                                    <i class="fas fa-star text-warning"></i>
-                                {% else %}
-                                    <i class="far fa-star text-warning"></i>
-                                {% endif %}
-                            {% endfor %}
+                        <div class="stars-display" id="averageRatingStars">
+                            <i class="far fa-star text-warning"></i>
+                            <i class="far fa-star text-warning"></i>
+                            <i class="far fa-star text-warning"></i>
+                            <i class="far fa-star text-warning"></i>
+                            <i class="far fa-star text-warning"></i>
                         </div>
                     </div>
                     <div class="stat-card text-center">
-                        <div class="stat-number">{{ job.total_reviews|default:"0" }}</div>
+                        <div class="stat-number" id="totalReviewsStat">0</div>
                         <div class="stat-label">Total Reviews</div>
                     </div>
                     <div class="stat-card text-center">
-                        <div class="stat-number">{{ job.positive_reviews|default:"0" }}</div>
+                        <div class="stat-number" id="positiveReviewsStat">0</div>
                         <div class="stat-label">Positive Reviews</div>
                     </div>
                     <div class="stat-card text-center">
-                        <div class="stat-number">{{ job.recent_reviews|default:"0" }}</div>
+                        <div class="stat-number" id="recentReviewsStat">0</div>
                         <div class="stat-label">Recent Reviews</div>
                     </div>
                 </div>
@@ -1902,7 +1900,7 @@ document.addEventListener('DOMContentLoaded', function() {
         submitFeedback();
     });
     
-    // Load reviews on page load
+    // Load reviews on page load (this will also update stats)
     loadReviews();
 });
 
@@ -1946,7 +1944,7 @@ function submitFeedback() {
             modal.hide();
             // Reset form
             resetFeedbackForm();
-            // Reload reviews
+            // Reload reviews (this will also update stats)
             loadReviews();
         } else {
             showNotification(data.message || 'Failed to submit feedback. Please try again.', 'error');
@@ -1975,6 +1973,8 @@ function loadReviews() {
     .then(data => {
         if (data.success && data.reviews.length > 0) {
             displayReviews(data.reviews);
+            // Update stats based on loaded reviews
+            updateFeedbackStats(data.reviews);
         } else {
             reviewsContainer.innerHTML = `
                 <div class="text-center text-muted">
@@ -1982,6 +1982,8 @@ function loadReviews() {
                     <p>No reviews yet. Be the first to share your experience!</p>
                 </div>
             `;
+            // Reset stats to 0 if no reviews
+            updateFeedbackStats([]);
         }
     })
     .catch(error => {
@@ -1992,6 +1994,8 @@ function loadReviews() {
                 <p>Unable to load reviews at this time.</p>
             </div>
         `;
+        // Reset stats on error
+        updateFeedbackStats([]);
     });
 }
 
@@ -2000,56 +2004,58 @@ function displayReviews(reviews) {
     const reviewsContainer = document.getElementById('reviewsContainer');
     
     const reviewsHTML = reviews.map(review => {
-        const stars = generateStars(review.rating);
+        // Use overall_rating if available, otherwise use rating
+        const rating = review.overall_rating || review.rating || 0;
+        const stars = generateStars(rating);
         const date = new Date(review.created_at).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
         });
         
-        // Note: Your model only has rating and comment, not detailed category ratings
-        
         return `
             <div class="review-item">
                 <div class="review-header">
                     <div class="reviewer-info">
                         <div class="reviewer-avatar">
-                            ${review.reviewer_name.charAt(0).toUpperCase()}
+                            ${(review.reviewer_name || review.employee_name || 'U').charAt(0).toUpperCase()}
                         </div>
                         <div class="reviewer-details">
-                            <h5>${review.reviewer_name}</h5>
+                            <h5>${review.reviewer_name || review.employee_name || 'Anonymous'}</h5>
                             <small>Former Employee</small>
                         </div>
                     </div>
                     <div class="review-rating">
                         <div class="stars">${stars}</div>
-                        <span class="rating-number">${review.rating}/5</span>
+                        <span class="rating-number">${rating}/5</span>
                     </div>
                 </div>
                 <div class="review-content">
-                    ${review.comment}
+                    ${review.comment || 'No comment provided.'}
                 </div>
                 
                 <!-- Category Ratings Display -->
+                ${(review.work_environment || review.management || review.compensation || review.work_life_balance) ? `
                 <div class="review-categories">
-                    <span class="review-category">Work Environment: ${review.work_environment || 0}/5</span>
-                    <span class="review-category">Management: ${review.management || 0}/5</span>
-                    <span class="review-category">Compensation: ${review.compensation || 0}/5</span>
-                    <span class="review-category">Work-Life Balance: ${review.work_life_balance || 0}/5</span>
+                    ${review.work_environment ? `<span class="review-category">Work Environment: ${review.work_environment}/5</span>` : ''}
+                    ${review.management ? `<span class="review-category">Management: ${review.management}/5</span>` : ''}
+                    ${review.compensation ? `<span class="review-category">Compensation: ${review.compensation}/5</span>` : ''}
+                    ${review.work_life_balance ? `<span class="review-category">Work-Life Balance: ${review.work_life_balance}/5</span>` : ''}
                 </div>
+                ` : ''}
                 
                 <!-- Recommendation Display -->
-                ${review.recommend_employer ? `
+                ${review.recommend_employer !== undefined && review.recommend_employer !== null ? `
                 <div class="review-recommendation">
                     <i class="fas fa-thumbs-up text-success"></i>
                     Would recommend this employer
                 </div>
-                ` : `
+                ` : review.recommend_employer === false ? `
                 <div class="review-recommendation">
                     <i class="fas fa-thumbs-down text-danger"></i>
                     Would not recommend this employer
                 </div>
-                `}
+                ` : ''}
 
                 <div class="review-date">
                     <i class="far fa-calendar-alt me-1"></i>${date}
@@ -2059,6 +2065,94 @@ function displayReviews(reviews) {
     }).join('');
     
     reviewsContainer.innerHTML = reviewsHTML;
+}
+
+// Function to update feedback statistics
+function updateFeedbackStats(reviews) {
+    if (!reviews || reviews.length === 0) {
+        // Reset all stats to 0
+        document.getElementById('averageRatingStat').textContent = '0.0';
+        document.getElementById('totalReviewsStat').textContent = '0';
+        document.getElementById('positiveReviewsStat').textContent = '0';
+        document.getElementById('recentReviewsStat').textContent = '0';
+        
+        // Reset stars
+        const starsContainer = document.getElementById('averageRatingStars');
+        starsContainer.innerHTML = `
+            <i class="far fa-star text-warning"></i>
+            <i class="far fa-star text-warning"></i>
+            <i class="far fa-star text-warning"></i>
+            <i class="far fa-star text-warning"></i>
+            <i class="far fa-star text-warning"></i>
+        `;
+        return;
+    }
+    
+    // Calculate average rating
+    let totalRating = 0;
+    let positiveReviews = 0;
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+    let recentReviews = 0;
+    
+    reviews.forEach(review => {
+        // Use overall_rating if available, otherwise use rating
+        // Handle both string and number types
+        let rating = 0;
+        if (review.overall_rating !== undefined && review.overall_rating !== null) {
+            rating = parseFloat(review.overall_rating);
+        } else if (review.rating !== undefined && review.rating !== null) {
+            rating = parseFloat(review.rating);
+        }
+        
+        // Only count valid ratings (between 1 and 5)
+        if (!isNaN(rating) && rating >= 1 && rating <= 5) {
+            totalRating += rating;
+            
+            // Count positive reviews (rating >= 4)
+            if (rating >= 4) {
+                positiveReviews++;
+            }
+        }
+        
+        // Count recent reviews (within last 30 days)
+        if (review.created_at) {
+            const reviewDate = new Date(review.created_at);
+            if (!isNaN(reviewDate.getTime()) && reviewDate >= thirtyDaysAgo) {
+                recentReviews++;
+            }
+        }
+    });
+    
+    const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0;
+    const totalReviews = reviews.length;
+    
+    // Update stat numbers
+    const avgRatingEl = document.getElementById('averageRatingStat');
+    const totalReviewsEl = document.getElementById('totalReviewsStat');
+    const positiveReviewsEl = document.getElementById('positiveReviewsStat');
+    const recentReviewsEl = document.getElementById('recentReviewsStat');
+    
+    if (avgRatingEl) avgRatingEl.textContent = averageRating.toFixed(1);
+    if (totalReviewsEl) totalReviewsEl.textContent = totalReviews.toString();
+    if (positiveReviewsEl) positiveReviewsEl.textContent = positiveReviews.toString();
+    if (recentReviewsEl) recentReviewsEl.textContent = recentReviews.toString();
+    
+    // Update stars display - show filled stars based on average rating
+    const starsContainer = document.getElementById('averageRatingStars');
+    if (starsContainer) {
+        let starsHTML = '';
+        const roundedRating = Math.round(averageRating); // Round to nearest integer
+        
+        for (let i = 1; i <= 5; i++) {
+            if (i <= roundedRating) {
+                starsHTML += '<i class="fas fa-star text-warning"></i>';
+            } else {
+                starsHTML += '<i class="far fa-star text-warning"></i>';
+            }
+        }
+        starsContainer.innerHTML = starsHTML;
+    }
 }
 
 // Function to generate stars HTML
