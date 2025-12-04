@@ -1195,28 +1195,26 @@
             <div class="employer-feedback-stats mb-3">
                 <div class="feedback-stats-grid">
                     <div class="stat-card text-center">
-                        <div class="stat-number">{{ job.employer.average_rating|default:"0"|floatformat:1 }}</div>
+                        <div class="stat-number" id="employerAverageRatingStat">0.0</div>
                         <div class="stat-label">Company Rating</div>
-                        <div class="stars-display">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= job.employer.average_rating|default:0 %}
-                                    <i class="fas fa-star text-warning"></i>
-                                {% else %}
-                                    <i class="far fa-star text-warning"></i>
-                                {% endif %}
-                            {% endfor %}
+                        <div class="stars-display" id="employerAverageRatingStars">
+                            <i class="far fa-star text-warning"></i>
+                            <i class="far fa-star text-warning"></i>
+                            <i class="far fa-star text-warning"></i>
+                            <i class="far fa-star text-warning"></i>
+                            <i class="far fa-star text-warning"></i>
                         </div>
                     </div>
                     <div class="stat-card text-center">
-                        <div class="stat-number">{{ job.employer.total_reviews|default:"0" }}</div>
+                        <div class="stat-number" id="employerTotalReviewsStat">0</div>
                         <div class="stat-label">Company Reviews</div>
                     </div>
                     <div class="stat-card text-center">
-                        <div class="stat-number">{{ job.employer.positive_reviews|default:"0" }}</div>
+                        <div class="stat-number" id="employerPositiveReviewsStat">0</div>
                         <div class="stat-label">Positive Reviews</div>
                     </div>
                     <div class="stat-card text-center">
-                        <div class="stat-number">{{ job.employer.recommendation_rate|default:"0" }}%</div>
+                        <div class="stat-number" id="employerRecommendationRateStat">0%</div>
                         <div class="stat-label">Recommendation Rate</div>
                     </div>
                 </div>
@@ -1614,6 +1612,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
+    
+    // Load employer reviews and update stats on page load
+    if (typeof loadEmployerReviews === 'function') {
+        loadEmployerReviews();
+    }
 });
 
 // Function to open apply modal
@@ -2296,7 +2299,7 @@ function submitEmployerReview() {
             // Reset form
             resetEmployerReviewForm();
             
-            // Reload employer reviews
+            // Reload employer reviews (this will also update stats)
             loadEmployerReviews();
         } else {
             showNotification(data.message || 'Failed to submit review. Please try again.', 'error');
@@ -2325,6 +2328,8 @@ function loadEmployerReviews() {
     .then(data => {
         if (data.success && data.reviews.length > 0) {
             displayEmployerReviews(data.reviews);
+            // Update employer stats based on loaded reviews
+            updateEmployerFeedbackStats(data.reviews);
         } else {
             employerReviewsContainer.innerHTML = `
                 <div class="text-center text-muted">
@@ -2332,6 +2337,8 @@ function loadEmployerReviews() {
                     <p>No company reviews yet. Be the first to share your experience!</p>
                 </div>
             `;
+            // Reset employer stats to 0 if no reviews
+            updateEmployerFeedbackStats([]);
         }
     })
     .catch(error => {
@@ -2342,6 +2349,8 @@ function loadEmployerReviews() {
                 <p>Unable to load company reviews at this time.</p>
             </div>
         `;
+        // Reset employer stats on error
+        updateEmployerFeedbackStats([]);
     });
 }
 
@@ -2403,6 +2412,94 @@ function displayEmployerReviews(reviews) {
     }).join('');
     
     employerReviewsContainer.innerHTML = reviewsHTML;
+}
+
+// Function to update employer feedback statistics
+function updateEmployerFeedbackStats(reviews) {
+    if (!reviews || reviews.length === 0) {
+        // Reset all employer stats to 0
+        const avgRatingEl = document.getElementById('employerAverageRatingStat');
+        const totalReviewsEl = document.getElementById('employerTotalReviewsStat');
+        const positiveReviewsEl = document.getElementById('employerPositiveReviewsStat');
+        const recommendationRateEl = document.getElementById('employerRecommendationRateStat');
+        
+        if (avgRatingEl) avgRatingEl.textContent = '0.0';
+        if (totalReviewsEl) totalReviewsEl.textContent = '0';
+        if (positiveReviewsEl) positiveReviewsEl.textContent = '0';
+        if (recommendationRateEl) recommendationRateEl.textContent = '0%';
+        
+        // Reset stars
+        const starsContainer = document.getElementById('employerAverageRatingStars');
+        if (starsContainer) {
+            starsContainer.innerHTML = `
+                <i class="far fa-star text-warning"></i>
+                <i class="far fa-star text-warning"></i>
+                <i class="far fa-star text-warning"></i>
+                <i class="far fa-star text-warning"></i>
+                <i class="far fa-star text-warning"></i>
+            `;
+        }
+        return;
+    }
+    
+    // Calculate average rating
+    let totalRating = 0;
+    let positiveReviews = 0;
+    let recommendedCount = 0;
+    
+    reviews.forEach(review => {
+        // Use overall_rating for employer reviews
+        let rating = 0;
+        if (review.overall_rating !== undefined && review.overall_rating !== null) {
+            rating = parseFloat(review.overall_rating);
+        }
+        
+        // Only count valid ratings (between 1 and 5)
+        if (!isNaN(rating) && rating >= 1 && rating <= 5) {
+            totalRating += rating;
+            
+            // Count positive reviews (rating >= 4)
+            if (rating >= 4) {
+                positiveReviews++;
+            }
+        }
+        
+        // Count recommendations (recommend_employer is true)
+        if (review.recommend_employer === true || review.recommend_employer === 'true' || review.recommend_employer === 1) {
+            recommendedCount++;
+        }
+    });
+    
+    const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0;
+    const totalReviews = reviews.length;
+    const recommendationRate = totalReviews > 0 ? Math.round((recommendedCount / totalReviews) * 100) : 0;
+    
+    // Update stat numbers
+    const avgRatingEl = document.getElementById('employerAverageRatingStat');
+    const totalReviewsEl = document.getElementById('employerTotalReviewsStat');
+    const positiveReviewsEl = document.getElementById('employerPositiveReviewsStat');
+    const recommendationRateEl = document.getElementById('employerRecommendationRateStat');
+    
+    if (avgRatingEl) avgRatingEl.textContent = averageRating.toFixed(1);
+    if (totalReviewsEl) totalReviewsEl.textContent = totalReviews.toString();
+    if (positiveReviewsEl) positiveReviewsEl.textContent = positiveReviews.toString();
+    if (recommendationRateEl) recommendationRateEl.textContent = recommendationRate + '%';
+    
+    // Update stars display - show filled stars based on average rating
+    const starsContainer = document.getElementById('employerAverageRatingStars');
+    if (starsContainer) {
+        let starsHTML = '';
+        const roundedRating = Math.round(averageRating); // Round to nearest integer
+        
+        for (let i = 1; i <= 5; i++) {
+            if (i <= roundedRating) {
+                starsHTML += '<i class="fas fa-star text-warning"></i>';
+            } else {
+                starsHTML += '<i class="far fa-star text-warning"></i>';
+            }
+        }
+        starsContainer.innerHTML = starsHTML;
+    }
 }
 </script>
 {% endblock %} 
