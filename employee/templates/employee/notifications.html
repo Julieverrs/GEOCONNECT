@@ -5,12 +5,14 @@
 <link rel="stylesheet" href="{% static 'css/employee_home.css' %}">
 <style>
 html, body {
-    font-size: 18px; /* Increased base font size */
+    font-size: 16px;
     background: #f6f8fb;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    overflow-y: hidden;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 100vw;
 }
 body {
     margin-top: 0 !important;
@@ -20,39 +22,44 @@ body {
 .notifications-header {
     background: linear-gradient(120deg, #3949ab 0%, #1e88e5 60%, #42a5f5 100%);
     color: white;
-    padding: 1.1rem 0 0.7rem 0;
+    padding: 1rem 0 0.7rem 0;
     text-align: center;
     border-radius: 0 0 24px 24px;
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem;
     margin-top: 0 !important;
-    box-shadow: 0 4px 24px rgba(30,136,229,0.18), 0 1.5px 8px rgba(57,73,171,0.10);
+    box-shadow: 0 4px 24px rgba(30,136,229,0.18), 0 1.5px 8px rgba(57,73,171,0.10), 0 0 16px #42a5f544;
     position: relative;
     overflow: hidden;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     backdrop-filter: blur(6px);
     background-blend-mode: overlay;
     border-bottom: 2.5px solid #e3e8f7;
-    /* Add a subtle glow */
-    box-shadow: 0 4px 24px rgba(30,136,229,0.18), 0 1.5px 8px rgba(57,73,171,0.10), 0 0 16px #42a5f544;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
 }
 .notifications-header h2 {
-    font-size: 1.7rem;
+    font-size: 1.5rem;
     font-weight: 800;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     text-shadow: 0 2px 8px #1e88e533;
     background: linear-gradient(90deg, #fff 10%, #e3e8f7 90%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     font-family: 'Segoe UI', 'Montserrat', 'Arial', sans-serif;
     margin-bottom: 0.2rem;
     margin-top: 0.2rem;
+    padding: 0 4rem 0 4rem;
+    word-wrap: break-word;
 }
 .notifications-header .subtitle {
-    font-size: 1.08rem;
+    font-size: 0.9rem;
     color: #e3e8f7;
     text-shadow: 0 1px 4px #1e88e522;
     font-weight: 500;
     letter-spacing: 0.2px;
+    padding: 0 1rem;
 }
 #toggleSound {
     border-radius: 50%;
@@ -95,15 +102,21 @@ body {
     background: #fff;
     border-radius: 0 0 12px 12px;
     box-shadow: 0 2px 8px rgba(57,73,171,0.04);
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 .input-group .form-control {
-    font-size: 1.15rem;
-    padding: 1rem 1.2rem;
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 .input-group .btn {
-    font-size: 1.15rem;
-    padding: 1rem 1.2rem;
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+    flex-shrink: 0;
 }
 .row#notificationsList {
     gap: 2rem 0;
@@ -116,10 +129,13 @@ body {
     border-radius: 16px;
     box-shadow: 0 4px 24px rgba(57,73,171,0.08);
     transition: box-shadow 0.2s, transform 0.2s;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     background: #fff;
     position: relative;
-    font-size: 1.15rem;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 .notification-item.card.bg-light {
     background: #f8fafc;
@@ -142,11 +158,13 @@ body {
     box-shadow: 0 2px 8px rgba(57,73,171,0.06);
 }
 .notification-message {
-    font-size: 1.18rem;
+    font-size: 1rem;
     color: #222;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 .notification-date {
-    font-size: 1.05rem;
+    font-size: 0.9rem;
     color: #7b809a;
 }
 .notification-actions .btn {
@@ -296,39 +314,46 @@ html.modal-open, body.modal-open {
     display: flex;
     flex-direction: row;
     gap: 0;
-    min-height: 70vh;
-    height: 100%;
+    min-height: calc(100vh - 120px);
+    height: auto;
     width: 100%;
+    max-width: 100vw;
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 .notifications-sidebar {
     flex: 0 0 220px;
     width: 220px;
+    max-width: 220px;
     background: rgba(255,255,255,0.85);
     border-radius: 24px;
     box-shadow: 0 8px 32px rgba(30,136,229,0.10), 0 2px 8px rgba(57,73,171,0.08);
-    padding: 2.5rem 1rem 2.5rem 1rem;
+    padding: 2rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    height: 100vh;
-    min-height: 100vh;
-    font-size: 1.25rem;
+    gap: 1.5rem;
+    height: fit-content;
+    min-height: fit-content;
+    max-height: calc(100vh - 140px);
+    font-size: 1.1rem;
     backdrop-filter: blur(8px);
     transition: box-shadow 0.3s, background 0.3s;
-    margin: 0 1.2rem;
+    margin: 0 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 .notifications-sidebar .sidebar-link {
     display: flex;
     align-items: center;
-    gap: 1.1rem;
-    font-size: 1.25rem;
+    gap: 0.9rem;
+    font-size: 1.1rem;
     color: #3949ab;
     background: rgba(255,255,255,0.7);
     border: none;
     outline: none;
-    padding: 1.1rem 1.5rem;
+    padding: 0.9rem 1.2rem;
     border-radius: 16px;
     cursor: pointer;
     font-weight: 600;
@@ -337,6 +362,8 @@ html.modal-open, body.modal-open {
     transition: background 0.25s, color 0.25s, box-shadow 0.25s, transform 0.18s;
     position: relative;
     overflow: hidden;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 .notifications-sidebar .sidebar-link i {
     font-size: 1.5em;
@@ -354,32 +381,39 @@ html.modal-open, body.modal-open {
 .notifications-list-panel {
     flex: 1 1 0;
     width: auto;
-    background: none;
-    padding: 1.2rem 1.2rem 1.2rem 1.2rem;
     min-width: 0;
+    background: none;
+    padding: 1rem;
     border-right: 1px solid #e3e8f7;
-    height: 100vh;
-    min-height: 100vh;
-    font-size: 1.15rem;
-}
-#notificationsList {
+    height: auto;
+    min-height: calc(100vh - 140px);
+    max-height: calc(100vh - 140px);
+    font-size: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 .notifications-details-panel {
     flex: 1 1 0;
     width: auto;
+    min-width: 0;
     background: #f8fafc;
     border-radius: 0;
     box-shadow: 0 2px 8px rgba(57,73,171,0.04);
-    padding: 1.2rem 1.2rem 1.2rem 1.2rem;
-    min-height: 100vh;
-    height: 100vh;
+    padding: 1rem;
+    min-height: calc(100vh - 140px);
+    max-height: calc(100vh - 140px);
+    height: auto;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
     transition: box-shadow 0.2s;
-    font-size: 1.15rem;
+    font-size: 1rem;
     align-items: center;
     justify-content: flex-start;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 .notification-details-card {
     background: rgba(255,255,255,0.95);
@@ -472,74 +506,448 @@ html.modal-open, body.modal-open {
     box-shadow: 0 0 0 2px #1e88e533;
 }
 @media (max-width: 1200px) {
+    .notifications-sidebar {
+        flex: 0 0 180px;
+        width: 180px;
+        max-width: 180px;
+        padding: 1.5rem 0.8rem;
+        font-size: 1rem;
+        margin: 0 0.8rem;
+    }
+    
+    .notifications-sidebar .sidebar-link {
+        font-size: 1rem;
+        padding: 0.8rem 1rem;
+        gap: 0.8rem;
+    }
+    
     .notifications-details-panel {
         width: 100%;
         min-width: 0;
         border-radius: 0 0 16px 16px;
-        padding: 1.5rem 0.5rem;
+        padding: 1rem 0.8rem;
+        font-size: 0.95rem;
     }
     .notifications-list-panel {
         width: 100%;
         flex: 1 1 0;
-        padding: 1.5rem 0.5rem;
+        padding: 1rem 0.8rem;
+        font-size: 0.95rem;
+    }
+    
+    .notification-item.card {
+        font-size: 0.95rem;
     }
 }
 @media (max-width: 991px) {
+    .notifications-header {
+        padding: 0.8rem 0 0.6rem 0;
+        margin-bottom: 0.8rem;
+    }
+    
+    .notifications-header h2 {
+        font-size: 1.3rem;
+        padding: 0 3.5rem 0 3.5rem;
+    }
+    
+    .notifications-header .subtitle {
+        font-size: 0.85rem;
+        padding: 0 0.8rem;
+    }
+    
+    .notifications-header .back-btn-stylish {
+        padding: 0.45rem 1rem 0.45rem 0.8rem;
+        font-size: 0.85rem;
+        top: 0.7rem;
+        left: 0.6rem;
+    }
+    
     .notifications-3col-layout {
         flex-direction: column;
         min-height: 0;
+        height: auto;
     }
+    
     .notifications-sidebar {
         border-radius: 16px 16px 0 0;
         flex-direction: row;
         gap: 0.5rem;
-        padding: 1.2rem 0.5rem;
-        height: unset;
-        min-height: unset;
-        margin: 0.5rem 0.5rem 0 0.5rem;
+        padding: 0.8rem 0.5rem;
+        height: auto;
+        min-height: auto;
+        max-height: none;
+        margin: 0 0.5rem;
+        flex: 0 0 auto;
+        width: calc(100% - 1rem);
+        max-width: calc(100% - 1rem);
+        overflow-x: auto;
+        overflow-y: hidden;
     }
+    
     .notifications-sidebar .sidebar-link {
-        font-size: 1.1rem;
-        padding: 0.7rem 1rem;
+        font-size: 0.95rem;
+        padding: 0.6rem 0.9rem;
         border-radius: 10px;
+        gap: 0.6rem;
+        flex-shrink: 0;
+        white-space: nowrap;
     }
+    
+    .notifications-sidebar .sidebar-link i {
+        font-size: 1.2em;
+    }
+    
     .notifications-list-panel {
         border-right: none;
         border-bottom: 1px solid #e3e8f7;
-        padding: 1rem 0.5rem;
+        padding: 0.8rem 0.5rem;
         width: 100%;
         flex: 1 1 0;
+        min-height: 50vh;
+        max-height: 60vh;
+        font-size: 0.95rem;
     }
+    
     .notifications-details-panel {
         border-radius: 0 0 12px 12px;
-        padding: 1rem 0.5rem;
-        min-height: unset;
-        height: unset;
+        padding: 0.8rem 0.5rem;
+        min-height: auto;
+        max-height: 50vh;
+        height: auto;
         width: 100%;
         flex: 1 1 0;
+        font-size: 0.95rem;
+    }
+    
+    .notification-item.card {
+        font-size: 0.95rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .notification-message {
+        font-size: 0.95rem;
+    }
+    
+    .notification-date {
+        font-size: 0.85rem;
+    }
+    
+    .input-group {
+        margin-bottom: 0.8rem;
+    }
+    
+    .input-group .form-control {
+        font-size: 0.95rem;
+        padding: 0.7rem 0.9rem;
+    }
+    
+    .input-group .btn {
+        font-size: 0.95rem;
+        padding: 0.7rem 0.9rem;
     }
 }
+
+@media (max-width: 768px) {
+    html, body {
+        font-size: 14px;
+    }
+    
+    .notifications-header {
+        padding: 0.7rem 0 0.5rem 0;
+        margin-bottom: 0.6rem;
+        border-radius: 0 0 16px 16px;
+    }
+    
+    .notifications-header h2 {
+        font-size: 1.2rem;
+        padding: 0 3rem 0 3rem;
+        margin-bottom: 0.15rem;
+        margin-top: 0.15rem;
+    }
+    
+    .notifications-header .subtitle {
+        font-size: 0.8rem;
+        padding: 0 0.6rem;
+    }
+    
+    .notifications-header .back-btn-stylish {
+        padding: 0.4rem 0.9rem 0.4rem 0.7rem;
+        font-size: 0.8rem;
+        top: 0.6rem;
+        left: 0.5rem;
+        gap: 0.4rem;
+    }
+    
+    .notifications-header .back-btn-stylish i {
+        font-size: 0.9rem;
+    }
+    
+    #toggleSound {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.5rem;
+        top: 0.6rem !important;
+        right: 0.5rem !important;
+    }
+    
+    .notifications-3col-layout {
+        min-height: calc(100vh - 100px);
+    }
+    
+    .notifications-sidebar {
+        margin: 0 0.4rem;
+        padding: 0.7rem 0.4rem;
+        gap: 0.4rem;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .notifications-sidebar .sidebar-link {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.7rem;
+        gap: 0.5rem;
+        border-radius: 8px;
+    }
+    
+    .notifications-sidebar .sidebar-link i {
+        font-size: 1.1em;
+    }
+    
+    .notifications-list-panel {
+        padding: 0.6rem 0.4rem;
+        min-height: 45vh;
+        max-height: 55vh;
+        font-size: 0.9rem;
+    }
+    
+    .notifications-details-panel {
+        padding: 0.6rem 0.4rem;
+        max-height: 45vh;
+        font-size: 0.9rem;
+    }
+    
+    .notification-item.card {
+        font-size: 0.9rem;
+        margin-bottom: 0.7rem;
+        border-radius: 12px;
+    }
+    
+    .notification-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.8rem;
+    }
+    
+    .notification-message {
+        font-size: 0.9rem;
+    }
+    
+    .notification-date {
+        font-size: 0.8rem;
+    }
+    
+    .notification-actions .btn {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+    
+    .input-group {
+        margin-bottom: 0.7rem;
+        border-radius: 0 0 10px 10px;
+    }
+    
+    .input-group .form-control {
+        font-size: 0.9rem;
+        padding: 0.6rem 0.8rem;
+    }
+    
+    .input-group .btn {
+        font-size: 0.9rem;
+        padding: 0.6rem 0.8rem;
+    }
+    
+    .notification-details-card {
+        padding: 1.5rem 1.2rem;
+        font-size: 0.9rem;
+        border-radius: 16px;
+    }
+    
+    .notification-details-card .details-title {
+        font-size: 1.2rem;
+    }
+    
+    .notification-details-card .details-meta {
+        font-size: 0.9rem;
+        gap: 0.8rem 1.5rem;
+    }
+    
+    .notification-details-card .details-desc,
+    .notification-details-card .details-req {
+        font-size: 0.9rem;
+        padding: 0.9rem 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    html, body {
+        font-size: 13px;
+    }
+    
+    .notifications-header {
+        padding: 0.6rem 0 0.4rem 0;
+        margin-bottom: 0.5rem;
+        border-radius: 0 0 12px 12px;
+    }
+    
+    .notifications-header h2 {
+        font-size: 1.1rem;
+        padding: 0 2.5rem 0 2.5rem;
+        letter-spacing: 0.3px;
+    }
+    
+    .notifications-header .subtitle {
+        font-size: 0.75rem;
+        padding: 0 0.5rem;
+    }
+    
+    .notifications-header .back-btn-stylish {
+        padding: 0.35rem 0.8rem 0.35rem 0.6rem;
+        font-size: 0.75rem;
+        top: 0.5rem;
+        left: 0.4rem;
+        gap: 0.3rem;
+    }
+    
+    .notifications-header .back-btn-stylish i {
+        font-size: 0.85rem;
+    }
+    
+    #toggleSound {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.45rem;
+        top: 0.5rem !important;
+        right: 0.4rem !important;
+    }
+    
+    .notifications-3col-layout {
+        min-height: calc(100vh - 90px);
+    }
+    
+    .notifications-sidebar {
+        margin: 0 0.3rem;
+        padding: 0.6rem 0.3rem;
+        gap: 0.3rem;
+        border-radius: 10px 10px 0 0;
+    }
+    
+    .notifications-sidebar .sidebar-link {
+        font-size: 0.8rem;
+        padding: 0.45rem 0.6rem;
+        gap: 0.4rem;
+        border-radius: 6px;
+    }
+    
+    .notifications-sidebar .sidebar-link i {
+        font-size: 1em;
+    }
+    
+    .notifications-list-panel {
+        padding: 0.5rem 0.3rem;
+        min-height: 40vh;
+        max-height: 50vh;
+        font-size: 0.85rem;
+    }
+    
+    .notifications-details-panel {
+        padding: 0.5rem 0.3rem;
+        max-height: 40vh;
+        font-size: 0.85rem;
+    }
+    
+    .notification-item.card {
+        font-size: 0.85rem;
+        margin-bottom: 0.6rem;
+        border-radius: 10px;
+    }
+    
+    .notification-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.6rem;
+    }
+    
+    .notification-message {
+        font-size: 0.85rem;
+    }
+    
+    .notification-date {
+        font-size: 0.75rem;
+    }
+    
+    .notification-actions .btn {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .input-group {
+        margin-bottom: 0.6rem;
+        border-radius: 0 0 8px 8px;
+    }
+    
+    .input-group .form-control {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.7rem;
+    }
+    
+    .input-group .btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.7rem;
+    }
+    
+    .notification-details-card {
+        padding: 1.2rem 1rem;
+        font-size: 0.85rem;
+        border-radius: 12px;
+    }
+    
+    .notification-details-card .details-title {
+        font-size: 1.1rem;
+    }
+    
+    .notification-details-card .details-meta {
+        font-size: 0.85rem;
+        gap: 0.6rem 1.2rem;
+    }
+    
+    .notification-details-card .details-desc,
+    .notification-details-card .details-req {
+        font-size: 0.85rem;
+        padding: 0.8rem 0.9rem;
+    }
+}
+
 .notifications-header .back-btn-stylish {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     background: linear-gradient(90deg, #42a5f5 0%, #1e88e5 100%);
     color: #fff;
     border: none;
     border-radius: 999px;
-    padding: 0.55rem 1.5rem 0.55rem 1.1rem;
-    font-size: 1.08rem;
+    padding: 0.5rem 1.2rem 0.5rem 1rem;
+    font-size: 0.9rem;
     font-weight: 600;
     box-shadow: 0 2px 12px rgba(30,136,229,0.13);
     transition: background 0.22s, color 0.22s, box-shadow 0.22s, transform 0.18s;
     position: absolute;
-    top: 1.1rem;
-    left: 1.2rem;
+    top: 0.8rem;
+    left: 0.8rem;
     z-index: 2;
     cursor: pointer;
     outline: none;
-    /* border removed for cleaner look */
     text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 .notifications-header .back-btn-stylish:hover, .notifications-header .back-btn-stylish:focus {
     background: linear-gradient(90deg, #1e88e5 0%, #3949ab 100%);
@@ -556,7 +964,7 @@ html.modal-open, body.modal-open {
     <a href="/employee/home/" class="back-btn-stylish">
         <i class="fas fa-arrow-left"></i> Back to Home
     </a>
-    <h2 class="mb-0" style="text-align: center; letter-spacing: 1px; text-shadow: 0 2px 8px #1e88e533; font-weight: 800; background: linear-gradient(90deg, #fff 10%, #e3e8f7 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.7rem;">
+    <h2 class="mb-0" style="text-align: center; letter-spacing: 1px; text-shadow: 0 2px 8px #1e88e533; font-weight: 800; background: linear-gradient(90deg, #fff 10%, #e3e8f7 90%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.7rem;">
         Notifications
     </h2>
     <div class="position-absolute top-0 end-0 me-3 mt-3" style="z-index:2;">

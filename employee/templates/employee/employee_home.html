@@ -154,15 +154,6 @@
             </div>
         </div>
     </div>
-    
-   
-    
-    <div class="scroll-indicator">
-        <a href="#jobs" class="scroll-down">
-            <span class="scroll-text">Scroll Down</span>
-            <i class="fas fa-chevron-down"></i>
-        </a>
-    </div>
 </section>
 
 <!-- Inside the jobs section -->
@@ -3715,54 +3706,6 @@ body {
     color: rgba(255, 255, 255, 0.7);
 }
 
-.scroll-indicator {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    animation: bounce 2s infinite;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.scroll-down {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: white;
-    text-decoration: none;
-    opacity: 0.7;
-    transition: opacity 0.3s ease;
-}
-
-.scroll-down:hover {
-    opacity: 1;
-    color: white;
-}
-
-.scroll-text {
-    font-size: 0.8rem;
-    margin-bottom: 5px;
-}
-
-.scroll-down i {
-    font-size: 1.2rem;
-}
-
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-    }
-    40% {
-        transform: translateY(-10px);
-    }
-    60% {
-        transform: translateY(-5px);
-    }
-}
 
 /* Responsive adjustments for home section */
 @media (max-width: 992px) {
@@ -3771,14 +3714,6 @@ body {
         padding-top: 80px;
         margin-top: -80px;
         top: 0;
-    }
-    
-    .scroll-indicator {
-        bottom: 25px;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
     
     .welcome-content {
@@ -3836,18 +3771,6 @@ body {
         top: 0;
     }
     
-    .scroll-indicator {
-        bottom: 20px;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .scroll-text {
-        font-size: 0.85rem;
-    }
-    
     .home-section .container {
         padding-left: 1rem;
         padding-right: 1rem;
@@ -3902,32 +3825,6 @@ body {
         padding-top: 65px;
         margin-top: -65px;
         top: 0;
-    }
-    
-    .scroll-indicator {
-        bottom: 15px;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        left: 0;
-        transform: none;
-    }
-    
-    .scroll-down {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .scroll-text {
-        font-size: 0.8rem;
-        margin-bottom: 6px;
-    }
-    
-    .scroll-down i {
-        font-size: 1rem;
     }
     
     .welcome-title {
@@ -4613,8 +4510,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Add smooth scrolling to scroll buttons (scroll-btn and scroll-down)
-        document.querySelectorAll('.scroll-btn, .scroll-down').forEach(anchor => {
+        // Add smooth scrolling to scroll buttons
+        document.querySelectorAll('.scroll-btn').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 
