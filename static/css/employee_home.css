@@ -1429,23 +1429,27 @@ body.modal-open {
 .contact-us-content {
   max-width: 1400px;
   width: 95%;
-  height: 85vh;
+  min-height: 85vh;
+  max-height: 90vh;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 20px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+  padding: 3rem 2.5rem;
   position: relative;
   z-index: 2;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   animation: fadeInUp 0.8s ease-out;
   backdrop-filter: blur(10px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .contact-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  width: 100%;
 }
 
 .contact-header h2 {
@@ -1477,47 +1481,53 @@ body.modal-open {
 
 .contact-main-content {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 2rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
   height: 100%;
-  align-items: center;
+  align-items: start;
+  padding-top: 1rem;
 }
 
 .contact-form-section {
-  display: grid;
-  grid-template-columns: 200px 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
   height: 100%;
-  align-items: center;
+  position: relative;
 }
 
 .form-visual {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  z-index: 1;
+  opacity: 0.15;
+  pointer-events: none;
 }
 
 .contact-icon-container {
   position: relative;
-  width: 180px;
-  height: 180px;
+  width: 150px;
+  height: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .animated-contact-icon {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   background: linear-gradient(135deg, #1a237e, #3949ab);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 2rem;
-  box-shadow: 0 10px 30px rgba(26, 35, 126, 0.3);
+  font-size: 1.5rem;
+  box-shadow: 0 10px 30px rgba(26, 35, 126, 0.2);
   z-index: 3;
   position: relative;
   animation: contactIconFloat 3s ease-in-out infinite;
@@ -1549,24 +1559,24 @@ body.modal-open {
 }
 
 .contact-ring-1 {
-  width: 100px;
-  height: 100px;
-  top: 40px;
-  left: 40px;
+  width: 80px;
+  height: 80px;
+  top: 35px;
+  left: 35px;
   animation-delay: 0s;
 }
 
 .contact-ring-2 {
-  width: 140px;
-  height: 140px;
+  width: 110px;
+  height: 110px;
   top: 20px;
   left: 20px;
   animation-delay: 0.5s;
 }
 
 .contact-ring-3 {
-  width: 180px;
-  height: 180px;
+  width: 150px;
+  height: 150px;
   top: 0;
   left: 0;
   animation-delay: 1s;
@@ -1588,13 +1598,17 @@ body.modal-open {
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+  position: relative;
+  z-index: 2;
+  width: 100%;
 }
 
 .enhanced-contact-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.2rem;
+  width: 100%;
 }
 
 .form-row {
@@ -1662,7 +1676,8 @@ body.modal-open {
   flex-direction: column;
   gap: 1.5rem;
   height: 100%;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-top: 1rem;
 }
 
 .contact-cards-grid {
@@ -1673,14 +1688,24 @@ body.modal-open {
 
 .enhanced-contact-card {
   background: white;
-  padding: 1.2rem;
+  padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   border-left: 4px solid transparent;
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  align-items: flex-start;
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.enhanced-contact-card .contact-card-icon {
+  margin-top: 0.2rem;
+}
+
+.enhanced-contact-card h3,
+.enhanced-contact-card p {
+  margin: 0;
 }
 
 .enhanced-contact-card:hover {
@@ -1713,15 +1738,16 @@ body.modal-open {
 }
 
 .contact-card-icon {
-  width: 50px;
-  height: 50px;
+  width: 55px;
+  height: 55px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .location-icon {
@@ -1739,15 +1765,16 @@ body.modal-open {
 .enhanced-contact-card h3 {
   font-size: 1.1rem;
   color: #1a237e;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.5rem;
   font-weight: 600;
+  margin-top: 0;
 }
 
 .enhanced-contact-card p {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #666;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .social-connect-section {
@@ -1811,7 +1838,7 @@ body.modal-open {
 @media (max-width: 1200px) {
   .contact-us-content {
     width: 98%;
-    padding: 1.5rem;
+    padding: 2.5rem 2rem;
   }
 
   .contact-header h2 {
@@ -1819,24 +1846,35 @@ body.modal-open {
   }
 
   .contact-main-content {
-    gap: 1.5rem;
+    gap: 2.5rem;
+  }
+  
+  .form-visual {
+    top: -15px;
+    right: -15px;
   }
 }
 
 @media (max-width: 992px) {
   .contact-us-content {
-    height: 90vh;
-    padding: 1.2rem;
+    min-height: auto;
+    max-height: none;
+    padding: 2rem 1.5rem;
+    height: auto;
   }
 
   .contact-main-content {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 2rem;
+    align-items: start;
   }
 
   .contact-form-section {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 1.5rem;
+  }
+  
+  .form-visual {
+    display: none; /* Hide on tablet and below */
   }
 
   .contact-icon-container {
@@ -1870,7 +1908,11 @@ body.modal-open {
   }
 
   .contact-cards-grid {
-    gap: 0.8rem;
+    gap: 1rem;
+  }
+  
+  .contact-info-section {
+    padding-top: 0;
   }
 }
 
