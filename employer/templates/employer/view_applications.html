@@ -117,9 +117,12 @@
         height: 100%;
         padding: 0;
         width: 100%;
+        max-width: 100vw;
         position: relative;
         z-index: 2;
         background: transparent; /* Ensure it's transparent to show the header background */
+        overflow-x: hidden;
+        box-sizing: border-box;
     }
 
     /* Enhanced Logo Section - Far Left */
@@ -136,6 +139,8 @@
         position: relative;
         overflow: hidden;
         min-width: 200px;
+        flex-shrink: 0;
+        white-space: nowrap;
     }
 
     .header-logo::before {
@@ -195,6 +200,8 @@
         min-width: 200px;
         justify-content: center;
         gap: 12px;
+        flex-shrink: 0;
+        white-space: nowrap;
     }
 
     .back-button::before {
@@ -1175,6 +1182,19 @@
             padding: 40px 30px;
             min-height: 200px;
         }
+
+        .applications-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-container {
+            flex-direction: column;
+        }
+
+        .filter-select {
+            width: 100%;
+            min-width: 100%;
+        }
     }
 
     @media (max-width: 992px) {
@@ -1190,6 +1210,11 @@
             padding: 0 20px;
         }
 
+        .header-container {
+            padding: 0 10px;
+            gap: 10px;
+        }
+
         .header-logo {
             font-size: 28px;
             padding: 15px 0 15px 20px;
@@ -1200,6 +1225,33 @@
             padding: 12px 20px 12px 20px;
             font-size: 14px;
             min-width: 180px;
+        }
+
+        .applications-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .card-actions {
+            flex-direction: column;
+        }
+
+        .card-actions .btn {
+            width: 100%;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            margin: 20px auto;
+        }
+
+        .detail-row {
+            flex-direction: column;
+        }
+
+        .detail-label {
+            width: 100%;
+            margin-bottom: 5px;
         }
     }
 
@@ -1241,6 +1293,11 @@
             padding: 0 15px;
         }
 
+        .header-container {
+            padding: 0 8px;
+            gap: 8px;
+        }
+
         .header-logo {
             font-size: 24px;
             padding: 12px 0 12px 15px;
@@ -1261,13 +1318,129 @@
         .back-button span {
             display: none;
         }
+
+        .applications-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .filter-section {
+            padding: 15px;
+        }
+
+        .filter-container {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .filter-select {
+            width: 100%;
+            min-width: 100%;
+        }
+
+        .application-card {
+            margin-bottom: 0;
+        }
+
+        .card-header {
+            padding: 15px;
+        }
+
+        .job-title {
+            font-size: 16px;
+            padding-right: 80px;
+        }
+
+        .status-badge {
+            top: 12px;
+            right: 12px;
+            padding: 5px 12px;
+            font-size: 11px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .applicant-avatar {
+            width: 45px;
+            height: 45px;
+            font-size: 18px;
+        }
+
+        .applicant-name {
+            font-size: 15px;
+        }
+
+        .applicant-email {
+            font-size: 13px;
+        }
+
+        .card-actions {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .modal {
+            padding: 15px 10px;
+        }
+
+        .modal-content {
+            max-width: 95%;
+            margin: 15px auto;
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-row {
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+
+        .detail-label {
+            width: 100%;
+            margin-bottom: 5px;
+            margin-right: 0;
+        }
+
+        .detail-value {
+            width: 100%;
+        }
+
+        .modal-footer {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .modal-footer .btn {
+            width: 100%;
+        }
     }
 
     @media (max-width: 576px) {
         .stats-grid {
             grid-template-columns: 1fr;
             gap: 20px;
-            max-width: 400px;
+            max-width: 100%;
             margin: 0 auto 30px;
         }
 
@@ -1278,9 +1451,13 @@
         .stats-title {
             font-size: 28px;
         }
+
+        .stats-subtitle {
+            font-size: 16px;
+        }
         
         .stat-card {
-            padding: 30px 25px;
+            padding: 30px 20px;
             min-height: 160px;
         }
         
@@ -1288,14 +1465,25 @@
             width: 75px;
             height: 75px;
             font-size: 30px;
+            margin: 0 auto 20px;
         }
         
         .stat-number {
             font-size: 42px;
         }
 
+        .stat-label {
+            font-size: 12px;
+        }
+
         .content-container {
             padding: 0 15px;
+        }
+
+        .header-container {
+            padding: 0 5px;
+            gap: 5px;
+            height: 70px;
         }
 
         .header-logo {
@@ -1312,6 +1500,328 @@
             padding: 8px 15px;
             min-width: 60px;
         }
+
+        .main-header {
+            height: 70px;
+        }
+
+        .dashboard-stats {
+            padding: 70px 0 25px 0;
+        }
+
+        .stats-container {
+            padding: 0 15px;
+        }
+
+        .stats-header {
+            padding-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        .filter-section {
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-title {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .applications-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .application-card {
+            border-radius: 12px;
+        }
+
+        .card-header {
+            padding: 12px 15px;
+        }
+
+        .job-title {
+            font-size: 15px;
+            padding-right: 70px;
+            line-height: 1.3;
+        }
+
+        .status-badge {
+            top: 10px;
+            right: 10px;
+            padding: 4px 10px;
+            font-size: 10px;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .applicant-info {
+            margin-bottom: 15px;
+        }
+
+        .applicant-avatar {
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+            margin-right: 12px;
+        }
+
+        .applicant-name {
+            font-size: 14px;
+        }
+
+        .applicant-email {
+            font-size: 12px;
+        }
+
+        .application-date {
+            padding: 8px 12px;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .interview-info {
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .interview-info-title {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .interview-info p {
+            font-size: 13px;
+            margin: 6px 0;
+        }
+
+        .card-actions {
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .card-actions .btn {
+            width: 100%;
+            padding: 10px 15px;
+            font-size: 13px;
+        }
+
+        .card-actions .btn i {
+            margin-right: 6px;
+            font-size: 14px;
+        }
+
+        .modal {
+            padding: 10px 5px;
+        }
+
+        .modal-content {
+            max-width: 100%;
+            margin: 10px auto;
+            border-radius: 12px;
+        }
+
+        .modal-header {
+            padding: 12px 15px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+        }
+
+        .close-modal {
+            width: 32px;
+            height: 32px;
+            font-size: 20px;
+        }
+
+        .modal-body {
+            padding: 15px;
+        }
+
+        .detail-section {
+            margin-bottom: 15px;
+        }
+
+        .detail-title {
+            font-size: 14px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+        }
+
+        .detail-content {
+            padding: 12px;
+        }
+
+        .detail-row {
+            flex-direction: column;
+            margin-bottom: 12px;
+        }
+
+        .detail-label {
+            width: 100%;
+            margin-bottom: 5px;
+            margin-right: 0;
+            font-size: 13px;
+        }
+
+        .detail-value {
+            width: 100%;
+            font-size: 13px;
+        }
+
+        .cover-letter-content {
+            padding: 12px;
+            font-size: 12px;
+            max-height: 150px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+        }
+
+        .modal-footer {
+            padding: 15px;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .modal-footer .btn {
+            width: 100%;
+            padding: 10px 15px;
+            font-size: 13px;
+        }
+
+        .empty-state {
+            padding: 40px 15px;
+        }
+
+        .empty-state-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .stats-title {
+            font-size: 24px;
+        }
+
+        .stats-subtitle {
+            font-size: 14px;
+        }
+
+        .stat-card {
+            padding: 25px 15px;
+            min-height: 140px;
+        }
+
+        .stat-icon {
+            width: 65px;
+            height: 65px;
+            font-size: 26px;
+            margin: 0 auto 15px;
+        }
+
+        .stat-number {
+            font-size: 36px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+        }
+
+        .header-container {
+            padding: 0 5px;
+            gap: 5px;
+        }
+
+        .header-logo {
+            font-size: 18px;
+            padding: 8px 0 8px 10px;
+            min-width: 100px;
+        }
+
+        .header-logo i {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+
+        .back-button {
+            padding: 6px 12px;
+            min-width: 50px;
+        }
+
+        .content-container {
+            padding: 0 10px;
+        }
+
+        .filter-section {
+            padding: 12px;
+        }
+
+        .filter-title {
+            font-size: 15px;
+        }
+
+        .card-header {
+            padding: 10px 12px;
+        }
+
+        .job-title {
+            font-size: 14px;
+            padding-right: 60px;
+        }
+
+        .status-badge {
+            padding: 3px 8px;
+            font-size: 9px;
+        }
+
+        .card-body {
+            padding: 12px;
+        }
+
+        .applicant-avatar {
+            width: 35px;
+            height: 35px;
+            font-size: 14px;
+        }
+
+        .applicant-name {
+            font-size: 13px;
+        }
+
+        .applicant-email {
+            font-size: 11px;
+        }
     }
 
     /* Touch Device Optimizations */
@@ -1319,11 +1829,56 @@
         .btn {
             padding-top: 14px;
             padding-bottom: 14px;
+            min-height: 44px;
         }
 
         .filter-select {
             padding-top: 14px;
             padding-bottom: 14px;
+            min-height: 44px;
+        }
+
+        .card-actions .btn {
+            min-height: 44px;
+        }
+
+        .status-badge {
+            min-height: 24px;
+            display: inline-flex;
+            align-items: center;
+        }
+    }
+
+    /* Landscape orientation on mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .dashboard-stats {
+            padding: var(--header-height) 0 20px 0;
+        }
+
+        .stats-header {
+            padding-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            padding: 25px 20px;
+            min-height: 140px;
+        }
+
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            font-size: 28px;
+            margin: 0 auto 15px;
+        }
+
+        .stat-number {
+            font-size: 38px;
         }
     }
 
@@ -1344,6 +1899,40 @@
 
     .detail-value {
         flex: 1;
+    }
+
+    /* Ensure proper overflow handling */
+    html, body {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+
+    .main-header {
+        overflow-x: hidden;
+    }
+
+    .dashboard-stats {
+        overflow-x: hidden;
+    }
+
+    .content-section {
+        overflow-x: hidden;
+    }
+
+    /* Improve button touch targets on mobile */
+    @media (max-width: 768px) {
+        .btn {
+            min-height: 44px;
+        }
+
+        .filter-select {
+            min-height: 44px;
+        }
+
+        .close-modal {
+            min-width: 44px;
+            min-height: 44px;
+        }
     }
 
     .cover-letter-content {
