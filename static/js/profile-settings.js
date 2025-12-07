@@ -309,7 +309,7 @@ function initializeProfileSettings() {
   profileSettingsLink?.addEventListener("click", (e) => {
     e.preventDefault()
     // Ensure modal is on top of everything
-    profileModal.style.zIndex = "10002"
+    profileModal.style.zIndex = "99999" // Much higher than header (9999) and dropdown (10000)
     profileModal.style.position = "fixed"
     profileModal.style.top = "0"
     profileModal.style.left = "0"
