@@ -899,15 +899,37 @@ def update_profile(request):
             employer = Employer.objects.get(username=request.session['employer_username'])
             data = json.loads(request.body)
             
-            # Update fields
-            employer.company_name = data.get('company_name', employer.company_name)
-            employer.company_description = data.get('company_description', employer.company_description)
-            employer.company_website = data.get('company_website', employer.company_website)
-            employer.company_location = data.get('company_location', employer.company_location)
-            employer.latitude = data.get('latitude', employer.latitude)
-            employer.longitude = data.get('longitude', employer.longitude)
-            employer.industry = data.get('industry', employer.industry)
-            employer.email = data.get('email', employer.email)
+            # Helper function to convert empty strings to None for optional fields
+            def clean_value(value, default=None):
+                if value == '' or value is None:
+                    return default
+                return value
+            
+            # Update fields with proper handling of empty strings
+            if 'company_name' in data:
+                employer.company_name = clean_value(data.get('company_name'), '')
+            if 'company_description' in data:
+                employer.company_description = clean_value(data.get('company_description'), '')
+            if 'company_website' in data:
+                website = clean_value(data.get('company_website'), '')
+                employer.company_website = website if website else ''
+            if 'company_location' in data:
+                employer.company_location = clean_value(data.get('company_location'), '')
+            if 'latitude' in data:
+                lat = data.get('latitude')
+                employer.latitude = float(lat) if lat and lat != '' else None
+            if 'longitude' in data:
+                lng = data.get('longitude')
+                employer.longitude = float(lng) if lng and lng != '' else None
+            if 'industry' in data:
+                employer.industry = clean_value(data.get('industry'), '')
+            if 'email' in data:
+                email = clean_value(data.get('email'))
+                if email and email != employer.email:
+                    # Check if email is already taken by another employer
+                    if Employer.objects.filter(email=email).exclude(username=employer.username).exists():
+                        return JsonResponse({'error': 'Email is already taken'}, status=400)
+                    employer.email = email
             
             employer.save()
             
@@ -915,8 +937,13 @@ def update_profile(request):
                 'success': True,
                 'message': 'Profile updated successfully'
             })
+        except json.JSONDecodeError as e:
+            return JsonResponse({'error': f'Invalid JSON: {str(e)}'}, status=400)
+        except ValueError as e:
+            return JsonResponse({'error': f'Invalid data format: {str(e)}'}, status=400)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            import traceback
+            return JsonResponse({'error': f'Error updating profile: {str(e)}'}, status=400)
     
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 

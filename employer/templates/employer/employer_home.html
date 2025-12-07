@@ -47,7 +47,7 @@ body {
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  z-index: 9999 !important;
+  z-index: 9999 !important; /* Lower than modals */
   background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
   box-shadow: 
     0 8px 32px rgba(26, 35, 126, 0.4),
@@ -3345,6 +3345,25 @@ button:disabled {
     backdrop-filter: blur(5px);
   }
   
+  /* Profile Modal - Always on top */
+  #profileModal {
+    z-index: 10002 !important; /* Higher than header (9999) and other modals */
+    position: fixed !important;
+  }
+  
+  #profileModal .modal-content {
+    z-index: 10003 !important;
+    position: relative !important;
+  }
+  
+  /* Ensure profile modal is always visible above header */
+  #profileModal[style*="display: block"],
+  #profileModal[style*="display: flex"],
+  #profileModal:not([style*="display: none"]) {
+    z-index: 10002 !important;
+    position: fixed !important;
+  }
+  
   /* Ensure modals with display: none are properly hidden */
   .modal[style*="display: none"] {
     display: none !important;
@@ -5897,10 +5916,18 @@ window.closeEditJobModal = function() {
                         profileModal.style.bottom = '0';
                         profileModal.style.width = '100%';
                         profileModal.style.height = '100%';
+                        // Set z-index higher than header and ensure it's on top
                         profileModal.style.zIndex = '10002'; /* Higher than header (9999) */
                         profileModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
                         profileModal.style.backdropFilter = 'blur(5px)';
                         profileModal.style.padding = '20px';
+                        profileModal.style.position = 'fixed';
+                        profileModal.style.top = '0';
+                        profileModal.style.left = '0';
+                        profileModal.style.right = '0';
+                        profileModal.style.bottom = '0';
+                        profileModal.style.width = '100%';
+                        profileModal.style.height = '100%';
                         
                         // Set centering styles while hidden
                         profileModal.style.display = 'flex';
@@ -5914,15 +5941,11 @@ window.closeEditJobModal = function() {
                             modalContent.style.left = 'auto';
                             modalContent.style.transform = 'none';
                             modalContent.style.margin = '0 auto';
-                            modalContent.style.maxHeight = 'calc(100vh - 100px)';
-                            modalContent.style.left = '50%';
-                            modalContent.style.transform = 'translate(-50%, -50%)';
-                            modalContent.style.margin = '0';
                             modalContent.style.maxWidth = '800px';
                             modalContent.style.width = '90%';
-                            modalContent.style.maxHeight = '90vh';
+                            modalContent.style.maxHeight = 'calc(100vh - 100px)';
                             modalContent.style.overflowY = 'auto';
-                            modalContent.style.zIndex = '10002';
+                            modalContent.style.zIndex = '10003';
                             modalContent.style.animation = 'none';
                             modalContent.style.transition = 'none';
                         }

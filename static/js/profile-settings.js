@@ -308,7 +308,19 @@ function initializeProfileSettings() {
   // Event Listeners
   profileSettingsLink?.addEventListener("click", (e) => {
     e.preventDefault()
-    profileModal.style.display = "block"
+    // Ensure modal is on top of everything
+    profileModal.style.zIndex = "10002"
+    profileModal.style.position = "fixed"
+    profileModal.style.top = "0"
+    profileModal.style.left = "0"
+    profileModal.style.right = "0"
+    profileModal.style.bottom = "0"
+    profileModal.style.width = "100%"
+    profileModal.style.height = "100%"
+    profileModal.style.display = "flex"
+    profileModal.style.alignItems = "center"
+    profileModal.style.justifyContent = "center"
+    profileModal.style.padding = "20px"
     document.body.style.overflow = "hidden"
     loadProfileData()
   })
