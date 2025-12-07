@@ -1416,11 +1416,12 @@ button:disabled {
     align-items: center !important;
     justify-content: center !important;
     padding: 20px !important;
+    z-index: 10002 !important; /* Higher than header (9999) */
   }
   
   #profileModal.modal .modal-content {
     margin: 0 auto !important;
-    max-height: 90vh !important;
+    max-height: calc(100vh - 100px) !important; /* Account for padding */
     overflow-y: auto !important;
     position: relative !important;
     top: 0 !important;
@@ -1436,11 +1437,12 @@ button:disabled {
     align-items: center !important;
     justify-content: center !important;
     padding: 20px !important;
+    z-index: 10002 !important; /* Higher than header (9999) */
   }
   
   #profileModal .modal-content {
     margin: 0 auto !important;
-    max-height: 90vh !important;
+    max-height: calc(100vh - 100px) !important; /* Account for padding */
     overflow-y: auto !important;
     position: relative !important;
     top: 0 !important;
@@ -1459,15 +1461,17 @@ button:disabled {
     bottom: 0 !important;
     width: 100% !important;
     height: 100% !important;
+    z-index: 10002 !important; /* Higher than header (9999) */
   }
   
-  /* Ensure profile modal content is centered */
+  /* Ensure profile modal content is centered with proper spacing */
   #profileModal .modal-content {
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     margin: 0 !important;
+    max-height: calc(100vh - 80px) !important; /* Account for header height */
   }
   
   /* Override external CSS file styles with maximum specificity */
@@ -1482,22 +1486,25 @@ button:disabled {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    z-index: 10002 !important; /* Higher than header (9999) */
+    padding: 20px !important;
   }
   
   #profileModal.modal .modal-content {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    margin: 0 !important;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 0 auto !important;
     max-width: 800px !important;
     width: 90% !important;
-    max-height: 90vh !important;
+    max-height: calc(100vh - 100px) !important; /* Account for padding */
     overflow-y: auto !important;
   }
   
   /* Force override with inline styles if needed */
-  #profileModal[style*="display: block"] {
+  #profileModal[style*="display: block"],
+  #profileModal[style*="display: flex"] {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
@@ -1508,14 +1515,18 @@ button:disabled {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    z-index: 10002 !important; /* Higher than header (9999) */
+    padding: 20px !important;
   }
   
-  #profileModal[style*="display: block"] .modal-content {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    margin: 0 !important;
+  #profileModal[style*="display: block"] .modal-content,
+  #profileModal[style*="display: flex"] .modal-content {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 0 auto !important;
+    max-height: calc(100vh - 100px) !important; /* Account for padding */
   }
   
   /* Edit Job Modal Centering */
@@ -1611,8 +1622,7 @@ button:disabled {
   
   /* Override any conflicting modal styles with maximum force */
   .modal#editJobModal,
-  .modal#viewJobModal,
-  .modal#profileModal {
+  .modal#viewJobModal {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
@@ -1626,14 +1636,37 @@ button:disabled {
     z-index: 10001 !important;
   }
   
+  .modal#profileModal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 10002 !important; /* Higher than header (9999) */
+    padding: 20px !important;
+  }
+  
   .modal#editJobModal .modal-content,
-  .modal#viewJobModal .modal-content,
-  .modal#profileModal .modal-content {
+  .modal#viewJobModal .modal-content {
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     margin: 0 !important;
+  }
+  
+  .modal#profileModal .modal-content {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 0 auto !important;
+    max-height: calc(100vh - 100px) !important; /* Account for padding */
   }
   
   /* Completely disable any default modal positioning - REMOVED as it was breaking modal content */
@@ -1643,6 +1676,15 @@ button:disabled {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+  }
+  
+  /* Ensure profile modal is above header */
+  #profileModal {
+    z-index: 10002 !important; /* Higher than header (9999) */
+  }
+  
+  #profileModal .modal-content {
+    z-index: 10003 !important;
   }
   
   /* Completely disable ALL animations and transitions from external CSS */
@@ -1758,7 +1800,6 @@ button:disabled {
   /* Force immediate positioning for all modals - but only when visible */
   #editJobModal:not([style*="display: none"]),
   #viewJobModal:not([style*="display: none"]),
-  #profileModal:not([style*="display: none"]),
   #createJobModal:not([style*="display: none"]) {
     position: fixed !important;
     top: 0 !important;
@@ -1775,6 +1816,26 @@ button:disabled {
     backdrop-filter: blur(5px) !important;
     animation: none !important;
     transition: none !important;
+  }
+  
+  /* Profile modal with higher z-index to be above header */
+  #profileModal:not([style*="display: none"]) {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 10002 !important; /* Higher than header (9999) */
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(5px) !important;
+    animation: none !important;
+    transition: none !important;
+    padding: 20px !important;
   }
   
   /* Additional rule for modals with display: flex */
@@ -2657,11 +2718,15 @@ button:disabled {
   
   /* Profile Modal Responsive Styles */
   @media (max-width: 992px) {
+    #profileModal {
+      padding: 15px !important;
+    }
+    
     #profileModal .modal-content {
       width: 95% !important;
       max-width: 95% !important;
-      max-height: 95vh !important;
-      margin: 10px !important;
+      max-height: calc(100vh - 80px) !important; /* Account for padding */
+      margin: 0 auto !important;
     }
     
     .modal-header {
@@ -2778,12 +2843,16 @@ button:disabled {
   }
   
   @media (max-width: 768px) {
+    #profileModal {
+      padding: 10px !important;
+    }
+    
     #profileModal .modal-content {
       width: 98% !important;
       max-width: 98% !important;
-      max-height: 98vh !important;
+      max-height: calc(100vh - 60px) !important; /* Account for padding */
       border-radius: 12px !important;
-      margin: 5px !important;
+      margin: 0 auto !important;
     }
     
     .modal-header {
@@ -2953,6 +3022,10 @@ button:disabled {
   }
   
   @media (max-width: 480px) {
+    #profileModal {
+      padding: 0 !important;
+    }
+    
     #profileModal .modal-content {
       width: 100% !important;
       max-width: 100% !important;
@@ -3150,7 +3223,7 @@ button:disabled {
   }
   
   /* Then reapply our centering styles - but only when visible */
-  .modal:not([style*="display: none"]) {
+  .modal:not([style*="display: none"]):not(#profileModal) {
     display: flex !important;
     position: fixed !important;
     top: 0 !important;
@@ -3164,6 +3237,29 @@ button:disabled {
     z-index: 10001 !important;
     background-color: rgba(0, 0, 0, 0.5) !important;
     backdrop-filter: blur(5px) !important;
+  }
+  
+  /* Profile modal specific styling */
+  #profileModal:not([style*="display: none"]) {
+    display: flex !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 10002 !important; /* Higher than header (9999) */
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(5px) !important;
+    padding: 20px !important;
+  }
+  
+  #profileModal:not([style*="display: none"]) .modal-content {
+    max-height: calc(100vh - 100px) !important; /* Account for padding */
+    margin: 0 auto !important;
   }
   
   .modal-content {
@@ -3296,6 +3392,16 @@ button:disabled {
     background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
     color: white;
     border-radius: 12px 12px 0 0;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+  
+  /* Ensure profile modal header is always visible */
+  #profileModal .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
   
   .modal-header h3 {
@@ -5791,9 +5897,10 @@ window.closeEditJobModal = function() {
                         profileModal.style.bottom = '0';
                         profileModal.style.width = '100%';
                         profileModal.style.height = '100%';
-                        profileModal.style.zIndex = '10001';
+                        profileModal.style.zIndex = '10002'; /* Higher than header (9999) */
                         profileModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
                         profileModal.style.backdropFilter = 'blur(5px)';
+                        profileModal.style.padding = '20px';
                         
                         // Set centering styles while hidden
                         profileModal.style.display = 'flex';
@@ -5802,8 +5909,12 @@ window.closeEditJobModal = function() {
                         
                         const modalContent = profileModal.querySelector('.modal-content');
                         if (modalContent) {
-                            modalContent.style.position = 'absolute';
-                            modalContent.style.top = '50%';
+                            modalContent.style.position = 'relative';
+                            modalContent.style.top = 'auto';
+                            modalContent.style.left = 'auto';
+                            modalContent.style.transform = 'none';
+                            modalContent.style.margin = '0 auto';
+                            modalContent.style.maxHeight = 'calc(100vh - 100px)';
                             modalContent.style.left = '50%';
                             modalContent.style.transform = 'translate(-50%, -50%)';
                             modalContent.style.margin = '0';
