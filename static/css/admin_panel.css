@@ -525,7 +525,8 @@ body {
 .table-container {
   background: white;
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   border: 1px solid var(--sidebar-border);
 }
 
@@ -1003,6 +1004,15 @@ body {
 
   .user-cell {
     justify-content: center;
+  }
+
+  /* Keep tables usable on small screens */
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .data-table {
+    min-width: 720px;
   }
 }
 

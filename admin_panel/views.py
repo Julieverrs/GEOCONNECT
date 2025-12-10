@@ -942,7 +942,7 @@ def jobs_monitoring(request):
         # Use the correct related_name from JobApplication model
         try:
             jobs = jobs.annotate(
-                applications_count=Coalesce(Count('jobapplication'), Value(0))
+                applications_count=Coalesce(Count('applications', distinct=True), Value(0))
             ).order_by('-created_at')
             print(f"DEBUG: After annotation, jobs count: {jobs.count()}")
         except Exception as e:
