@@ -1556,7 +1556,8 @@ button:disabled {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    z-index: 10001 !important;
+    z-index: 999999 !important;
+    isolation: isolate !important; /* Create new stacking context independent of header */
   }
   
   #editJobModal .modal-content {
@@ -1583,7 +1584,8 @@ button:disabled {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    z-index: 10001 !important;
+    z-index: 999999 !important;
+    isolation: isolate !important; /* Create new stacking context independent of header */
   }
   
   #viewJobModal .modal-content {
@@ -1613,6 +1615,7 @@ button:disabled {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    isolation: isolate !important; /* Create new stacking context independent of header */
   }
   
   #editJobModal[style*="display: block"] .modal-content,
@@ -1648,7 +1651,8 @@ button:disabled {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    z-index: 10001 !important;
+    z-index: 999999 !important;
+    isolation: isolate !important; /* Create new stacking context independent of header */
   }
   
   .modal#profileModal {
@@ -6421,6 +6425,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (editModal) {
             console.log('🔧 Setting up edit modal...');
             
+            // Move modal to body to avoid parent stacking contexts
+            if (editModal.parentElement !== document.body) {
+                document.body.appendChild(editModal);
+            }
+            
             // Set modal styles
             editModal.style.position = 'fixed';
             editModal.style.top = '0';
@@ -6429,7 +6438,8 @@ document.addEventListener('DOMContentLoaded', function() {
             editModal.style.bottom = '0';
             editModal.style.width = '100%';
             editModal.style.height = '100%';
-            editModal.style.zIndex = '10001';
+            editModal.style.zIndex = '999999';
+            editModal.style.isolation = 'isolate';
             editModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
             editModal.style.backdropFilter = 'blur(5px)';
             editModal.style.display = 'flex';
@@ -6453,7 +6463,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 modalContent.style.width = '90%';
                 modalContent.style.maxHeight = '90vh';
                 modalContent.style.overflowY = 'auto';
-                modalContent.style.zIndex = '10002';
+                modalContent.style.zIndex = '999999';
                 modalContent.style.animation = 'none';
                 modalContent.style.transition = 'none';
                 
@@ -6618,6 +6628,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (viewModal) {
             console.log('🔧 Setting up view modal...');
             
+            // Move modal to body to avoid parent stacking contexts
+            if (viewModal.parentElement !== document.body) {
+                document.body.appendChild(viewModal);
+            }
+            
             // Set modal styles
             viewModal.style.position = 'fixed';
             viewModal.style.top = '0';
@@ -6626,7 +6641,8 @@ document.addEventListener('DOMContentLoaded', function() {
             viewModal.style.bottom = '0';
             viewModal.style.width = '100%';
             viewModal.style.height = '100%';
-            viewModal.style.zIndex = '10001';
+            viewModal.style.zIndex = '999999';
+            viewModal.style.isolation = 'isolate';
             viewModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
             viewModal.style.backdropFilter = 'blur(5px)';
             viewModal.style.display = 'flex';
@@ -6646,7 +6662,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 modalContent.style.width = '90%';
                 modalContent.style.maxHeight = '90vh';
                 modalContent.style.overflowY = 'auto';
-                modalContent.style.zIndex = '10002';
+                modalContent.style.zIndex = '999999';
                 modalContent.style.animation = 'none';
                 modalContent.style.transition = 'none';
             }
